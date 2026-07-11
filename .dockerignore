@@ -1,0 +1,7 @@
+docs/
+_migration/benchmark/
+_migration/html/
+.github/
+docker-compose.yml
+README.md
+*.png

@@ -1,0 +1,4 @@
+Instructions for Subaru Forester (UU108UL):
+1. Rename your photos to: 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg (up to 5 photos are pre-configured).
+2. Place them in this folder.
+3. Commit and push your changes to Git.

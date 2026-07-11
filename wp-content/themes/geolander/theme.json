@@ -1,0 +1,154 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"layout": {
+			"contentSize": "760px",
+			"wideSize": "1240px"
+		},
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"palette": [
+				{ "slug": "ink", "name": "Ink", "color": "#142420" },
+				{ "slug": "surface", "name": "Surface", "color": "#1E332C" },
+				{ "slug": "glacier", "name": "Glacier", "color": "#F2F4F1" },
+				{ "slug": "paper", "name": "Paper", "color": "#F7F5F0" },
+				{ "slug": "ink-text", "name": "Ink Text", "color": "#141414" },
+				{ "slug": "stone", "name": "Stone", "color": "#9FB4A8" },
+				{ "slug": "accent", "name": "Accent", "color": "#FF6B35" },
+				{ "slug": "accent-deep", "name": "Accent Deep", "color": "#E4531F" },
+				{ "slug": "success", "name": "Success", "color": "#8FBE6E" }
+			],
+			"gradients": [
+				{
+					"slug": "ink-fade",
+					"name": "Ink fade",
+					"gradient": "linear-gradient(180deg, rgba(20, 36, 32,0.25) 0%, rgba(20, 36, 32,0.55) 60%, #142420 100%)"
+				}
+			]
+		},
+		"typography": {
+			"defaultFontSizes": false,
+			"fluid": true,
+			"fontFamilies": [
+				{
+					"slug": "georgian",
+					"name": "Noto Sans Georgian",
+					"fontFamily": "\"Noto Sans Georgian\", \"Geolander Script Fallback\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Noto Sans Georgian",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"unicodeRange": "U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F, U+0020-00A0",
+							"src": [ "file:./assets/fonts/noto-sans-georgian-var.woff2" ]
+						},
+						{
+							"fontFamily": "Geolander Script Fallback",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"unicodeRange": "U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116",
+							"src": [ "file:./assets/fonts/noto-sans-cyrillic-var.woff2" ]
+						},
+						{
+							"fontFamily": "Geolander Script Fallback",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"unicodeRange": "U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC, U+200C-200E",
+							"src": [ "file:./assets/fonts/noto-sans-arabic-var.woff2" ]
+						}
+					]
+				},
+				{
+					"slug": "display",
+					"name": "Archivo",
+					"fontFamily": "\"Archivo\", \"Noto Sans Georgian\", \"Geolander Script Fallback\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Archivo",
+							"fontWeight": "100 900",
+							"fontStretch": "62% 125%",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/archivo-var.woff2" ]
+						}
+					]
+				}
+			],
+			"fontSizes": [
+				{ "slug": "small", "name": "Small", "size": "0.875rem", "fluid": false },
+				{ "slug": "medium", "name": "Medium", "size": "1.0625rem", "fluid": false },
+				{ "slug": "large", "name": "Large", "size": "1.375rem", "fluid": { "min": "1.2rem", "max": "1.375rem" } },
+				{ "slug": "x-large", "name": "XL", "size": "2rem", "fluid": { "min": "1.6rem", "max": "2rem" } },
+				{ "slug": "xx-large", "name": "2XL", "size": "3.25rem", "fluid": { "min": "2.2rem", "max": "3.25rem" } },
+				{ "slug": "display", "name": "Display", "size": "5.5rem", "fluid": { "min": "2.75rem", "max": "5.5rem" } }
+			]
+		},
+		"spacing": {
+			"defaultSpacingSizes": false,
+			"spacingSizes": [
+				{ "slug": "20", "name": "XS", "size": "0.5rem" },
+				{ "slug": "30", "name": "S", "size": "1rem" },
+				{ "slug": "40", "name": "M", "size": "1.75rem" },
+				{ "slug": "50", "name": "L", "size": "clamp(2rem, 5vw, 3.5rem)" },
+				{ "slug": "60", "name": "XL", "size": "clamp(3rem, 8vw, 6rem)" },
+				{ "slug": "70", "name": "2XL", "size": "clamp(4.5rem, 11vw, 9rem)" }
+			]
+		},
+		"custom": {
+			"radius": { "card": "14px", "chip": "999px" },
+			"shadow": { "card": "0 18px 48px -18px rgba(20, 36, 32, 0.45)" }
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var(--wp--preset--color--ink)",
+			"text": "var(--wp--preset--color--glacier)"
+		},
+		"typography": {
+			"fontFamily": "var(--wp--preset--font-family--georgian)",
+			"fontSize": "var(--wp--preset--font-size--medium)",
+			"lineHeight": "1.6"
+		},
+		"elements": {
+			"heading": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--display)",
+					"fontWeight": "800",
+					"lineHeight": "1.05",
+					"letterSpacing": "-0.02em"
+				}
+			},
+			"link": {
+				"color": { "text": "var(--wp--preset--color--glacier)" },
+				":hover": { "color": { "text": "var(--wp--preset--color--accent)" } }
+			},
+			"button": {
+				"color": {
+					"background": "var(--wp--preset--color--accent)",
+					"text": "var(--wp--preset--color--ink)"
+				},
+				"typography": { "fontWeight": "700" },
+				"border": { "radius": "10px" },
+				":hover": {
+					"color": {
+						"background": "var(--wp--preset--color--accent-deep)",
+						"text": "var(--wp--preset--color--glacier)"
+					}
+				}
+			}
+		}
+	},
+	"templateParts": [
+		{ "name": "header", "title": "Header", "area": "header" },
+		{ "name": "footer", "title": "Footer", "area": "footer" }
+	],
+	"customTemplates": [
+		{ "name": "page-contact", "title": "Contact", "postTypes": [ "page" ] }
+	]
+}

@@ -1,0 +1,204 @@
+{
+  "nav": {
+    "home": "Home",
+    "fleet": "Our Fleet",
+    "places": "Places to Visit",
+    "travelInfo": "Travel Info",
+    "music": "Georgian Music",
+    "blog": "Blog",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "common": {
+    "bookNow": "Book Now",
+    "learnMore": "Learn More",
+    "viewAll": "View All",
+    "back": "Back",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "perDay": "/day",
+    "days": "days",
+    "from": "From",
+    "to": "To",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "readMore": "Read More",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "success": "Success",
+    "error": "Error",
+    "confirm": "Confirm",
+    "language": "Language",
+    "english": "English",
+    "georgian": "ქართული"
+  },
+  "hero": {
+    "title": "Explore Georgia Your Way",
+    "subtitle": "Premium car rentals for unforgettable adventures across the Caucasus",
+    "cta": "Browse Our Fleet",
+    "secondaryCta": "View Destinations"
+  },
+  "fleet": {
+    "title": "Our Fleet",
+    "subtitle": "Choose the perfect vehicle for your Georgian adventure",
+    "seats": "seats",
+    "automatic": "Automatic",
+    "manual": "Manual",
+    "gasoline": "Gasoline",
+    "diesel": "Diesel",
+    "electric": "Electric",
+    "hybrid": "Hybrid",
+    "features": "Features",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "selectDates": "Select your dates",
+    "pickupDate": "Pickup Date",
+    "returnDate": "Return Date",
+    "totalDays": "Total Days",
+    "totalPrice": "Total Price",
+    "pricePerDay": "Price per day",
+    "bookViaWhatsApp": "Book via WhatsApp",
+    "checkAvailability": "Check Availability",
+    "gallery": "Gallery"
+  },
+  "places": {
+    "title": "Places to Visit",
+    "subtitle": "Discover the most beautiful destinations in Georgia",
+    "allRegions": "All Regions",
+    "whatMakesItSpecial": "What makes it special",
+    "viewOnMap": "View on Google Maps",
+    "locations": "locations",
+    "exploreRegion": "Explore Region"
+  },
+  "travelInfo": {
+    "title": "Travel Information",
+    "subtitle": "Everything you need to know for driving in Georgia",
+    "fuelStations": "Fuel Stations",
+    "fuelStationsDesc": "Major fuel station chains across Georgia",
+    "markets": "Supermarkets",
+    "marketsDesc": "Where to shop for groceries and essentials",
+    "visitWebsite": "Visit Website",
+    "budget": "Budget",
+    "midRange": "Mid-Range",
+    "premium": "Premium"
+  },
+  "music": {
+    "title": "Georgian Music",
+    "subtitle": "Discover the rich musical heritage of Georgia during your journey",
+    "listenOn": "Listen on YouTube",
+    "noLinks": "No tracks added yet"
+  },
+  "booking": {
+    "title": "Booking Request",
+    "yourName": "Your Name",
+    "phoneNumber": "Phone Number",
+    "email": "Email (optional)",
+    "couponCode": "Coupon Code",
+    "applyCoupon": "Apply",
+    "summary": "Booking Summary",
+    "sendRequest": "Send Booking Request",
+    "successTitle": "Booking Request Sent!",
+    "successMessage": "We've received your booking request. We'll contact you on WhatsApp to confirm.",
+    "backToHome": "Back to Home"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch for questions, custom quotes, or assistance",
+    "whatsapp": "WhatsApp Us",
+    "phone": "Call Us",
+    "email": "Email Us",
+    "hours": "Business Hours",
+    "address": "Address"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "subtitle": "Please read our rental terms carefully before booking"
+  },
+  "footer": {
+    "description": "Premium car rental service in Georgia. Explore the beauty of the Caucasus with comfort and reliability.",
+    "quickLinks": "Quick Links",
+    "contactInfo": "Contact Info",
+    "followUs": "Follow Us",
+    "rights": "All rights reserved."
+  },
+  "supportBar": {
+    "availableNow": "Available 24/7",
+    "whatsapp": "WhatsApp"
+  },
+  "features": {
+    "title": "Why Choose Geolander?",
+    "subtitle": "We make your Georgian adventure seamless",
+    "freeDelivery": "Free Delivery",
+    "freeDeliveryDesc": "Free car delivery to Tbilisi airport or your hotel",
+    "allInclusive": "All-Inclusive Pricing",
+    "allInclusiveDesc": "Insurance, GPS, and roadside assistance included",
+    "localExpertise": "Local Expertise",
+    "localExpertiseDesc": "Get insider tips on the best routes and hidden gems",
+    "flexibleBooking": "Flexible Booking",
+    "flexibleBookingDesc": "Free cancellation up to 24 hours before pickup"
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Renting a car with Geolander is simple",
+    "step1Title": "Choose Your Car",
+    "step1Desc": "Browse our fleet and pick the perfect vehicle",
+    "step2Title": "Pick Your Dates",
+    "step2Desc": "Select pickup and return dates that work for you",
+    "step3Title": "Book via WhatsApp",
+    "step3Desc": "Send us a message and we'll confirm your booking",
+    "step4Title": "Hit the Road",
+    "step4Desc": "Pick up your car and start exploring Georgia"
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Real experiences from real travelers"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about renting with Geolander"
+  },
+  "cta": {
+    "title": "Ready to Explore Georgia?",
+    "subtitle": "Book your perfect rental car today and start an unforgettable adventure",
+    "button": "Browse Our Fleet"
+  },
+  "blog": {
+    "title": "Travel & Car Rental Guides",
+    "subtitle": "Honest guides to renting a car and exploring Georgia",
+    "readArticle": "Read article"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "cars": "Cars",
+    "bookings": "Bookings",
+    "places": "Places",
+    "music": "Music",
+    "travelInfo": "Travel Info",
+    "coupons": "Coupons",
+    "testimonials": "Testimonials",
+    "settings": "Settings",
+    "signOut": "Sign Out",
+    "totalBookings": "Total Bookings",
+    "pendingBookings": "Pending",
+    "totalRevenue": "Total Revenue",
+    "activeCars": "Active Cars"
+  },
+  "login": {
+    "title": "Admin Login",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "meta": {
+    "homeTitle": "Premium Car Rental in Georgia | Geolander",
+    "homeDescription": "Premium car rental in Georgia. Rent reliable 4x4 SUVs, crossovers and passenger cars at the best prices with free airport delivery. Perfect for tourist travel."
+  },
+  "db": {}
+}

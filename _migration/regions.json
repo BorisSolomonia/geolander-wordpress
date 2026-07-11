@@ -1,0 +1,74 @@
+[
+  {
+    "id": "00000000-0000-0000-0001-000000000001",
+    "slug": "kakheti",
+    "nameEn": "Kakheti",
+    "nameKa": "კახეთი",
+    "descriptionEn": "Georgia's premier wine region, home to ancient monasteries, charming hilltop towns, and the cradle of 8,000 years of winemaking tradition.",
+    "descriptionKa": "საქართველოს უპირველესი ღვინის რეგიონი, უძველესი მონასტრების, მომხიბვლელი მთის ქალაქების და 8000 წლიანი მეღვინეობის ტრადიციის სამშობლო.",
+    "image": null,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000002",
+    "slug": "adjara",
+    "nameEn": "Adjara",
+    "nameKa": "აჭარა",
+    "descriptionEn": "A subtropical paradise on the Black Sea coast, featuring the vibrant city of Batumi and stunning mountain landscapes.",
+    "descriptionKa": "სუბტროპიკული სამოთხე შავი ზღვის სანაპიროზე, ცოცხალი ქალაქი ბათუმით და მომხიბვლელი მთის ლანდშაფტებით.",
+    "image": null,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000003",
+    "slug": "mtskheta-mtianeti",
+    "nameEn": "Mtskheta-Mtianeti",
+    "nameKa": "მცხეთა-მთიანეთი",
+    "descriptionEn": "Home to Georgia's ancient capital Mtskheta and the dramatic high Caucasus mountains, including the famous Georgian Military Highway.",
+    "descriptionKa": "საქართველოს უძველესი დედაქალაქ მცხეთისა და მაღალი კავკასიონის სახლი, მათ შორის ცნობილი საქართველოს სამხედრო გზატკეცილი.",
+    "image": null,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000004",
+    "slug": "svaneti",
+    "nameEn": "Svaneti",
+    "nameKa": "სვანეთი",
+    "descriptionEn": "The land of towers and high mountains, featuring UNESCO World Heritage sites and some of Europe's highest inhabited villages.",
+    "descriptionKa": "კოშკებისა და მაღალი მთების მხარე, იუნესკოს მსოფლიო მემკვიდრეობის ძეგლებით და ევროპის ყველაზე მაღალ დასახლებულ სოფლებით.",
+    "image": null,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000005",
+    "slug": "tbilisi",
+    "nameEn": "Tbilisi",
+    "nameKa": "თბილისი",
+    "descriptionEn": "Georgia's cosmopolitan capital, blending historic Old Town charm with modern architecture and vibrant cultural life.",
+    "descriptionKa": "საქართველოს კოსმოპოლიტური დედაქალაქი, ძველი ქალაქის ხიბლისა და თანამედროვე არქიტექტურის შერწყმა.",
+    "image": null,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000006",
+    "slug": "samegrelo",
+    "nameEn": "Samegrelo",
+    "nameKa": "სამეგრელო",
+    "descriptionEn": "A region in western Georgia rich in history, featuring lush sub-tropical canyons, the majestic Dadiani Palace, and the pristine wetlands of Kolkheti National Park.",
+    "descriptionKa": "დასავლეთ საქართველოს ისტორიული რეგიონი, რომელიც ცნობილია სუბტროპიკული კანიონებით, დადიანების დიდებული სასახლით და კოლხეთის ეროვნული პარკის ხელუხლებელი ჭაობებით.",
+    "image": null,
+    "sortOrder": 6,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]

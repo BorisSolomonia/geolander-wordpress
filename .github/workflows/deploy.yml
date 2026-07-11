@@ -1,0 +1,37 @@
+# Deploy to Railway on every push to main.
+#
+# Setup (one time):
+#   1. railway login && railway link   (link this repo folder to your Railway project)
+#   2. Create a project token: Railway dashboard → project → Settings → Tokens
+#   3. Add it as the GitHub repo secret RAILWAY_TOKEN
+#
+# Note: if you connect the GitHub repo directly in the Railway dashboard
+# (Service → Settings → Source), Railway builds on push by itself and this
+# workflow is unnecessary — keep exactly one of the two mechanisms.
+
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sanity-check PHP syntax
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq php-cli > /dev/null
+          find wp-content -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+          echo "PHP lint OK"
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service geolander-wordpress --detach

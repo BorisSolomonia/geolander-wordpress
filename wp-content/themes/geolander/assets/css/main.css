@@ -1,0 +1,1086 @@
+/* ==========================================================================
+   Geolander — Expedition Green design system
+   Dark for emotion, light for transaction. Georgian UI, English cars.
+   ========================================================================== */
+
+/* Data layer face: plates, prices, elevations, specs. */
+@font-face {
+	font-family: "IBM Plex Mono";
+	src: url("../fonts/plex-mono-400.woff2") format("woff2");
+	font-weight: 400;
+	font-display: swap;
+}
+@font-face {
+	font-family: "IBM Plex Mono";
+	src: url("../fonts/plex-mono-600.woff2") format("woff2");
+	font-weight: 600;
+	font-display: swap;
+}
+
+:root {
+	--glc-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+	--glc-plate-blue: #123f9d;
+	--glc-ink: #142420;
+	--glc-surface: #1E332C;
+	--glc-glacier: #F2F4F1;
+	--glc-paper: #f7f5f0;
+	--glc-ink-text: #141414;
+	--glc-stone: #9FB4A8;
+	--glc-accent: #ff6b35;
+	--glc-accent-deep: #e4531f;
+	--glc-success: #8FBE6E;
+	--glc-radius: 14px;
+	--glc-shadow: 0 18px 48px -18px rgba(20, 36, 32, 0.45);
+	--glc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Border-box everywhere: without this, width:100% + padding makes form
+   controls overflow their cells in engines that default to content-box. */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+/* Georgian labels — Mtavruli-style emphasis */
+.glc-label {
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--glc-stone);
+}
+
+/* Editorial section header: dual-script road sign + rule + title */
+.glc-section-head {
+	display: grid;
+	gap: 0.75rem;
+	margin-bottom: var(--wp--preset--spacing--50);
+}
+.glc-section-head .glc-kicker {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+.glc-kicker::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: color-mix(in srgb, var(--glc-stone) 35%, transparent);
+}
+
+/* Kilometer-post data chip: one mono fact line, orange edge stripe. */
+.glc-sign {
+	display: inline-grid;
+	padding: 0.4rem 0.8rem;
+	border: 1px solid #3c5248;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 22%, transparent);
+	border-left: 3px solid var(--glc-accent);
+	border-radius: 4px;
+	background: rgba(242, 244, 241, 0.04);
+}
+.glc-sign .glc-sign-alt {
+	font-family: var(--glc-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--glc-stone);
+}
+[dir="rtl"] .glc-sign { border-left-width: 1px; border-right: 3px solid var(--glc-accent); }
+
+/* Registration plate — proof of "the exact car you book". */
+.glc-plate {
+	display: inline-flex;
+	align-items: stretch;
+	background: #fdfdfb;
+	border: 1px solid #b9bdc4;
+	border-radius: 4px;
+	overflow: clip;
+	line-height: 1;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+	direction: ltr;
+}
+.glc-plate .glc-plate-band {
+	background: var(--glc-plate-blue);
+	color: #fff;
+	font-family: var(--glc-mono);
+	font-weight: 600;
+	font-size: 0.5em;
+	display: grid;
+	place-items: center;
+	padding: 0.3em 0.45em;
+	letter-spacing: 0.02em;
+}
+.glc-plate .glc-plate-num {
+	font-family: var(--glc-mono);
+	font-weight: 600;
+	font-size: 0.92em;
+	color: #16181d;
+	padding: 0.28em 0.5em 0.22em;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- Header */
+
+.glc-header {
+	position: sticky;
+	top: 0;
+	z-index: 60;
+	background: color-mix(in srgb, var(--glc-ink) 82%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	border-bottom: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
+}
+.glc-header a { text-decoration: none; }
+.glc-header-inner {
+	width: min(100% - 2.5rem, 1240px);
+	margin-inline: auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1.25rem;
+	padding-block: 0.7rem;
+}
+.glc-nav { display: flex; gap: 1.15rem; flex-wrap: nowrap; }
+.glc-nav a {
+	font-feature-settings: "case";
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	font-size: 0.78rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.glc-logo img { height: 44px; width: auto; display: block; }
+.glc-header-actions { display: flex; align-items: center; gap: 0.9rem; flex: 0 0 auto; }
+.glc-header-phone { font-weight: 700; font-size: 0.88rem; white-space: nowrap; }
+.glc-header-cta { font-size: 0.83rem; padding: 0.55rem 1.05rem; }
+
+/* Burger (mobile) */
+.glc-burger { display: none; position: relative; }
+.glc-burger summary {
+	list-style: none;
+	cursor: pointer;
+	display: grid;
+	gap: 5px;
+	padding: 0.6rem 0.4rem;
+}
+.glc-burger summary::-webkit-details-marker { display: none; }
+.glc-burger summary span {
+	display: block;
+	width: 22px;
+	height: 2px;
+	background: var(--glc-glacier);
+	transition: transform 0.25s var(--glc-ease), opacity 0.25s var(--glc-ease);
+}
+.glc-burger[open] summary span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.glc-burger[open] summary span:nth-child(2) { opacity: 0; }
+.glc-burger[open] summary span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.glc-mobile-nav {
+	position: absolute;
+	top: calc(100% + 0.8rem);
+	right: 0;
+	min-width: 240px;
+	background: var(--glc-surface);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border-radius: var(--glc-radius);
+	box-shadow: var(--glc-shadow);
+	display: grid;
+	padding: 0.5rem;
+}
+.glc-mobile-nav a {
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	font-weight: 600;
+	font-size: 0.95rem;
+	font-feature-settings: "case";
+}
+.glc-mobile-nav a:hover { background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
+.glc-mobile-nav .glc-mobile-phone { color: var(--glc-accent); }
+
+@media (max-width: 1180px) {
+	.glc-nav, .glc-header-phone { display: none; }
+	.glc-burger { display: block; }
+}
+
+/* Language switcher */
+.glc-lang { position: relative; }
+.glc-lang summary {
+	list-style: none;
+	cursor: pointer;
+	font-weight: 700;
+	font-size: 0.78rem;
+	letter-spacing: 0.08em;
+	padding: 0.45rem 0.7rem;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 22%, transparent);
+	border-radius: 8px;
+	color: var(--glc-glacier);
+}
+.glc-lang summary::-webkit-details-marker { display: none; }
+.glc-lang summary::after { content: " ▾"; font-size: 0.65em; color: var(--glc-stone); }
+.glc-lang-menu {
+	position: absolute;
+	top: calc(100% + 0.6rem);
+	inset-inline-end: 0;
+	min-width: 170px;
+	background: var(--glc-surface);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border-radius: 12px;
+	box-shadow: var(--glc-shadow);
+	display: grid;
+	padding: 0.4rem;
+	z-index: 80;
+}
+.glc-lang-menu a {
+	padding: 0.55rem 0.9rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.glc-lang-menu a:hover { background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
+.glc-lang-menu a.glc-lang-active { color: var(--glc-accent); }
+
+/* RTL adjustments (Arabic) */
+[dir="rtl"] .glc-card-media .glc-card-num { left: auto; right: 0.9rem; }
+[dir="rtl"] .glc-region-chip { right: auto; left: 0.8rem; }
+[dir="rtl"] .glc-wa-bubble { right: auto; left: 1.1rem; }
+[dir="rtl"] .glc-mobile-nav { right: auto; left: 0; }
+[dir="rtl"] .glc-price-table td:first-child,
+[dir="rtl"] .glc-price-table th:first-child { text-align: right; }
+
+.glc-btn,
+.wp-element-button {
+	transition: background-color 0.25s var(--glc-ease), color 0.25s var(--glc-ease), transform 0.25s var(--glc-ease);
+}
+.glc-btn:hover,
+.wp-element-button:hover { transform: translateY(-1px); }
+
+/* ------------------------------------------------------------------ Hero */
+
+.glc-hero {
+	position: relative;
+	min-height: min(94vh, 900px);
+	display: grid;
+	align-items: end;
+	overflow: clip;
+	isolation: isolate;
+}
+.glc-hero-media {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+}
+.glc-hero-media picture,
+.glc-route picture,
+.glc-cta picture {
+	display: block;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.glc-cta picture { z-index: -1; }
+.glc-hero-media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center 30%;
+}
+.glc-hero-media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(20, 36, 32, 0.35) 0%, rgba(20, 36, 32, 0.15) 40%, rgba(20, 36, 32, 0.78) 82%, var(--glc-ink) 100%);
+}
+
+/* Scroll-driven slow zoom — progressive enhancement, off-main-thread */
+@supports (animation-timeline: scroll()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.glc-hero-media img {
+			animation: glc-hero-zoom linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 100vh;
+		}
+		@keyframes glc-hero-zoom {
+			from { transform: scale(1); }
+			to { transform: scale(1.09); }
+		}
+	}
+}
+
+.glc-hero-inner {
+	width: min(100% - 3rem, 1240px);
+	margin-inline: auto;
+	padding-block: clamp(3rem, 8vh, 6rem);
+	display: grid;
+	gap: 1.5rem;
+}
+.glc-hero h1 {
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	font-weight: 800;
+	font-size: clamp(2.1rem, 6.5vw, 4.9rem);
+	line-height: 1.04;
+	letter-spacing: -0.01em;
+	max-width: 18ch;
+	margin: 0;
+}
+.glc-hero .glc-hero-sub {
+	color: color-mix(in srgb, var(--glc-glacier) 82%, transparent);
+	font-size: clamp(1rem, 1.8vw, 1.2rem);
+	max-width: 52ch;
+}
+
+/* Hero booking card */
+.glc-hero-widget {
+	background: rgba(30, 51, 44, 0.92);
+	background: color-mix(in srgb, var(--glc-surface) 88%, transparent);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(242, 244, 241, 0.1);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border-radius: var(--glc-radius);
+	padding: 1.25rem;
+	/* Grid with two fixed columns: minmax(0,1fr) caps each field at
+	   exactly half the row, so the date inputs can never collide. */
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem 1.25rem;
+	align-items: end;
+	box-shadow: var(--glc-shadow);
+	max-width: 640px;
+}
+.glc-hero-widget .glc-field { min-width: 0; }
+.glc-hero-widget .wp-element-button,
+.glc-hero-widget .glc-trust { grid-column: 1 / -1; }
+.glc-hero-widget .wp-element-button { padding-block: 0.78rem; text-align: center; }
+@media (max-width: 560px) {
+	.glc-hero-widget { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Trust strip */
+.glc-trust {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.6rem;
+	padding-top: 0.7rem;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--glc-glacier) 75%, transparent);
+}
+.glc-trust span::before {
+	content: "✓";
+	color: var(--glc-success);
+	margin-right: 0.45em;
+	font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- Fields */
+
+.glc-field { display: grid; gap: 0.3rem; }
+.glc-field label {
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	font-weight: 600;
+	color: var(--glc-stone);
+	font-feature-settings: "case";
+}
+.glc-field input,
+.glc-field select {
+	background: #283b34;
+	background: color-mix(in srgb, var(--glc-glacier) 9%, var(--glc-ink));
+	color: var(--glc-glacier);
+	border: 1px solid #58685f;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 28%, transparent);
+	border-radius: 9px;
+	padding: 0.65rem 0.8rem;
+	font: inherit;
+	font-size: 0.95rem;
+	width: 100%;
+	min-width: 0;
+	color-scheme: dark;
+}
+.glc-field input[type="date"] { font-family: var(--glc-mono); font-size: 0.88rem; }
+.glc-field input:focus-visible,
+.glc-field select:focus-visible {
+	outline: 2px solid var(--glc-accent);
+	outline-offset: 1px;
+}
+
+/* ----------------------------------------------------------- Fleet cards */
+
+.glc-fleet-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+	gap: 1.4rem;
+}
+.glc-card {
+	position: relative;
+	background: var(--glc-surface);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+	border-radius: var(--glc-radius);
+	overflow: clip;
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.35s var(--glc-ease), box-shadow 0.35s var(--glc-ease), border-color 0.35s var(--glc-ease);
+}
+.glc-card:hover {
+	transform: translateY(-5px);
+	box-shadow: var(--glc-shadow);
+	border-color: color-mix(in srgb, var(--glc-accent) 45%, transparent);
+}
+.glc-card-media {
+	position: relative;
+	aspect-ratio: 3 / 2;
+	background: linear-gradient(160deg, var(--glc-surface), var(--glc-ink));
+	overflow: clip;
+}
+.glc-card-media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.6s var(--glc-ease);
+}
+.glc-card:hover .glc-card-media img { transform: scale(1.05); }
+.glc-card-media .glc-card-num {
+	position: absolute;
+	top: 0.8rem;
+	left: 0.9rem;
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 300;
+	font-size: 0.85rem;
+	letter-spacing: 0.12em;
+	color: color-mix(in srgb, var(--glc-glacier) 85%, transparent);
+	background: color-mix(in srgb, var(--glc-ink) 55%, transparent);
+	backdrop-filter: blur(6px);
+	padding: 0.2rem 0.55rem;
+	border-radius: 6px;
+}
+.glc-card-media .glc-unavailable-veil {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: color-mix(in srgb, var(--glc-ink) 68%, transparent);
+	color: var(--glc-glacier);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	font-feature-settings: "case";
+	text-transform: uppercase;
+	font-size: 0.85rem;
+}
+.glc-no-photo {
+	display: grid;
+	place-items: center;
+	height: 100%;
+	color: var(--glc-stone);
+	font-size: 0.85rem;
+	background:
+		radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--glc-accent) 8%, transparent), transparent 55%),
+		linear-gradient(160deg, var(--glc-surface), var(--glc-ink));
+}
+
+.glc-card-body {
+	padding: 1.1rem 1.2rem 1.25rem;
+	display: grid;
+	gap: 0.7rem;
+	flex: 1;
+	align-content: start;
+}
+.glc-card-title {
+	font-family: var(--wp--preset--font-family--display);
+	font-variation-settings: "wdth" 112;
+	font-weight: 800;
+	font-size: 1.3rem;
+	letter-spacing: -0.015em;
+	margin: 0;
+	color: var(--glc-glacier);
+}
+.glc-card-title .glc-year { color: var(--glc-stone); font-weight: 500; }
+.glc-card a { text-decoration: none; }
+.glc-card a::after { content: ""; position: absolute; inset: 0; }
+
+.glc-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.glc-chip {
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	padding: 0.28rem 0.65rem;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 18%, transparent);
+	color: color-mix(in srgb, var(--glc-glacier) 80%, transparent);
+	white-space: nowrap;
+}
+.glc-chip--4x4 {
+	border-color: color-mix(in srgb, var(--glc-accent) 55%, transparent);
+	color: var(--glc-accent);
+}
+
+.glc-card-price {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.8rem;
+	border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
+	padding-top: 0.8rem;
+	margin-top: auto;
+}
+.glc-price {
+	font-family: var(--glc-mono);
+	font-weight: 600;
+	font-size: 1.3rem;
+	letter-spacing: -0.03em;
+	color: var(--glc-glacier);
+}
+.glc-price .glc-price-unit {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--glc-stone);
+	font-family: var(--wp--preset--font-family--georgian);
+}
+.glc-price--total { color: var(--glc-accent); }
+.glc-price-note { font-size: 0.75rem; color: var(--glc-stone); }
+.glc-microline {
+	font-size: 0.76rem;
+	color: var(--glc-success);
+}
+
+/* ------------------------------------------------------- Single car page */
+
+.glc-gallery {
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr;
+	grid-template-rows: repeat(2, minmax(140px, 22vw));
+	gap: 0.6rem;
+	border-radius: var(--glc-radius);
+	overflow: clip;
+}
+.glc-gallery a { display: block; height: 100%; }
+.glc-gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.glc-gallery > *:first-child { grid-row: span 2; }
+@media (max-width: 781px) {
+	.glc-gallery {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		border-radius: 0;
+		gap: 0.4rem;
+	}
+	.glc-gallery > * {
+		flex: 0 0 86%;
+		scroll-snap-align: center;
+		aspect-ratio: 3 / 2;
+	}
+}
+
+.glc-single-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 380px;
+	gap: clamp(1.5rem, 4vw, 3.5rem);
+	align-items: start;
+}
+.glc-single-layout h1 {
+	font-size: clamp(1.65rem, 6.2vw, 3.25rem);
+	overflow-wrap: anywhere;
+}
+@media (max-width: 1023px) {
+	.glc-single-layout { grid-template-columns: 1fr; }
+}
+
+/* Spec plate — engineered look */
+.glc-specs {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	gap: 1px;
+	background: color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border-radius: var(--glc-radius);
+	overflow: clip;
+}
+.glc-spec {
+	background: var(--glc-surface);
+	padding: 0.9rem 1rem;
+	display: grid;
+	gap: 0.15rem;
+}
+.glc-spec dt {
+	font-size: 0.68rem;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--glc-stone);
+	font-feature-settings: "case";
+}
+.glc-spec dd {
+	margin: 0;
+	font-family: var(--glc-mono);
+	font-weight: 600;
+	font-size: 0.98rem;
+	color: var(--glc-glacier);
+}
+
+/* Seasonal price table */
+.glc-price-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.glc-price-table td { font-family: var(--glc-mono); font-size: 0.82rem; }
+.glc-price-table th,
+.glc-price-table td {
+	padding: 0.55rem 0.6rem;
+	text-align: center;
+	border-bottom: 1px solid color-mix(in srgb, var(--glc-glacier) 9%, transparent);
+}
+.glc-price-table th {
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--glc-stone);
+	font-weight: 600;
+}
+.glc-price-table td:first-child,
+.glc-price-table th:first-child { text-align: left; white-space: nowrap; }
+.glc-price-table td.glc-active-cell {
+	background: color-mix(in srgb, var(--glc-accent) 18%, transparent);
+	color: var(--glc-accent);
+	font-weight: 700;
+	border-radius: 6px;
+}
+
+/* Booking widget (sticky rail) */
+.glc-booking {
+	position: sticky;
+	top: 90px;
+	background: var(--glc-paper);
+	color: var(--glc-ink-text);
+	border-radius: var(--glc-radius);
+	padding: 1.4rem;
+	box-shadow: var(--glc-shadow);
+	display: grid;
+	gap: 0.9rem;
+}
+.glc-booking h2 {
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	font-size: 1.05rem;
+	font-weight: 800;
+	margin: 0;
+	color: var(--glc-ink-text);
+}
+.glc-booking .glc-field label { color: #6b7280; }
+.glc-booking .glc-field input {
+	background: #fff;
+	color: var(--glc-ink-text);
+	border-color: #d8d4cb;
+	color-scheme: light;
+}
+.glc-booking-lines { display: grid; gap: 0.35rem; font-size: 0.92rem; }
+.glc-booking-lines .glc-line { display: flex; justify-content: space-between; gap: 1rem; }
+.glc-booking-lines .glc-line--total {
+	border-top: 1px solid #d8d4cb;
+	padding-top: 0.5rem;
+	margin-top: 0.25rem;
+	font-weight: 800;
+	font-size: 1.15rem;
+}
+.glc-booking-lines .glc-line span:last-child { font-family: var(--glc-mono); font-weight: 600; }
+.glc-booking-lines .glc-line--total .glc-amount { color: var(--glc-accent-deep); }
+.glc-booking .wp-element-button,
+.glc-booking button {
+	width: 100%;
+	border: 0;
+	cursor: pointer;
+	background: #25d366;
+	color: #073b1a;
+	font-weight: 800;
+	font-size: 1rem;
+	padding: 0.85rem 1rem;
+	border-radius: 10px;
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	transition: filter 0.2s var(--glc-ease), transform 0.2s var(--glc-ease);
+}
+.glc-booking button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.glc-booking button:disabled { background: #c8c4bb; color: #7a766d; cursor: not-allowed; transform: none; }
+.glc-booking .glc-micro {
+	font-size: 0.78rem;
+	color: #6b7280;
+	text-align: center;
+}
+.glc-booking .glc-micro strong { color: var(--glc-success); }
+.glc-booking .glc-ref {
+	font-family: var(--wp--preset--font-family--display);
+	letter-spacing: 0.08em;
+}
+
+/* Mobile sticky bottom bar */
+.glc-bar {
+	display: none;
+}
+@media (max-width: 1023px) {
+	.glc-booking { position: static; }
+	.glc-bar {
+		display: flex;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 70;
+		background: color-mix(in srgb, var(--glc-ink) 92%, transparent);
+		backdrop-filter: blur(14px);
+		border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 12%, transparent);
+		padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+	.glc-bar .glc-bar-price { display: grid; line-height: 1.2; }
+	.glc-bar .glc-bar-price strong { font-family: var(--wp--preset--font-family--display); font-size: 1.15rem; color: var(--glc-glacier); }
+	.glc-bar .glc-bar-price span { font-size: 0.72rem; color: var(--glc-stone); }
+	.glc-bar a {
+		background: #25d366;
+		color: #073b1a;
+		font-weight: 800;
+		text-decoration: none;
+		padding: 0.7rem 1.2rem;
+		border-radius: 10px;
+		font-feature-settings: "case";
+		white-space: nowrap;
+	}
+	body:has(.glc-bar) { padding-bottom: 76px; }
+}
+
+/* --------------------------------------------------------------- Process */
+
+.glc-steps {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 1.4rem;
+	counter-reset: step;
+}
+.glc-step {
+	position: relative;
+	padding: 1.6rem 1.4rem 1.4rem;
+	background: var(--glc-surface);
+	border-radius: var(--glc-radius);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+	display: grid;
+	gap: 0.5rem;
+	align-content: start;
+}
+.glc-step::before {
+	counter-increment: step;
+	content: "0" counter(step);
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 300;
+	font-size: 2.2rem;
+	color: color-mix(in srgb, var(--glc-accent) 80%, transparent);
+	line-height: 1;
+}
+.glc-step h3 {
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	font-size: 1.02rem;
+	font-weight: 800;
+	margin: 0;
+}
+.glc-step p { margin: 0; font-size: 0.9rem; color: color-mix(in srgb, var(--glc-glacier) 70%, transparent); }
+
+/* ---------------------------------------------------------------- Routes */
+
+.glc-routes {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 1rem;
+}
+.glc-route {
+	position: relative;
+	aspect-ratio: 4 / 5;
+	border-radius: var(--glc-radius);
+	overflow: clip;
+	display: grid;
+	align-items: end;
+	text-decoration: none;
+}
+.glc-route img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.7s var(--glc-ease);
+}
+.glc-route:hover img { transform: scale(1.06); }
+.glc-route::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, transparent 35%, rgba(20, 36, 32, 0.88) 100%);
+}
+.glc-route-label {
+	position: relative;
+	z-index: 1;
+	padding: 1.2rem;
+	display: grid;
+	gap: 0.2rem;
+}
+.glc-route-label strong {
+	font-family: var(--wp--preset--font-family--display);
+	font-variation-settings: "wdth" 112;
+	font-weight: 800;
+	font-size: 1.35rem;
+	color: var(--glc-glacier);
+}
+.glc-route-label span { font-size: 0.82rem; color: color-mix(in srgb, var(--glc-glacier) 72%, transparent); }
+.glc-route-label .glc-elev {
+	font-family: var(--glc-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.06em;
+	color: var(--glc-accent);
+	margin-top: 0.15rem;
+}
+.glc-hero-elev {
+	font-family: var(--glc-mono);
+	font-size: 0.78rem;
+	letter-spacing: 0.1em;
+	color: color-mix(in srgb, var(--glc-glacier) 70%, transparent);
+}
+.glc-hero-elev strong { color: var(--glc-accent); font-weight: 600; }
+
+/* --------------------------------------------------------------- Included */
+
+.glc-included {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 0.9rem;
+}
+.glc-included li {
+	list-style: none;
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	background: var(--glc-surface);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+	border-radius: 10px;
+	padding: 0.95rem 1.1rem;
+	font-size: 0.92rem;
+	font-weight: 600;
+}
+.glc-included li::before {
+	content: "✓";
+	color: var(--glc-success);
+	font-weight: 800;
+	font-size: 1.05rem;
+}
+
+/* ----------------------------------------------------------- Testimonials */
+
+.glc-testimonials {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 1.2rem;
+}
+.glc-quote {
+	background: var(--glc-surface);
+	border-radius: var(--glc-radius);
+	padding: 1.5rem;
+	display: grid;
+	gap: 0.9rem;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+}
+.glc-quote .glc-stars { color: var(--glc-accent); letter-spacing: 0.15em; font-size: 0.9rem; }
+.glc-quote blockquote { margin: 0; font-size: 0.95rem; line-height: 1.65; color: color-mix(in srgb, var(--glc-glacier) 85%, transparent); }
+.glc-quote figcaption { display: grid; gap: 0.1rem; }
+.glc-quote figcaption strong { font-size: 0.92rem; }
+.glc-quote figcaption span { font-size: 0.78rem; color: var(--glc-stone); }
+
+/* ------------------------------------------------------------------- FAQ */
+
+.glc-faq { display: grid; gap: 0.6rem; max-width: 820px; }
+.glc-faq details {
+	background: var(--glc-surface);
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+	border-radius: 12px;
+	overflow: clip;
+	transition: border-color 0.25s var(--glc-ease);
+}
+.glc-faq details[open] { border-color: color-mix(in srgb, var(--glc-accent) 40%, transparent); }
+.glc-faq summary {
+	cursor: pointer;
+	list-style: none;
+	padding: 1.05rem 1.2rem;
+	font-weight: 700;
+	font-size: 0.98rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+}
+.glc-faq summary::-webkit-details-marker { display: none; }
+.glc-faq summary::after {
+	content: "+";
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 300;
+	font-size: 1.5rem;
+	color: var(--glc-accent);
+	transition: rotate 0.3s var(--glc-ease);
+	flex: 0 0 auto;
+}
+.glc-faq details[open] summary::after { rotate: 45deg; }
+.glc-faq .glc-answer {
+	padding: 0 1.2rem 1.2rem;
+	font-size: 0.92rem;
+	line-height: 1.7;
+	color: color-mix(in srgb, var(--glc-glacier) 78%, transparent);
+}
+
+/* ------------------------------------------------------------- Places */
+
+.glc-places-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+	gap: 1.2rem;
+}
+.glc-place-card {
+	position: relative;
+	background: var(--glc-surface);
+	border-radius: var(--glc-radius);
+	overflow: clip;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
+	transition: transform 0.35s var(--glc-ease), box-shadow 0.35s var(--glc-ease);
+	display: grid;
+}
+.glc-place-card:hover { transform: translateY(-4px); box-shadow: var(--glc-shadow); }
+.glc-place-card .glc-card-media { aspect-ratio: 16 / 10; }
+.glc-place-card .glc-card-body { padding: 1rem 1.1rem 1.2rem; gap: 0.4rem; }
+.glc-place-card h3 { margin: 0; font-size: 1.1rem; font-variation-settings: "wdth" 108; }
+.glc-place-card p { margin: 0; font-size: 0.85rem; color: color-mix(in srgb, var(--glc-glacier) 68%, transparent); }
+.glc-region-chip {
+	position: absolute;
+	top: 0.8rem;
+	right: 0.8rem;
+	z-index: 1;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	background: color-mix(in srgb, var(--glc-ink) 62%, transparent);
+	backdrop-filter: blur(6px);
+	color: var(--glc-glacier);
+	padding: 0.3rem 0.7rem;
+	border-radius: 999px;
+}
+
+/* -------------------------------------------------------------- CTA band */
+
+.glc-cta {
+	position: relative;
+	border-radius: var(--glc-radius);
+	overflow: clip;
+	padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 4rem);
+	display: grid;
+	gap: 1.2rem;
+	isolation: isolate;
+}
+.glc-cta img {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.glc-cta::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(100deg, rgba(20, 36, 32, 0.92) 25%, rgba(20, 36, 32, 0.45) 100%);
+}
+
+/* --------------------------------------------------------------- Footer */
+
+.glc-footer {
+	border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
+	margin-top: var(--wp--preset--spacing--60);
+	font-size: 0.9rem;
+}
+.glc-footer a { text-decoration: none; color: color-mix(in srgb, var(--glc-glacier) 75%, transparent); }
+.glc-footer a:hover { color: var(--glc-accent); }
+.glc-footer h3 {
+	font-family: var(--wp--preset--font-family--georgian);
+	font-feature-settings: "case";
+	font-size: 0.8rem;
+	letter-spacing: 0.14em;
+	color: var(--glc-stone);
+	font-weight: 700;
+}
+
+/* Floating WhatsApp bubble */
+.glc-wa-bubble {
+	position: fixed;
+	right: 1.1rem;
+	bottom: 1.1rem;
+	z-index: 65;
+	width: 54px;
+	height: 54px;
+	border-radius: 50%;
+	background: #25d366;
+	display: grid;
+	place-items: center;
+	box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.5);
+	transition: transform 0.25s var(--glc-ease);
+}
+.glc-wa-bubble:hover { transform: scale(1.08); }
+.glc-wa-bubble svg { width: 28px; height: 28px; fill: #073b1a; }
+body.single-car .glc-wa-bubble { display: none; }
+
+/* --------------------------------------------------------------- Reveal */
+
+@media (prefers-reduced-motion: no-preference) {
+	.glc-reveal {
+		opacity: 0;
+		translate: 0 26px;
+		transition: opacity 0.7s var(--glc-ease), translate 0.7s var(--glc-ease);
+	}
+	.glc-reveal.glc-in {
+		opacity: 1;
+		translate: 0 0;
+	}
+	.glc-stagger > * {
+		opacity: 0;
+		translate: 0 22px;
+		transition: opacity 0.6s var(--glc-ease), translate 0.6s var(--glc-ease);
+	}
+	.glc-stagger.glc-in > * { opacity: 1; translate: 0 0; }
+	.glc-stagger.glc-in > *:nth-child(2) { transition-delay: 70ms; }
+	.glc-stagger.glc-in > *:nth-child(3) { transition-delay: 140ms; }
+	.glc-stagger.glc-in > *:nth-child(4) { transition-delay: 210ms; }
+	.glc-stagger.glc-in > *:nth-child(5) { transition-delay: 280ms; }
+	.glc-stagger.glc-in > *:nth-child(6) { transition-delay: 350ms; }
+}
+
+/* View-transition morph for car images */
+.glc-card-media img, .glc-gallery > *:first-child img { contain: layout paint; }
+
+/* Light sections (transactional) */
+.glc-light {
+	background: var(--glc-paper);
+	color: var(--glc-ink-text);
+}
+.glc-light h2, .glc-light h3 { color: var(--glc-ink-text); }
