@@ -22,6 +22,10 @@ RUN { \
 	} > /etc/apache2/conf-available/railway.conf \
 	&& a2enconf railway
 
+# WP-CLI for one-time content import and maintenance via `railway ssh`.
+RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
+	&& chmod +x /usr/local/bin/wp
+
 # Reasonable PHP defaults for a small production site.
 RUN { \
 		echo 'upload_max_filesize = 32M'; \
