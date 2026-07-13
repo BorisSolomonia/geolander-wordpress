@@ -22,6 +22,13 @@ RUN { \
 	} > /etc/apache2/conf-available/railway.conf \
 	&& a2enconf railway
 
+# Healthcheck endpoint that always returns 200. WordPress itself answers
+# "/" with a 302 (install screen or canonical redirect), which Railway's
+# healthcheck treats as failure. This confirms Apache + PHP are serving;
+# the entrypoint copies it to the web root alongside WordPress core.
+RUN echo '<?php http_response_code(200); header("Content-Type: text/plain"); echo "ok";' \
+	> /usr/src/wordpress/health.php
+
 # WP-CLI for one-time content import and maintenance via `railway ssh`.
 RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
 	&& chmod +x /usr/local/bin/wp
