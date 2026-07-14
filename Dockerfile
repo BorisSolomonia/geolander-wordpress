@@ -53,3 +53,10 @@ RUN { \
 		echo 'opcache.enable = 1'; \
 		echo 'opcache.validate_timestamps = 0'; \
 	} > /usr/local/etc/php/conf.d/geolander.ini
+
+# --- TEMP DIAGNOSTIC: find where the extra MPM is loaded. Remove once fixed. ---
+# If this prints "More than one MPM loaded", the conflict is baked into config
+# and the grep below shows every file that loads an MPM. If it prints a clean
+# module list, the conflict is injected at runtime (by the platform), not here.
+RUN echo "===== apache2ctl -M =====" ; apache2ctl -M 2>&1 || true
+RUN echo "===== every mpm reference under /etc/apache2 =====" ; grep -rIn -i mpm /etc/apache2/ 2>/dev/null || true
