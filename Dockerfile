@@ -6,6 +6,12 @@
 
 FROM wordpress:php8.3-apache
 
+# mod_php requires the prefork MPM. Some base-image states leave both
+# mpm_event and mpm_prefork enabled, which makes Apache refuse to start with
+# "AH00534: apache2: Configuration error: More than one MPM loaded." Force a
+# single, correct MPM so the container boots.
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true; a2enmod mpm_prefork
+
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
 COPY wp-content/themes/geolander /usr/src/wordpress/wp-content/themes/geolander
