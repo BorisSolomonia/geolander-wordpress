@@ -6,22 +6,16 @@
 
 FROM wordpress:php8.3-apache
 
-# mod_php needs exactly one MPM (prefork). In this base image the MPM files in
-# mods-enabled are REAL files, not symlinks, so a2dismod/a2enmod can't manage
-# them, and an extra MPM (event/worker) is being loaded → Apache aborts with
-# "AH00534: apache2: Configuration error: More than one MPM loaded."
-# Fix by physically deleting the event/worker load+conf files from BOTH
-# mods-enabled and mods-available (we never use them), leaving only prefork.
-# The diagnostics print the surviving state to the BUILD LOG; this step is
-# non-fatal (ends with `true`) so the build always completes and we can read it.
-RUN set +e; \
-	rm -f /etc/apache2/mods-enabled/mpm_event.*  /etc/apache2/mods-enabled/mpm_worker.* \
-	      /etc/apache2/mods-available/mpm_event.* /etc/apache2/mods-available/mpm_worker.* ; \
-	echo "=== remaining mpm files ==="; find /etc/apache2 -iname 'mpm_*' -print ; \
-	echo "=== mpm refs in config ==="; grep -rIn -i mpm /etc/apache2/apache2.conf /etc/apache2/conf-enabled/ /etc/apache2/mods-enabled/ 2>/dev/null ; \
-	echo "=== apache2ctl -M (mpm) ==="; apache2ctl -M 2>&1 | grep -i mpm ; \
-	echo "=== end mpm diagnostics ==="; \
-	true
+# mod_php requires exactly ONE Apache MPM (prefork). This base image re-enables
+# the event/worker MPMs at CONTAINER START (via the entrypoint, after all image
+# layers), which trips "AH00534: apache2: Configuration error: More than one MPM
+# loaded" and crash-loops the container. Removing them at build time doesn't
+# help — the runtime puts them back. So we strip them at startup instead: this
+# wrapper runs after the entrypoint, immediately before Apache, and is wired in
+# as CMD at the end of this file. (Verified against Railway runtime logs.)
+RUN printf '#!/bin/sh\nrm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*\nexec apache2-foreground "$@"\n' \
+		> /usr/local/bin/geolander-start.sh \
+	&& chmod +x /usr/local/bin/geolander-start.sh
 
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
@@ -58,3 +52,7 @@ RUN { \
 		echo 'opcache.enable = 1'; \
 		echo 'opcache.validate_timestamps = 0'; \
 	} > /usr/local/etc/php/conf.d/geolander.ini
+
+# Strip the runtime-re-enabled extra MPMs, then start Apache. Replaces the base
+# image's `CMD ["apache2-foreground"]`. The stock entrypoint still runs first.
+CMD ["geolander-start.sh"]
