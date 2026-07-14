@@ -6,17 +6,21 @@
 
 FROM wordpress:php8.3-apache
 
-# mod_php requires the prefork MPM. Some base-image states leave both
-# mpm_event and mpm_prefork enabled, which makes Apache refuse to start with
-# "AH00534: apache2: Configuration error: More than one MPM loaded." Force a
-# single, correct MPM so the container boots. The rm is belt-and-suspenders in
-# case a2dismod doesn't clear the symlinks; the ls prints the survivors to the
-# BUILD LOG so we can confirm only mpm_prefork remains.
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
-	&& a2enmod mpm_prefork \
-	&& rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* \
-	&& echo "=== MPM modules enabled after fix ===" \
-	&& ls -1 /etc/apache2/mods-enabled/ | grep mpm
+# mod_php needs a single MPM (prefork). This base image loads an MPM TWICE —
+# once via the mods-enabled symlink and once via an explicit LoadModule line in
+# a .conf file — so Apache aborts with
+# "AH00534: apache2: Configuration error: More than one MPM loaded."
+# a2dismod only manages mods-enabled, so it never removes the explicit line.
+# Strip every explicit MPM LoadModule from all .conf files, then enable exactly
+# one MPM the Debian way (a single mods-enabled symlink). The apache2ctl dump
+# goes to the BUILD LOG so we can confirm exactly one MPM remains.
+RUN set -e; \
+	find /etc/apache2 -name '*.conf' -exec sed -i -E '/^[[:space:]]*LoadModule[[:space:]]+mpm_[a-z]+_module/d' {} + ; \
+	a2dismod mpm_event mpm_worker 2>/dev/null || true; \
+	a2enmod mpm_prefork; \
+	rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*; \
+	echo "=== MPM after fix ==="; \
+	apache2ctl -M 2>&1 | grep -i mpm || true
 
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
@@ -53,10 +57,3 @@ RUN { \
 		echo 'opcache.enable = 1'; \
 		echo 'opcache.validate_timestamps = 0'; \
 	} > /usr/local/etc/php/conf.d/geolander.ini
-
-# --- TEMP DIAGNOSTIC: find where the extra MPM is loaded. Remove once fixed. ---
-# If this prints "More than one MPM loaded", the conflict is baked into config
-# and the grep below shows every file that loads an MPM. If it prints a clean
-# module list, the conflict is injected at runtime (by the platform), not here.
-RUN echo "===== apache2ctl -M =====" ; apache2ctl -M 2>&1 || true
-RUN echo "===== every mpm reference under /etc/apache2 =====" ; grep -rIn -i mpm /etc/apache2/ 2>/dev/null || true
