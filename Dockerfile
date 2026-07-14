@@ -6,21 +6,22 @@
 
 FROM wordpress:php8.3-apache
 
-# mod_php needs a single MPM (prefork). This base image loads an MPM TWICE —
-# once via the mods-enabled symlink and once via an explicit LoadModule line in
-# a .conf file — so Apache aborts with
+# mod_php needs exactly one MPM (prefork). In this base image the MPM files in
+# mods-enabled are REAL files, not symlinks, so a2dismod/a2enmod can't manage
+# them, and an extra MPM (event/worker) is being loaded → Apache aborts with
 # "AH00534: apache2: Configuration error: More than one MPM loaded."
-# a2dismod only manages mods-enabled, so it never removes the explicit line.
-# Strip every explicit MPM LoadModule from all .conf files, then enable exactly
-# one MPM the Debian way (a single mods-enabled symlink). The apache2ctl dump
-# goes to the BUILD LOG so we can confirm exactly one MPM remains.
-RUN set -e; \
-	find /etc/apache2 -name '*.conf' -exec sed -i -E '/^[[:space:]]*LoadModule[[:space:]]+mpm_[a-z]+_module/d' {} + ; \
-	a2dismod mpm_event mpm_worker 2>/dev/null || true; \
-	a2enmod mpm_prefork; \
-	rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*; \
-	echo "=== MPM after fix ==="; \
-	apache2ctl -M 2>&1 | grep -i mpm || true
+# Fix by physically deleting the event/worker load+conf files from BOTH
+# mods-enabled and mods-available (we never use them), leaving only prefork.
+# The diagnostics print the surviving state to the BUILD LOG; this step is
+# non-fatal (ends with `true`) so the build always completes and we can read it.
+RUN set +e; \
+	rm -f /etc/apache2/mods-enabled/mpm_event.*  /etc/apache2/mods-enabled/mpm_worker.* \
+	      /etc/apache2/mods-available/mpm_event.* /etc/apache2/mods-available/mpm_worker.* ; \
+	echo "=== remaining mpm files ==="; find /etc/apache2 -iname 'mpm_*' -print ; \
+	echo "=== mpm refs in config ==="; grep -rIn -i mpm /etc/apache2/apache2.conf /etc/apache2/conf-enabled/ /etc/apache2/mods-enabled/ 2>/dev/null ; \
+	echo "=== apache2ctl -M (mpm) ==="; apache2ctl -M 2>&1 | grep -i mpm ; \
+	echo "=== end mpm diagnostics ==="; \
+	true
 
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
