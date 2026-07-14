@@ -26,6 +26,7 @@ require_once GLC_DIR . 'includes/class-glc-blocks.php';
 require_once GLC_DIR . 'includes/class-glc-seo.php';
 require_once GLC_DIR . 'includes/class-glc-i18n.php';
 require_once GLC_DIR . 'includes/class-glc-ai.php';
+require_once GLC_DIR . 'includes/class-glc-perf.php';
 
 add_action( 'plugins_loaded', function () {
 	GLC_I18n::boot();
@@ -40,6 +41,7 @@ add_action( 'plugins_loaded', function () {
 	GLC_Blocks::init();
 	GLC_SEO::init();
 	GLC_AI::init();
+	GLC_Perf::init();
 } );
 
 register_activation_hook( __FILE__, function () {

@@ -186,7 +186,8 @@ class GLC_Schema {
 	}
 
 	private static function fleet_list(): array {
-		$cars = get_posts( [ 'post_type' => 'car', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
+		// Reuse the per-request memoized fleet (shared with the grid block).
+		$cars = glc_fleet_query()->posts;
 		return [
 			'@type'           => 'ItemList',
 			'@id'             => get_post_type_archive_link( 'car' ) . '#fleet',

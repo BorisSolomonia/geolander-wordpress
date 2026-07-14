@@ -115,11 +115,15 @@ class GLC_Gateway_BOG_iPay extends GLC_Gateway {
 
 		$reference = $this->log_request( $car_id, $from, $to, $quote, $name );
 
+		// BOG requires the Idempotency-Key to be a UUID (a "create:<id>"-style
+		// string is rejected). No retry loop here, so a fresh v4 per attempt is
+		// correct. total_amount / unit_price are JSON numbers below, not strings.
 		$response = wp_remote_post( self::ORDER_URL, [
 			'timeout' => 20,
 			'headers' => [
-				'Authorization' => 'Bearer ' . $token,
-				'Content-Type'  => 'application/json',
+				'Authorization'   => 'Bearer ' . $token,
+				'Content-Type'    => 'application/json',
+				'Idempotency-Key' => wp_generate_uuid4(),
 			],
 			'body'    => wp_json_encode( [
 				'external_order_id' => $reference,

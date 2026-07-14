@@ -112,7 +112,10 @@ class GLC_SEO {
 	public static function output() {
 		$description = self::description();
 		$title       = wp_get_document_title();
-		$url         = is_singular() ? get_permalink() : home_url( add_query_arg( [] ) );
+		// Clean, canonical og:url — never echo tracking params (fbclid/utm/…).
+		$url         = is_singular()
+			? get_permalink()
+			: ( is_post_type_archive() ? get_post_type_archive_link( get_post_type() ) : home_url( '/' ) );
 
 		$image = '';
 		if ( is_singular() && has_post_thumbnail() ) {

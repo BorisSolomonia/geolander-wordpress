@@ -12,6 +12,27 @@ function glc_ui( string $key ): string {
 	return function_exists( 'glc_t' ) ? glc_t( $key ) : $key;
 }
 
+/**
+ * The full ordered fleet, fetched once per request. The archive page renders
+ * the fleet twice (JSON-LD ItemList in <head>, grid in <body>); the front page
+ * renders a slice — memoizing collapses those to a single query and primes
+ * every featured image in one pass (else has_post_thumbnail() is one query per
+ * card). posts_per_page=-1 already skips the found-rows count.
+ */
+function glc_fleet_query(): WP_Query {
+	static $q = null;
+	if ( null === $q ) {
+		$q = new WP_Query( [
+			'post_type'      => 'car',
+			'posts_per_page' => -1,
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
+		] );
+		update_post_thumbnail_cache( $q );
+	}
+	return $q;
+}
+
 class GLC_Blocks {
 
 	public static function init() {
@@ -37,7 +58,7 @@ class GLC_Blocks {
 
 	public static function assets() {
 		if ( is_singular( 'car' ) ) {
-			wp_enqueue_script( 'glc-booking', GLC_URL . 'assets/booking.js', [], (string) filemtime( GLC_DIR . 'assets/booking.js' ), [ 'strategy' => 'defer' ] );
+			wp_enqueue_script( 'glc-booking', GLC_URL . 'assets/booking.js', [], GLC_VERSION, [ 'strategy' => 'defer' ] );
 			$ads_id    = GLC_Settings::get( 'ads_id' );
 			$ads_label = GLC_Settings::get( 'ads_conversion_label' );
 			wp_localize_script( 'glc-booking', 'glcBooking', [
@@ -72,12 +93,11 @@ class GLC_Blocks {
 	public static function fleet_grid( array $attrs ): string {
 		[ $from, $to ] = self::requested_dates();
 
-		$cars = get_posts( [
-			'post_type'      => 'car',
-			'posts_per_page' => (int) ( $attrs['count'] ?? -1 ),
-			'orderby'        => 'menu_order',
-			'order'          => 'ASC',
-		] );
+		$cars  = glc_fleet_query()->posts;
+		$count = (int) ( $attrs['count'] ?? -1 );
+		if ( $count > 0 ) {
+			$cars = array_slice( $cars, 0, $count );
+		}
 		if ( ! $cars ) {
 			return '';
 		}

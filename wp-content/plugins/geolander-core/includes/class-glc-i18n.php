@@ -82,6 +82,8 @@ class GLC_I18n {
 	}
 
 	private static function redirect( string $to ): void {
+		// The 302 depends on cookie/Accept-Language — never let a CDN cache it.
+		nocache_headers();
 		header( 'X-Redirect-By: geolander-i18n' );
 		header( 'Vary: Accept-Language' );
 		header( 'Location: ' . esc_url_raw( $to ), true, 302 );
@@ -112,6 +114,19 @@ class GLC_I18n {
 
 	private static function remember(): void {
 		if ( headers_sent() ) {
+			return;
+		}
+		// A Set-Cookie on every response makes shared caches (Cloudflare "cache
+		// everything") bypass the page, so only write when there is a real,
+		// changed preference to persist.
+		$stored = $_COOKIE[ self::COOKIE ] ?? null;
+		if ( $stored === self::$locale ) {
+			return; // already remembered
+		}
+		// First visitor who resolved to the default locale needs no cookie: the
+		// next visit negotiates to the same default, and writing one here would
+		// make this cache-populating response uncacheable.
+		if ( null === $stored && self::DEFAULT_LOCALE === self::$locale ) {
 			return;
 		}
 		setcookie( self::COOKIE, self::$locale, [

@@ -12,6 +12,7 @@
 	if (!fromEl || !toEl || !submit) return;
 
 	var current = null;
+	var busy = false; // guards BOTH the submit button and the sticky-bar CTA
 
 	function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 
@@ -49,8 +50,16 @@
 	}
 
 	function checkout() {
-		if (!current) return;
+		if (!current || busy) return;
+		busy = true;
 		submit.disabled = true;
+		// Open the destination tab synchronously, inside the click gesture, so
+		// Safari/Firefox don't treat the later window.open() as an unsolicited
+		// popup (the async fetch consumes the user-activation token). We steer
+		// this blank tab to the WhatsApp/payment URL once the server responds;
+		// if the browser blocked it anyway, fall back to a same-tab navigation.
+		var win = window.open('', '_blank');
+		if (win) win.opener = null;
 		fetch(cfg.restCheckout, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -58,6 +67,7 @@
 		})
 			.then(function (r) { return r.ok ? r.json() : Promise.reject(); })
 			.then(function (res) {
+				busy = false;
 				submit.disabled = false;
 				$('glc-b-next-title').textContent = '✓ ' + res.reference + ' — ' + cfg.i18n.nextTitle;
 				$('glc-b-next-text').textContent = cfg.i18n.nextText;
@@ -79,9 +89,15 @@
 						});
 					}
 				}
-				window.open(res.redirect, '_blank', 'noopener');
+				if (win) { win.location = res.redirect; }
+				else { window.location.href = res.redirect; }
 			})
-			.catch(function () { submit.disabled = false; setError(cfg.i18n.quoteError); });
+			.catch(function () {
+				if (win) win.close();
+				busy = false;
+				submit.disabled = false;
+				setError(cfg.i18n.quoteError);
+			});
 	}
 
 	fromEl.addEventListener('change', refresh);

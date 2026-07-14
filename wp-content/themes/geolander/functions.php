@@ -11,18 +11,21 @@ add_action( 'after_setup_theme', function () {
 } );
 
 add_action( 'wp_enqueue_scripts', function () {
-	// filemtime as version: every edit busts browser caches immediately.
+	// Version-keyed cache busting (no per-request filemtime stat — opcache runs
+	// with validate_timestamps=0 in production, so assets only change on deploy).
+	// Bump the theme's Version header in style.css whenever CSS/JS changes.
+	$ver = wp_get_theme()->get( 'Version' ) ?: '1.0.0';
 	wp_enqueue_style(
 		'geolander-main',
 		get_theme_file_uri( 'assets/css/main.css' ),
 		[],
-		(string) filemtime( get_theme_file_path( 'assets/css/main.css' ) )
+		$ver
 	);
 	wp_enqueue_script(
 		'geolander-reveal',
 		get_theme_file_uri( 'assets/js/reveal.js' ),
 		[],
-		(string) filemtime( get_theme_file_path( 'assets/js/reveal.js' ) ),
+		$ver,
 		[ 'strategy' => 'defer' ]
 	);
 } );

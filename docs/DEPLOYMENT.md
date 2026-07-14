@@ -26,7 +26,27 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    `wp plugin activate geolander-core && wp theme activate geolander && wp rewrite structure '/%postname%/' && wp rewrite flush && wp eval-file /migration/import.php && wp eval-file /migration/setup-pages.php && wp eval-file /migration/setup-seo.php`
 6. Custom domain: add `geo-lander.com` to the service, set the CNAME at your DNS. **Recommended:**
    put Cloudflare (free) in front for CDN + page caching — Railway has no built-in page cache.
-   Cache rule: bypass cache on `/wp-admin`, `/wp-json`, and requests with `from`/`to` query params.
+   The `geolander-core` plugin (`GLC_Perf`) now emits `Cache-Control: public, max-age=300,
+   s-maxage=86400` on static pages and `private, no-cache` on dynamic ones, so configure Cloudflare to
+   **respect origin cache headers** (Caching → Browser Cache TTL: "Respect Existing Headers"), then add
+   a Cache Rule that **bypasses cache** when ANY of these hold, so the origin's own decision is honored:
+   - path starts with `/wp-admin` or `/wp-json`
+   - request has a `from` or `to` query param (live seasonal quotes)
+   - Cookie contains `glc_lang` **or** `wordpress_logged_in` (language-switched or logged-in visitors)
+
+   The unprefixed homepage `/` is deliberately sent `private, no-cache` by the plugin (its response
+   depends on cookie/Accept-Language language negotiation), so it is always decided at the origin —
+   do **not** add a "cache everything" rule that would override this. Prefixed pages (`/ka/…`,
+   `/ru/…`) are path-keyed and fully cacheable.
+
+   **Caveat (unprefixed deep links):** `GLC_I18n` also 302-redirects unprefixed deep links (`/fleet/`,
+   `/cars/…`) for a *first-visit* non-English browser (no cookie yet). Because those pages ARE edge-cached
+   as English, such a visitor can be served English HTML instead of the redirect. In practice this is
+   rare and non-breaking: search engines follow hreflang straight to the `/ru/…` URL, and the on-page
+   switcher is always present; the cookie-bypass rule covers every *returning* visitor. The clean,
+   recommended fix (a small product decision) is to **scope the Accept-Language auto-redirect to the
+   homepage only** and let deep links stay language-stable — standard i18n practice, and it removes the
+   caveat entirely while keeping the cache win. Tracked in `docs/PERFORMANCE_AUDIT.md` (finding S1).
 7. Email: containers can't send mail reliably — install an SMTP plugin (add to repo) wired to a
    free tier (e.g. Brevo) so booking notifications/password resets work.
 8. Backups: enable Railway MySQL backups; the uploads volume + repo are the rest of the state.
