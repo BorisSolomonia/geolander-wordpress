@@ -9,8 +9,14 @@ FROM wordpress:php8.3-apache
 # mod_php requires the prefork MPM. Some base-image states leave both
 # mpm_event and mpm_prefork enabled, which makes Apache refuse to start with
 # "AH00534: apache2: Configuration error: More than one MPM loaded." Force a
-# single, correct MPM so the container boots.
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true; a2enmod mpm_prefork
+# single, correct MPM so the container boots. The rm is belt-and-suspenders in
+# case a2dismod doesn't clear the symlinks; the ls prints the survivors to the
+# BUILD LOG so we can confirm only mpm_prefork remains.
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
+	&& a2enmod mpm_prefork \
+	&& rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* \
+	&& echo "=== MPM modules enabled after fix ===" \
+	&& ls -1 /etc/apache2/mods-enabled/ | grep mpm
 
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
