@@ -37,15 +37,18 @@ class GLC_Schema {
 
 		if ( is_singular( 'car' ) ) {
 			$graph[] = self::car( get_the_ID() );
+			// Car titles are model names — never translated. Only the crumb label is.
 			$graph[] = self::breadcrumbs( [
-				[ get_post_type_archive_link( 'car' ), __( 'Fleet', 'geolander' ) ],
+				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
 				[ get_permalink(), get_the_title() ],
 			] );
 		} elseif ( is_singular( 'place' ) ) {
 			$graph[] = self::place( get_the_ID() );
+			// glc_ui(), not __(): the plugin ships no .mo files, so __() would emit
+			// English on every locale. Place titles come from the content resolver.
 			$graph[] = self::breadcrumbs( [
-				[ get_post_type_archive_link( 'place' ), __( 'Places', 'geolander' ) ],
-				[ get_permalink(), get_the_title() ],
+				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
+				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
 			] );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$graph[] = self::fleet_list();
@@ -141,7 +144,9 @@ class GLC_Schema {
 			'@type'               => [ 'Product', 'Car' ],
 			'@id'                 => get_permalink( $post_id ) . '#car',
 			'name'                => get_the_title( $post_id ),
-			'description'         => get_the_excerpt( $post_id ) ?: wp_strip_all_tags( get_post_field( 'post_content', $post_id ) ),
+			// Localized description: schema declares inLanguage per locale, so the
+			// description must match it rather than always being English.
+			'description'         => GLC_Content::excerpt( $post_id, 40 ),
 			'image'               => array_values( array_unique( $images ) ),
 			'url'                 => get_permalink( $post_id ),
 			'brand'               => $brand ? [ '@type' => 'Brand', 'name' => $brand[0] ] : null,
@@ -177,8 +182,8 @@ class GLC_Schema {
 		return [
 			'@type'       => 'TouristAttraction',
 			'@id'         => get_permalink( $post_id ) . '#place',
-			'name'        => get_the_title( $post_id ),
-			'description' => get_the_excerpt( $post_id ) ?: wp_strip_all_tags( get_post_field( 'post_content', $post_id ) ),
+			'name'        => GLC_Content::title( $post_id ),
+			'description' => GLC_Content::excerpt( $post_id, 40 ),
 			'image'       => has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'full' ) : null,
 			'url'         => get_permalink( $post_id ),
 			'address'     => [ '@type' => 'PostalAddress', 'addressCountry' => 'GE' ],
@@ -217,10 +222,10 @@ class GLC_Schema {
 			'@id'        => home_url( '/#faq' ),
 			'mainEntity' => array_map( fn( $faq ) => [
 				'@type'          => 'Question',
-				'name'           => $faq->post_title,
+				'name'           => GLC_Content::title( $faq ),
 				'acceptedAnswer' => [
 					'@type' => 'Answer',
-					'text'  => wp_strip_all_tags( $faq->post_content ),
+					'text'  => wp_strip_all_tags( GLC_Content::body( $faq ) ),
 				],
 			], $faqs ),
 		];

@@ -66,6 +66,9 @@ class GLC_Blocks {
 				'restCheckout' => rest_url( 'geolander/v1/checkout' ),
 				'adsSendTo'    => $ads_id && $ads_label ? "{$ads_id}/{$ads_label}" : '',
 				'carId'        => get_the_ID(),
+				// Locale formatting rules, so live client-side quote updates match
+				// the server-rendered prices instead of reverting to US format.
+				'fmt'          => GLC_Format::js_config(),
 				'i18n'         => [
 					'days'       => glc_ui( 'days' ),
 					'perDay'     => glc_ui( 'per_day' ),
@@ -156,11 +159,11 @@ class GLC_Blocks {
 				</div>
 				<div class="glc-card-price">
 					<?php if ( $quote ) : ?>
-						<span class="glc-price glc-price--total">$<?php echo esc_html( number_format( $quote['total'], 0 ) ); ?>
-							<span class="glc-price-unit">$<?php echo esc_html( number_format( $quote['per_day_avg'], 0 ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
+						<span class="glc-price glc-price--total"><?php echo esc_html( GLC_Format::money( $quote['total'] ) ); ?>
+							<span class="glc-price-unit"><?php echo esc_html( GLC_Format::money( $quote['per_day_avg'] ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
 						</span>
 					<?php else : ?>
-						<span class="glc-price">$<?php echo esc_html( number_format( $price_from, 0 ) ); ?>
+						<span class="glc-price"><?php echo esc_html( GLC_Format::money( $price_from ) ); ?>
 							<span class="glc-price-unit"><?php echo esc_html( glc_ui( 'from_per_day' ) ); ?></span>
 						</span>
 					<?php endif; ?>
@@ -205,8 +208,8 @@ class GLC_Blocks {
 			</div>
 			<div class="glc-booking-lines" id="glc-b-lines" <?php echo $quote ? '' : 'hidden'; ?>>
 				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'total_days' ) ); ?></span><span id="glc-b-days"><?php echo esc_html( $quote['days'] ?? '' ); ?></span></div>
-				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'price_per_day' ) ); ?></span><span id="glc-b-perday">$<?php echo esc_html( number_format( $quote['per_day_avg'] ?? 0, 0 ) ); ?></span></div>
-				<div class="glc-line glc-line--total"><span><?php echo esc_html( glc_ui( 'total_price' ) ); ?></span><span class="glc-amount" id="glc-b-total">$<?php echo esc_html( number_format( $quote['total'] ?? 0, 0 ) ); ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'price_per_day' ) ); ?></span><span id="glc-b-perday"><?php echo esc_html( GLC_Format::money( (float) ( $quote['per_day_avg'] ?? 0 ) ) ); ?></span></div>
+				<div class="glc-line glc-line--total"><span><?php echo esc_html( glc_ui( 'total_price' ) ); ?></span><span class="glc-amount" id="glc-b-total"><?php echo esc_html( GLC_Format::money( (float) ( $quote['total'] ?? 0 ) ) ); ?></span></div>
 			</div>
 			<p class="glc-micro" id="glc-b-error" hidden></p>
 			<button type="button" id="glc-b-submit"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></button>
@@ -219,8 +222,12 @@ class GLC_Blocks {
 
 		<div class="glc-bar" id="glc-bar">
 			<span class="glc-bar-price">
-				<strong id="glc-bar-total"><?php echo $quote ? '$' . esc_html( number_format( $quote['total'], 0 ) ) : '$' . esc_html( number_format( (float) get_post_meta( $id, 'glc_price_from', true ), 0 ) ) . esc_html( glc_ui( 'from_per_day' ) ); ?></strong>
-				<span id="glc-bar-dates"><?php echo $quote ? esc_html( "{$from} → {$to}" ) : esc_html( glc_ui( 'select_dates' ) ); ?></span>
+				<strong id="glc-bar-total"><?php echo $quote
+					? esc_html( GLC_Format::money( $quote['total'] ) )
+					: esc_html( GLC_Format::money( (float) get_post_meta( $id, 'glc_price_from', true ) ) ) . esc_html( glc_ui( 'from_per_day' ) ); ?></strong>
+				<span id="glc-bar-dates"><?php echo $quote
+					? esc_html( GLC_Format::date( $from ) . ' → ' . GLC_Format::date( $to ) )
+					: esc_html( glc_ui( 'select_dates' ) ); ?></span>
 			</span>
 			<a href="#glc-booking" id="glc-bar-cta"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></a>
 		</div>
@@ -300,9 +307,9 @@ class GLC_Blocks {
 			foreach ( GLC_Pricing::TIERS as $tier ) {
 				$is_active = $tier === $active_tier && in_array( $season['label'] ?? '', $active_labels, true );
 				$out      .= sprintf(
-					'<td%s>$%s</td>',
+					'<td%s>%s</td>',
 					$is_active ? ' class="glc-active-cell"' : '',
-					esc_html( number_format( (float) ( $season['rates'][ $tier ] ?? 0 ), 0 ) )
+					esc_html( GLC_Format::money( (float) ( $season['rates'][ $tier ] ?? 0 ) ) )
 				);
 			}
 			$out .= '</tr>';
@@ -322,8 +329,8 @@ class GLC_Blocks {
 			$out .= sprintf(
 				'<details%s><summary>%s</summary><div class="glc-answer">%s</div></details>',
 				0 === $i ? ' open' : '',
-				esc_html( $faq->post_title ),
-				wp_kses_post( wpautop( $faq->post_content ) )
+				esc_html( GLC_Content::title( $faq ) ),
+				wp_kses_post( wpautop( GLC_Content::body( $faq ) ) )
 			);
 		}
 		return $out . '</div>';
@@ -391,12 +398,12 @@ class GLC_Blocks {
 					<?php if ( has_post_thumbnail( $place->ID ) ) : ?>
 						<?php echo get_the_post_thumbnail( $place->ID, 'glc-card', [ 'loading' => 'lazy' ] ); ?>
 					<?php else : ?>
-						<div class="glc-no-photo"><?php echo esc_html( $place->post_title ); ?></div>
+						<div class="glc-no-photo"><?php echo esc_html( GLC_Content::title( $place ) ); ?></div>
 					<?php endif; ?>
 				</div>
 				<div class="glc-card-body">
-					<h3><a href="<?php echo esc_url( get_permalink( $place->ID ) ); ?>" style="text-decoration:none;color:inherit;"><?php echo esc_html( $place->post_title ); ?></a></h3>
-					<p><?php echo esc_html( wp_trim_words( $place->post_excerpt ?: $place->post_content, 22 ) ); ?></p>
+					<h3><a href="<?php echo esc_url( get_permalink( $place->ID ) ); ?>" style="text-decoration:none;color:inherit;"><?php echo esc_html( GLC_Content::title( $place ) ); ?></a></h3>
+					<p><?php echo esc_html( GLC_Content::excerpt( $place, 22 ) ); ?></p>
 				</div>
 			</article>
 			<?php

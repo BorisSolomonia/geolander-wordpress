@@ -68,15 +68,6 @@ function glc_t( string $key ): string {
 	return $strings[ $key ] ?? $fallback[ $key ] ?? $key;
 }
 
-/** Georgian string regardless of visitor locale (brand/signage layer). */
-function glc_t_ka( string $key ): string {
-	static $ka = null;
-	if ( null === $ka ) {
-		$ka = require get_theme_file_path( 'inc/strings-ka.php' );
-	}
-	return $ka[ $key ] ?? $key;
-}
-
 /**
  * Kilometer-post data chip above section titles: one mono line with a
  * true fact (fleet size, altitude range, response promise). The section

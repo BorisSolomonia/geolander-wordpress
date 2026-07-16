@@ -14,7 +14,28 @@
 	var current = null;
 	var busy = false; // guards BOTH the submit button and the sticky-bar CTA
 
-	function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+	// Money formatted with the active locale's rules (supplied by the server),
+	// so live updates match the server-rendered price instead of forcing en-US.
+	function fmt(n) {
+		var f = cfg.fmt || { sep: ',', symBefore: true, symbol: '$' };
+		var amount = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, f.sep);
+		return f.symBefore ? f.symbol + amount : amount + ' ' + f.symbol;
+	}
+
+	// ISO date → the active locale's pattern (mirrors GLC_Format::date).
+	function fmtDate(iso) {
+		var p = (cfg.fmt && cfg.fmt.datePattern) || 'Y-m-d';
+		var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+		if (!m) return iso;
+		var Y = m[1], M = m[2], D = m[3];
+		if (p === 'd.m.Y') return D + '.' + M + '.' + Y;
+		if (p === 'd/m/Y') return D + '/' + M + '/' + Y;
+		if (p === 'M j, Y') {
+			var names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+			return names[parseInt(M, 10) - 1] + ' ' + parseInt(D, 10) + ', ' + Y;
+		}
+		return Y + '-' + M + '-' + D;
+	}
 
 	function setError(msg) {
 		errEl.textContent = msg || '';
@@ -39,7 +60,7 @@
 				setError('');
 				submit.disabled = false;
 				if (barTotal) barTotal.textContent = fmt(q.total);
-				if (barDates) barDates.textContent = from + ' → ' + to;
+				if (barDates) barDates.textContent = fmtDate(from) + ' → ' + fmtDate(to);
 				// Keep dates in the URL so sharing/back keeps state.
 				var url = new URL(window.location);
 				url.searchParams.set('from', from);

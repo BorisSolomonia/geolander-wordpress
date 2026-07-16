@@ -87,15 +87,33 @@ class GLC_SEO {
 	private static function description(): string {
 		if ( is_singular() ) {
 			$post = get_queried_object();
-			$text = $post->post_excerpt ?: wp_strip_all_tags( $post->post_content );
+			// Localized body/excerpt so the description matches the page's hreflang.
+			$text = class_exists( 'GLC_Content' )
+				? GLC_Content::excerpt( $post, 40 )
+				: ( $post->post_excerpt ?: wp_strip_all_tags( $post->post_content ) );
 			if ( is_singular( 'car' ) ) {
-				$price = get_post_meta( $post->ID, 'glc_price_from', true );
-				$text  = sprintf(
-					'Rent a %s in Tbilisi from $%s/day. 4x4, full insurance, free airport delivery. %s',
-					get_the_title( $post ),
-					number_format( (float) $price, 0 ),
-					$text
-				);
+				$price = (float) get_post_meta( $post->ID, 'glc_price_from', true );
+				$en    = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
+				// Localized pages must not advertise themselves in English: hreflang
+				// declares them e.g. Georgian, so an English description contradicts
+				// the page and reads badly in localized search results.
+				$text  = $en
+					? sprintf(
+						'Rent a %s in Tbilisi from %s/day. 4x4, full insurance, free airport delivery. %s',
+						get_the_title( $post ),
+						GLC_Format::money( $price ),
+						$text
+					)
+					: sprintf(
+						'%s — %s %s%s. %s, %s. %s',
+						get_the_title( $post ),
+						glc_ui( 'booking_title' ),
+						GLC_Format::money( $price ),
+						glc_ui( 'from_per_day' ),
+						glc_ui( 'trust_insurance' ),
+						glc_ui( 'trust_delivery' ),
+						$text
+					);
 			}
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$text = glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' ) . ' ' . glc_ui( 'trust_insurance' ) . ', ' . glc_ui( 'trust_delivery' ) . '.';

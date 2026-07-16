@@ -118,4 +118,11 @@ return [
 	'contact_email'    => '发送邮件',
 	'contact_hours'    => '营业时间',
 	'contact_address'  => '地址',
+
+	// 404 page.
+	'nf_code'          => '404',
+	'nf_text'          => '页面未找到。返回',
+	'nf_home'          => '首页',
+	'nf_or'            => '或',
+	'nf_fleet'         => '浏览我们的车队',
 ];

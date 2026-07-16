@@ -23,12 +23,12 @@ $glc_region = wp_get_post_terms( $glc_id, 'place_region', [ 'fields' => 'names' 
 			<span> / </span>
 			<a href="<?php echo esc_url( home_url( '/places/' ) ); ?>" style="text-decoration:none;"><?php echo esc_html( glc_t( 'nav_places' ) ); ?></a>
 		</nav>
-		<h1 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);"><?php the_title(); ?></h1>
+		<h1 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);"><?php echo esc_html( GLC_Content::title( $glc_id ) ); ?></h1>
 		<?php if ( $glc_region ) : ?>
 			<div class="glc-chips"><span class="glc-chip glc-chip--4x4"><?php echo esc_html( $glc_region[0] ); ?></span></div>
 		<?php endif; ?>
 		<div style="line-height:1.8;color:color-mix(in srgb, var(--glc-glacier) 88%, transparent);">
-			<?php echo wp_kses_post( wpautop( get_post_field( 'post_content', $glc_id ) ) ); ?>
+			<?php echo wp_kses_post( wpautop( GLC_Content::body( $glc_id ) ) ); ?>
 		</div>
 		<?php if ( $glc_lat && $glc_lng ) : ?>
 			<p><a class="wp-element-button glc-btn" href="<?php echo esc_url( "https://maps.google.com/?q={$glc_lat},{$glc_lng}" ); ?>" rel="noopener" style="background:transparent;border:1px solid var(--glc-accent);color:var(--glc-accent);"><?php echo esc_html( glc_t( 'view_on_map' ) ); ?> →</a></p>

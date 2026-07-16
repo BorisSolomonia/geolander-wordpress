@@ -118,4 +118,11 @@ return [
 	'contact_email'    => 'Envoyer un e-mail',
 	'contact_hours'    => 'Horaires',
 	'contact_address'  => 'Adresse',
+
+	// 404 page.
+	'nf_code'          => '404',
+	'nf_text'          => 'Page introuvable. Retour à',
+	'nf_home'          => 'l’accueil',
+	'nf_or'            => 'ou',
+	'nf_fleet'         => 'découvrez notre flotte',
 ];

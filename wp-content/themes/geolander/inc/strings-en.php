@@ -118,4 +118,11 @@ return [
 	'contact_email'    => 'Email us',
 	'contact_hours'    => 'Business hours',
 	'contact_address'  => 'Address',
+
+	// 404 page.
+	'nf_code'          => '404',
+	'nf_text'          => 'Page not found. Go back',
+	'nf_home'          => 'home',
+	'nf_or'            => 'or',
+	'nf_fleet'         => 'browse our fleet',
 ];

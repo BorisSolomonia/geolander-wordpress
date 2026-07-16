@@ -61,9 +61,9 @@ $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
 				<p style="margin:0;font-size:0.95rem;line-height:1.7;"><?php echo esc_html( glc_t( 'terrain_text' ) ); ?></p>
 			</section>
 
-			<?php if ( trim( get_post_field( 'post_content', $glc_id ) ) ) : ?>
+			<?php if ( trim( GLC_Content::body( $glc_id ) ) ) : ?>
 			<section style="max-width:64ch;line-height:1.75;color:color-mix(in srgb, var(--glc-glacier) 85%, transparent);">
-				<?php echo wp_kses_post( wpautop( get_post_field( 'post_content', $glc_id ) ) ); ?>
+				<?php echo wp_kses_post( wpautop( GLC_Content::body( $glc_id ) ) ); ?>
 			</section>
 			<?php endif; ?>
 		</div>

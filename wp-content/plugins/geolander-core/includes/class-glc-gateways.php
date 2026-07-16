@@ -63,6 +63,13 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 
 		$reference = $this->log_request( $car_id, $from, $to, $quote, $name );
 
+		// DELIBERATELY ENGLISH — do not "localize" this (decision: 2026-07-16).
+		// This message is composed in the customer's WhatsApp but READ BY GEOLANDER
+		// STAFF in Tbilisi. Translating it to the visitor's locale would deliver
+		// bookings the team cannot read (e.g. a Chinese customer's request arriving
+		// as 预订请求). It is an operational message, not UI copy, so it stays in one
+		// staff-readable language. Amounts stay in plain en-US format for the same
+		// reason — this is not a place for GLC_Format's locale rules.
 		$lines = [
 			'Booking request ' . $reference,
 			'Car: ' . get_the_title( $car_id ),
