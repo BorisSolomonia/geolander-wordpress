@@ -472,10 +472,21 @@ h1, h2, h3 { text-wrap: balance; }
 	flex-direction: column;
 	transition: transform 0.35s var(--glc-ease), box-shadow 0.35s var(--glc-ease), border-color 0.35s var(--glc-ease);
 }
+/*
+ * Scale, never translate, on hover.
+ *
+ * `translateY(-5px)` slid the card out from under the pointer: a cursor near the
+ * card's lower edge lost :hover, the card dropped back, :hover re-fired — an
+ * infinite flicker loop. A transform only affects the visual box, not the layout
+ * box, so the vacated strip stops being hoverable. Scaling UP can't loop: it only
+ * ever grows the area under the pointer, so hover can never be lost by the
+ * animation itself. Keep this rule grow-only — do not reintroduce a translate.
+ */
 .glc-card:hover {
-	transform: translateY(-5px);
+	transform: scale(1.015);
 	box-shadow: var(--glc-shadow);
 	border-color: color-mix(in srgb, var(--glc-accent) 45%, transparent);
+	z-index: 1; /* sit above neighbours while enlarged */
 }
 .glc-card-media {
 	position: relative;
@@ -592,26 +603,44 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 0.76rem;
 	color: var(--glc-success);
 }
-/* Per-card WhatsApp CTA — the primary action now that cards carry no price. */
-.glc-card-wa {
+/* Card actions: WhatsApp (primary) + Check details (secondary). */
+.glc-card-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem;
+	margin-top: 0.8rem;
+}
+.glc-card-actions > a {
 	align-items: center;
-	background: var(--glc-success);
 	border-radius: calc(var(--glc-radius) / 1.6);
-	color: var(--glc-paper);
 	display: inline-flex;
-	font-size: 0.85rem;
+	font-size: 0.82rem;
 	font-weight: 600;
-	gap: 0.45rem;
+	gap: 0.4rem;
 	justify-content: center;
-	margin-top: 0.7rem;
-	padding: 0.6rem 1rem;
+	padding: 0.62rem 0.8rem;
+	text-align: center;
 	text-decoration: none;
-	transition: filter 0.2s var(--glc-ease), transform 0.2s var(--glc-ease);
+	/* Colour-only hover: no transform, so buttons can't flicker either. */
+	transition: filter 0.2s var(--glc-ease), background-color 0.2s var(--glc-ease);
+}
+.glc-card-wa {
+	background: var(--glc-success);
+	color: var(--glc-paper);
 }
 .glc-card-wa:hover,
-.glc-card-wa:focus-visible {
-	filter: brightness(1.08);
-	transform: translateY(-1px);
+.glc-card-wa:focus-visible { filter: brightness(1.1); }
+.glc-card-details {
+	background: transparent;
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 22%, transparent);
+	color: var(--glc-ink-text);
+}
+.glc-card-details:hover,
+.glc-card-details:focus-visible {
+	background: color-mix(in srgb, var(--glc-glacier) 8%, transparent);
+}
+@media (max-width: 420px) {
+	.glc-card-actions { grid-template-columns: 1fr; }
 }
 
 /* ------------------------------------------------------- Single car page */

@@ -91,6 +91,25 @@ class GLC_Blocks {
 		return [ $from, $to ];
 	}
 
+	/**
+	 * Direct WhatsApp link for a car — no dates, no quote, just a conversation.
+	 *
+	 * Deliberately does NOT go through GLC_Gateways::checkout(): this is the
+	 * "just asking" path from the fleet grid, so it must not mint a booking
+	 * reference or log a booking_request. The dated quote flow on the car page
+	 * still does all of that for real enquiries.
+	 *
+	 * Message stays English on purpose — Geolander staff read these; see the note
+	 * in class-glc-gateways.php.
+	 */
+	private static function whatsapp_link( WP_Post $car ): string {
+		// One builder for every WhatsApp link on the site — the URL format is
+		// exacting (see GLC_Gateway_WhatsApp::url()) and must not be duplicated.
+		return GLC_Gateway_WhatsApp::url(
+			sprintf( 'Hi! I am interested in the %s. Is it available?', $car->post_title )
+		);
+	}
+
 	/* --------------------------------------------------------- Fleet grid */
 
 	public static function fleet_grid( array $attrs ): string {
@@ -175,9 +194,15 @@ class GLC_Blocks {
 					</div>
 				<?php endif; ?>
 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
-				<a class="glc-card-wa" href="<?php echo esc_url( $url . '#glc-booking' ); ?>">
-					<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'ask_whatsapp' ) ); ?>
-				</a>
+				<?php $glc_wa = self::whatsapp_link( $car ); ?>
+				<div class="glc-card-actions">
+					<?php if ( $glc_wa ) : ?>
+						<a class="glc-card-wa" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener">
+							<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'ask_whatsapp' ) ); ?>
+						</a>
+					<?php endif; ?>
+					<a class="glc-card-details" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( glc_ui( 'check_details' ) ); ?></a>
+				</div>
 			</div>
 		</article>
 		<?php
@@ -215,10 +240,17 @@ class GLC_Blocks {
 				<label for="glc-b-name"><?php echo esc_html( glc_ui( 'your_name' ) ); ?></label>
 				<input type="text" id="glc-b-name" autocomplete="name" />
 			</div>
+			<?php
+			/*
+			 * No prices on the car page (decision: 2026-07-16). The rental length
+			 * stays — it's a fact about the trip the visitor just described, not a
+			 * price — but per-day and total are gone. The server still prices the
+			 * booking; the figure simply travels to staff in the WhatsApp message
+			 * instead of being shown here.
+			 */
+			?>
 			<div class="glc-booking-lines" id="glc-b-lines" <?php echo $quote ? '' : 'hidden'; ?>>
 				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'total_days' ) ); ?></span><span id="glc-b-days"><?php echo esc_html( $quote['days'] ?? '' ); ?></span></div>
-				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'price_per_day' ) ); ?></span><span id="glc-b-perday"><?php echo esc_html( GLC_Format::money( (float) ( $quote['per_day_avg'] ?? 0 ) ) ); ?></span></div>
-				<div class="glc-line glc-line--total"><span><?php echo esc_html( glc_ui( 'total_price' ) ); ?></span><span class="glc-amount" id="glc-b-total"><?php echo esc_html( GLC_Format::money( (float) ( $quote['total'] ?? 0 ) ) ); ?></span></div>
 			</div>
 			<p class="glc-micro" id="glc-b-error" hidden></p>
 			<button type="button" id="glc-b-submit"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></button>
@@ -231,9 +263,8 @@ class GLC_Blocks {
 
 		<div class="glc-bar" id="glc-bar">
 			<span class="glc-bar-price">
-				<strong id="glc-bar-total"><?php echo $quote
-					? esc_html( GLC_Format::money( $quote['total'] ) )
-					: esc_html( GLC_Format::money( (float) get_post_meta( $id, 'glc_price_from', true ) ) ) . esc_html( glc_ui( 'from_per_day' ) ); ?></strong>
+				<?php // Sticky bar carries the car and dates, not a price. ?>
+				<strong id="glc-bar-total"><?php echo esc_html( get_the_title( $id ) ); ?></strong>
 				<span id="glc-bar-dates"><?php echo $quote
 					? esc_html( GLC_Format::date( $from ) . ' → ' . GLC_Format::date( $to ) )
 					: esc_html( glc_ui( 'select_dates' ) ); ?></span>

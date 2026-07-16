@@ -123,6 +123,7 @@ return [
 	'slogan'            => '为道路而来，带回忆而归。',
 	'price_range_label' => '所有车辆',
 	'ask_whatsapp'      => '通过 WhatsApp 咨询',
+	'check_details'      => '查看详情',
 
 	// 404 page.
 	'nf_code'          => '404',

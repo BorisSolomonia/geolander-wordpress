@@ -6,10 +6,12 @@
  */
 $glc_phone = GLC_Settings::get( 'phone' );
 $glc_tel   = preg_replace( '/[^+0-9]/', '', $glc_phone );
-$glc_wa    = preg_replace( '/[^0-9]/', '', (string) GLC_Settings::get( 'whatsapp_number' ) );
+// Built by the one verified builder — the old `wa.me/<bare digits>` link dropped
+// the leading "+" and did not reliably open the app. See GLC_Gateway_WhatsApp::url().
+$glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url() : '';
 $glc_email = GLC_Settings::get( 'email' );
 $glc_cards = [
-	[ glc_t( 'contact_whatsapp' ), $glc_phone, 'https://wa.me/' . $glc_wa, '#25d366' ],
+	[ glc_t( 'contact_whatsapp' ), $glc_phone, $glc_wa, '#25d366' ],
 	[ glc_t( 'contact_phone' ), $glc_phone, 'tel:' . $glc_tel, 'var(--glc-accent)' ],
 	[ glc_t( 'contact_email' ), $glc_email, 'mailto:' . $glc_email, 'var(--glc-accent)' ],
 	[ glc_t( 'contact_address' ), GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ), GLC_Settings::get( 'google_maps_url' ), 'var(--glc-accent)' ],
@@ -36,6 +38,6 @@ $glc_cards = [
 			<span class="glc-label"><?php echo esc_html( glc_t( 'contact_hours' ) ); ?></span>
 			<p style="margin:0.3rem 0 0;font-weight:700;font-size:1.2rem;"><?php echo esc_html( GLC_Settings::get( 'business_hours' ) ); ?></p>
 		</div>
-		<a class="wp-element-button glc-btn" href="https://wa.me/<?php echo esc_attr( $glc_wa ); ?>" rel="noopener" style="background:#25d366;color:#073b1a;"><?php echo esc_html( glc_t( 'contact_whatsapp' ) ); ?></a>
+		<a class="wp-element-button glc-btn" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener" style="background:#25d366;color:#073b1a;"><?php echo esc_html( glc_t( 'contact_whatsapp' ) ); ?></a>
 	</div>
 </main>

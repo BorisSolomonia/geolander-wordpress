@@ -123,6 +123,7 @@ return [
 	'slogan'            => 'Venez pour les routes. Repartez avec les souvenirs.',
 	'price_range_label' => 'Toutes les voitures',
 	'ask_whatsapp'      => 'Écrire sur WhatsApp',
+	'check_details'      => 'Voir les détails',
 
 	// 404 page.
 	'nf_code'          => '404',

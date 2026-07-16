@@ -123,6 +123,7 @@ return [
 	'slogan'            => 'Приезжайте за дорогами. Увозите воспоминания.',
 	'price_range_label' => 'Все автомобили',
 	'ask_whatsapp'      => 'Написать в WhatsApp',
+	'check_details'      => 'Подробнее',
 
 	// 404 page.
 	'nf_code'          => '404',

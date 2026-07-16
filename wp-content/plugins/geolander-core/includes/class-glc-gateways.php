@@ -47,6 +47,32 @@ abstract class GLC_Gateway {
 
 class GLC_Gateway_WhatsApp extends GLC_Gateway {
 
+	/**
+	 * The single place a WhatsApp deep link is built. Format verified working
+	 * against the live account (2026-07-16) — do not "tidy" it:
+	 *
+	 *  - `/send/` WITH the trailing slash.
+	 *  - `phone` keeps the leading "+", URL-encoded as %2B. Sending bare digits
+	 *    is what broke the old link.
+	 *  - `type=phone_number&app_absent=0` are required by that flow; app_absent=0
+	 *    is what hands off to the installed app rather than stranding the user on
+	 *    WhatsApp Web.
+	 *  - api.whatsapp.com, not wa.me: wa.me's redirect re-encodes `text` lossily
+	 *    for non-ASCII content.
+	 *
+	 * @param string $text Prefilled message; English by design (staff read these).
+	 * @return string Empty string when no number is configured.
+	 */
+	public static function url( string $text = '' ): string {
+		$digits = preg_replace( '/[^0-9]/', '', (string) GLC_Settings::get( 'whatsapp_number' ) );
+		if ( ! $digits ) {
+			return '';
+		}
+		return 'https://api.whatsapp.com/send/?phone=' . rawurlencode( '+' . $digits )
+			. '&text=' . rawurlencode( $text )
+			. '&type=phone_number&app_absent=0';
+	}
+
 	public function id(): string {
 		return 'whatsapp';
 	}
@@ -81,10 +107,8 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 		}
 		$message = implode( "\n", $lines );
 
-		// api.whatsapp.com directly: wa.me's redirect re-encodes the text
-		// parameter lossily for non-ASCII content.
 		return [
-			'redirect'  => 'https://api.whatsapp.com/send?phone=' . $number . '&text=' . rawurlencode( $message ),
+			'redirect'  => self::url( $message ),
 			'reference' => $reference,
 			'message'   => $message,
 		];

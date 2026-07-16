@@ -44,7 +44,11 @@ $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
 
 			<section>
 				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'pricing_title' ) ); ?></h2>
-				<?php echo do_blocks( '<!-- wp:geolander/price-table /-->' ); ?>
+				<?php
+				// Seasonal price table removed from the car page (no prices here by
+				// decision). The block itself still exists and renders wherever it is
+				// inserted — /pricing.md keeps serving the full tables to AI crawlers.
+				?>
 			</section>
 
 			<section>

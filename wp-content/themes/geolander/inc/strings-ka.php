@@ -139,6 +139,7 @@ return [
 	'slogan'            => 'ჩამოდით გზებისთვის. წაიღეთ მოგონებები.',
 	'price_range_label' => 'ყველა მანქანა',
 	'ask_whatsapp'      => 'დაგვიკავშირდით WhatsApp-ით',
+	'check_details'      => 'დეტალურად',
 
 	// 404 page.
 	'nf_code'         => '404',

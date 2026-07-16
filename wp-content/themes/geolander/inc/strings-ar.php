@@ -123,6 +123,7 @@ return [
 	'slogan'            => 'تعال من أجل الطرق. وارجع بالذكريات.',
 	'price_range_label' => 'جميع السيارات',
 	'ask_whatsapp'      => 'تواصل عبر واتساب',
+	'check_details'      => 'التفاصيل',
 
 	// 404 page.
 	'nf_code'          => '404',

@@ -8,19 +8,15 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var fromEl = $('glc-b-from'), toEl = $('glc-b-to'), nameEl = $('glc-b-name');
 	var lines = $('glc-b-lines'), errEl = $('glc-b-error'), submit = $('glc-b-submit');
-	var barTotal = $('glc-bar-total'), barDates = $('glc-bar-dates'), barCta = $('glc-bar-cta');
+	var barDates = $('glc-bar-dates'), barCta = $('glc-bar-cta');
 	if (!fromEl || !toEl || !submit) return;
 
 	var current = null;
 	var busy = false; // guards BOTH the submit button and the sticky-bar CTA
 
-	// Money formatted with the active locale's rules (supplied by the server),
-	// so live updates match the server-rendered price instead of forcing en-US.
-	function fmt(n) {
-		var f = cfg.fmt || { sep: ',', symBefore: true, symbol: '$' };
-		var amount = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, f.sep);
-		return f.symBefore ? f.symbol + amount : amount + ' ' + f.symbol;
-	}
+	// (No money formatter here: car pages show no prices, so nothing client-side
+	// renders an amount. GLC_Format::money() still handles every server-rendered
+	// price elsewhere, e.g. the front-page range.)
 
 	// ISO date → the active locale's pattern (mirrors GLC_Format::date).
 	function fmtDate(iso) {
@@ -53,13 +49,15 @@
 			.then(function (r) { return r.ok ? r.json() : Promise.reject(); })
 			.then(function (q) {
 				current = q;
-				$('glc-b-days').textContent = q.days;
-				$('glc-b-perday').textContent = fmt(q.per_day_avg);
-				$('glc-b-total').textContent = fmt(q.total);
+				// Price elements are intentionally absent (no prices on car pages),
+				// so every write is guarded — the quote is still fetched to validate
+				// the dates and unlock the button, and the total reaches staff via
+				// the WhatsApp message the server builds.
+				var days = $('glc-b-days');
+				if (days) days.textContent = q.days;
 				lines.hidden = false;
 				setError('');
 				submit.disabled = false;
-				if (barTotal) barTotal.textContent = fmt(q.total);
 				if (barDates) barDates.textContent = fmtDate(from) + ' → ' + fmtDate(to);
 				// Keep dates in the URL so sharing/back keeps state.
 				var url = new URL(window.location);
