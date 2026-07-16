@@ -83,7 +83,8 @@ class GLC_Schema {
 			'image'      => $logo,
 			'telephone'  => GLC_Settings::get( 'phone' ),
 			'email'      => GLC_Settings::get( 'email' ),
-			'priceRange' => '$26 - $90',
+			// Reads the settings range, so schema can't drift from the site copy.
+			'priceRange' => GLC_Format::range_display( 'en' ),
 			'hasMap'     => GLC_Settings::get( 'google_maps_url' ),
 			'currenciesAccepted' => 'GEL, USD',
 			'address'    => [

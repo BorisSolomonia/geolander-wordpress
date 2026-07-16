@@ -36,7 +36,7 @@ class GLC_SEO {
 				: sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$parts['title'] = $en
-				? 'Car Rental Fleet in Tbilisi, Georgia — 15 Real 4x4s from $26/day'
+				? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — 15 Real 4x4s from $%d/day', GLC_Format::range()[0] )
 				: glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' );
 		} elseif ( is_post_type_archive( 'place' ) ) {
 			$parts['title'] = $en
@@ -45,7 +45,7 @@ class GLC_SEO {
 		} elseif ( is_front_page() ) {
 			// Front page has no separate 'site' part — brand goes inline.
 			$parts['title'] = $en
-				? 'Car Rental in Tbilisi, Georgia — 4x4 from $26/day | Geolander'
+				? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', GLC_Format::range()[0] )
 				: glc_ui( 'hero_title' ) . ' | Geolander';
 			unset( $parts['tagline'] );
 		}

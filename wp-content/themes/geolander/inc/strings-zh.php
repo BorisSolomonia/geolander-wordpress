@@ -119,6 +119,11 @@ return [
 	'contact_hours'    => '营业时间',
 	'contact_address'  => '地址',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => '为道路而来，带回忆而归。',
+	'price_range_label' => '所有车辆',
+	'ask_whatsapp'      => '通过 WhatsApp 咨询',
+
 	// 404 page.
 	'nf_code'          => '404',
 	'nf_text'          => '页面未找到。返回',

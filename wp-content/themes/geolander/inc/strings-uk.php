@@ -119,6 +119,11 @@ return [
 	'contact_hours'    => 'Години роботи',
 	'contact_address'  => 'Адреса',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => 'Приїжджайте за дорогами. Везіть додому спогади.',
+	'price_range_label' => 'Усі автомобілі',
+	'ask_whatsapp'      => 'Написати у WhatsApp',
+
 	// 404 page.
 	'nf_code'          => '404',
 	'nf_text'          => 'Сторінку не знайдено. Поверніться',

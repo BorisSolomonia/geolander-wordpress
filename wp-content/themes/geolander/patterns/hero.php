@@ -18,7 +18,14 @@ $glc_default2 = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
 	<div class="glc-hero-inner">
 		<span class="glc-hero-elev">TBILISI 41.69°N 44.80°E · <strong>0 → 2196 M</strong> · 4X4</span>
 		<h1><?php echo esc_html( glc_t( 'hero_title' ) ); ?></h1>
+		<p class="glc-hero-slogan"><?php echo esc_html( glc_t( 'slogan' ) ); ?></p>
 		<p class="glc-hero-sub"><?php echo esc_html( glc_t( 'hero_subtitle' ) ); ?></p>
+		<?php // One honest range instead of a price on every car. ?>
+		<p class="glc-hero-range">
+			<?php echo esc_html( glc_t( 'price_range_label' ) ); ?>
+			<strong><?php echo esc_html( class_exists( 'GLC_Format' ) ? GLC_Format::range_display() : '' ); ?></strong>
+			<span><?php echo esc_html( glc_t( 'per_day' ) ); ?></span>
+		</p>
 
 		<form class="glc-hero-widget" action="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" method="get">
 			<div class="glc-field">

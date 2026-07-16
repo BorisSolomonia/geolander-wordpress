@@ -351,6 +351,34 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: clamp(1rem, 1.8vw, 1.2rem);
 	max-width: 52ch;
 }
+/* Positioning line — the promise, sitting directly under the H1. */
+.glc-hero .glc-hero-slogan {
+	color: var(--glc-accent);
+	font-size: clamp(1.05rem, 2vw, 1.35rem);
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	max-width: 34ch;
+	margin: 0.2rem 0 0;
+	text-wrap: balance;
+}
+/* One honest range, instead of a price tag on every car. */
+.glc-hero .glc-hero-range {
+	align-items: baseline;
+	color: color-mix(in srgb, var(--glc-glacier) 72%, transparent);
+	display: flex;
+	flex-wrap: wrap;
+	font-family: var(--glc-mono);
+	font-size: 0.85rem;
+	gap: 0.4rem;
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.glc-hero .glc-hero-range strong {
+	color: var(--glc-glacier);
+	font-size: 1.05rem;
+	letter-spacing: 0;
+}
 
 /* Hero booking card */
 .glc-hero-widget {
@@ -563,6 +591,27 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-microline {
 	font-size: 0.76rem;
 	color: var(--glc-success);
+}
+/* Per-card WhatsApp CTA — the primary action now that cards carry no price. */
+.glc-card-wa {
+	align-items: center;
+	background: var(--glc-success);
+	border-radius: calc(var(--glc-radius) / 1.6);
+	color: var(--glc-paper);
+	display: inline-flex;
+	font-size: 0.85rem;
+	font-weight: 600;
+	gap: 0.45rem;
+	justify-content: center;
+	margin-top: 0.7rem;
+	padding: 0.6rem 1rem;
+	text-decoration: none;
+	transition: filter 0.2s var(--glc-ease), transform 0.2s var(--glc-ease);
+}
+.glc-card-wa:hover,
+.glc-card-wa:focus-visible {
+	filter: brightness(1.08);
+	transform: translateY(-1px);
 }
 
 /* ------------------------------------------------------- Single car page */

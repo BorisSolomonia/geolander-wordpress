@@ -28,6 +28,11 @@ class GLC_Settings {
 		'longitude'           => '44.7934697',
 		'payment_provider'    => '',      // '' = WhatsApp only | 'bog_ipay'
 		'payment_currency'    => 'USD',
+		// Headline price range. Single source of truth: the hero, SEO titles,
+		// llms.txt and the AutoRental schema all read these, so the advertised
+		// range can never drift between them again.
+		'price_min'           => '28',
+		'price_max'           => '120',
 		'bog_client_id'       => '',
 		'bog_client_secret'   => '',
 		// Google tags — paste IDs when campaigns are created.
@@ -94,6 +99,10 @@ class GLC_Settings {
 			__( 'Social', 'geolander' ) => [
 				'instagram' => __( 'Instagram URL', 'geolander' ),
 				'facebook'  => __( 'Facebook URL', 'geolander' ),
+			],
+			__( 'Pricing', 'geolander' ) => [
+				'price_min' => __( 'Headline price range — from (per day)', 'geolander' ),
+				'price_max' => __( 'Headline price range — to (per day)', 'geolander' ),
 			],
 			__( 'Payments', 'geolander' ) => [
 				'payment_provider'  => __( 'Payment provider (empty = WhatsApp requests, "bog_ipay" = BOG iPay)', 'geolander' ),

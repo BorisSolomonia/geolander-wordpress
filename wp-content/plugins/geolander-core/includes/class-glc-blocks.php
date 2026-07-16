@@ -157,18 +157,27 @@ class GLC_Blocks {
 					<span class="glc-chip"><?php echo esc_html( $seats . ' ' . glc_ui( 'seats' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( glc_ui( $fuel ?: 'gasoline' ) ); ?></span>
 				</div>
-				<div class="glc-card-price">
-					<?php if ( $quote ) : ?>
+				<?php
+				/*
+				 * No per-car price on cards by design: the fleet sells fit and the
+				 * trip, not a number, and the real price depends on season + rental
+				 * length anyway. The headline range lives on the front page, and the
+				 * exact seasonal quote lives on the car page. When the visitor has
+				 * already chosen dates we still show their real total — at that point
+				 * it's an answer to a question they asked, not a price tag.
+				 */
+				?>
+				<?php if ( $quote ) : ?>
+					<div class="glc-card-price">
 						<span class="glc-price glc-price--total"><?php echo esc_html( GLC_Format::money( $quote['total'] ) ); ?>
 							<span class="glc-price-unit"><?php echo esc_html( GLC_Format::money( $quote['per_day_avg'] ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
 						</span>
-					<?php else : ?>
-						<span class="glc-price"><?php echo esc_html( GLC_Format::money( $price_from ) ); ?>
-							<span class="glc-price-unit"><?php echo esc_html( glc_ui( 'from_per_day' ) ); ?></span>
-						</span>
-					<?php endif; ?>
-				</div>
+					</div>
+				<?php endif; ?>
 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
+				<a class="glc-card-wa" href="<?php echo esc_url( $url . '#glc-booking' ); ?>">
+					<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'ask_whatsapp' ) ); ?>
+				</a>
 			</div>
 		</article>
 		<?php

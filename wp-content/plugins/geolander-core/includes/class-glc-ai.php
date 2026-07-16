@@ -52,7 +52,12 @@ class GLC_AI {
 		$out .= "- Phone / WhatsApp: " . GLC_Settings::get( 'phone' ) . "\n";
 		$out .= "- Email: " . GLC_Settings::get( 'email' ) . "\n";
 		$out .= "- Hours: " . GLC_Settings::get( 'business_hours' ) . "\n";
-		$out .= "- Prices: from \$26 to \$90 per day (USD), seasonal + duration-tiered; long rentals cost less per day\n";
+		[ $glc_low, $glc_high ] = GLC_Format::range();
+		$out .= sprintf(
+			"- Prices: from \$%d to \$%d per day (USD), seasonal + duration-tiered; long rentals cost less per day\n",
+			$glc_low,
+			$glc_high
+		);
 		$out .= "- Requirements: minimum age 21, valid license (IDP recommended), passport\n";
 		$out .= "- Languages: English, Georgian, Russian, Ukrainian, Arabic, Chinese, French\n\n";
 

@@ -72,6 +72,20 @@ class GLC_Format {
 		return $d->format( self::rules( $locale )['date'] );
 	}
 
+	/** Headline range low/high as raw numbers, from settings. */
+	public static function range(): array {
+		return [
+			(float) GLC_Settings::get( 'price_min', 28 ),
+			(float) GLC_Settings::get( 'price_max', 120 ),
+		];
+	}
+
+	/** Headline range rendered for the active locale, e.g. "$28 – $120". */
+	public static function range_display( ?string $locale = null ): string {
+		[ $low, $high ] = self::range();
+		return self::money( $low, $locale ) . ' – ' . self::money( $high, $locale );
+	}
+
 	/** The rules the front-end JS needs so client-side updates match the server. */
 	public static function js_config( ?string $locale = null ): array {
 		$r = self::rules( $locale );

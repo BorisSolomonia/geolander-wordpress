@@ -119,6 +119,11 @@ return [
 	'contact_hours'    => 'Business hours',
 	'contact_address'  => 'Address',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => 'Come for the roads. Leave with the memories.',
+	'price_range_label' => 'All cars',
+	'ask_whatsapp'      => 'Ask on WhatsApp',
+
 	// 404 page.
 	'nf_code'          => '404',
 	'nf_text'          => 'Page not found. Go back',

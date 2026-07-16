@@ -135,6 +135,11 @@ return [
 	'contact_hours'   => 'სამუშაო საათები',
 	'contact_address' => 'მისამართი',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => 'ჩამოდით გზებისთვის. წაიღეთ მოგონებები.',
+	'price_range_label' => 'ყველა მანქანა',
+	'ask_whatsapp'      => 'დაგვიკავშირდით WhatsApp-ით',
+
 	// 404 page.
 	'nf_code'         => '404',
 	'nf_text'         => 'გვერდი ვერ მოიძებნა. დაბრუნდით',

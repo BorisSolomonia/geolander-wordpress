@@ -119,6 +119,11 @@ return [
 	'contact_hours'    => 'Horaires',
 	'contact_address'  => 'Adresse',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => 'Venez pour les routes. Repartez avec les souvenirs.',
+	'price_range_label' => 'Toutes les voitures',
+	'ask_whatsapp'      => 'Écrire sur WhatsApp',
+
 	// 404 page.
 	'nf_code'          => '404',
 	'nf_text'          => 'Page introuvable. Retour à',

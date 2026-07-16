@@ -119,6 +119,11 @@ return [
 	'contact_hours'    => 'ساعات العمل',
 	'contact_address'  => 'العنوان',
 
+	// Positioning + fleet card CTA.
+	'slogan'            => 'تعال من أجل الطرق. وارجع بالذكريات.',
+	'price_range_label' => 'جميع السيارات',
+	'ask_whatsapp'      => 'تواصل عبر واتساب',
+
 	// 404 page.
 	'nf_code'          => '404',
 	'nf_text'          => 'الصفحة غير موجودة. العودة إلى',
