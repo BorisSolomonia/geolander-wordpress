@@ -557,7 +557,16 @@ h1, h2, h3 { text-wrap: balance; }
 }
 .glc-card-title .glc-year { color: var(--glc-stone); font-weight: 500; }
 .glc-card a { text-decoration: none; }
-.glc-card a::after { content: ""; position: absolute; inset: 0; }
+/*
+ * Stretched link: makes the whole card open the car page.
+ *
+ * MUST stay scoped to the TITLE link. It was `.glc-card a::after`, which matched
+ * every anchor in the card — so the action buttons each got an invisible overlay
+ * covering the entire card, and the last one in the DOM swallowed all clicks
+ * (tapping WhatsApp silently opened the car page instead). If you add another
+ * link inside a card, it needs to sit above this overlay — see .glc-card-actions.
+ */
+.glc-card-title a::after { content: ""; position: absolute; inset: 0; }
 
 .glc-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .glc-chip {
@@ -609,6 +618,9 @@ h1, h2, h3 { text-wrap: balance; }
 	grid-template-columns: 1fr 1fr;
 	gap: 0.5rem;
 	margin-top: 0.8rem;
+	/* Sit above the title's stretched-link overlay, or it eats these clicks. */
+	position: relative;
+	z-index: 2;
 }
 .glc-card-actions > a {
 	align-items: center;
