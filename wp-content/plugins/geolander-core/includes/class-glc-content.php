@@ -28,6 +28,7 @@ class GLC_Content {
 		'car'   => [ 'body' ],
 		'place' => [ 'title', 'body' ],
 		'faq'   => [ 'title', 'body' ],
+		'city'  => [ 'title', 'body' ],
 	];
 
 	public static function init() {

@@ -109,6 +109,7 @@ return [
 	'quick_links'     => 'Liens rapides',
 	'contact_info'    => 'Coordonnées',
 	'follow_us'       => 'Suivez-nous',
+	'we_deliver'       => 'Livraison à',
 	'rights'          => 'Tous droits réservés.',
 
 	'contact_title'    => 'Contactez-nous',

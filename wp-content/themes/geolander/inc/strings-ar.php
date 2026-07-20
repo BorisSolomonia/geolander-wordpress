@@ -109,6 +109,7 @@ return [
 	'quick_links'     => 'روابط سريعة',
 	'contact_info'    => 'معلومات الاتصال',
 	'follow_us'       => 'تابعنا',
+	'we_deliver'       => 'نوصل إلى',
 	'rights'          => 'جميع الحقوق محفوظة.',
 
 	'contact_title'    => 'اتصل بنا',

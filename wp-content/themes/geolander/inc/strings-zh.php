@@ -109,6 +109,7 @@ return [
 	'quick_links'     => '快捷链接',
 	'contact_info'    => '联系方式',
 	'follow_us'       => '关注我们',
+	'we_deliver'       => '送车城市',
 	'rights'          => '版权所有。',
 
 	'contact_title'    => '联系我们',

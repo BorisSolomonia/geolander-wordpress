@@ -109,6 +109,7 @@ return [
 	'quick_links'     => 'Быстрые ссылки',
 	'contact_info'    => 'Контакты',
 	'follow_us'       => 'Мы в соцсетях',
+	'we_deliver'       => 'Доставка в города',
 	'rights'          => 'Все права защищены.',
 
 	'contact_title'    => 'Свяжитесь с нами',

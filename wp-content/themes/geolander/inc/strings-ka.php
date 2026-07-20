@@ -124,6 +124,7 @@ return [
 	'quick_links'     => 'სწრაფი ბმულები',
 	'contact_info'    => 'საკონტაქტო ინფო',
 	'follow_us'       => 'გამოგვყევით',
+	'we_deliver'       => 'მიწოდება ქალაქებში',
 	'rights'          => 'ყველა უფლება დაცულია.',
 
 	// Contact page.

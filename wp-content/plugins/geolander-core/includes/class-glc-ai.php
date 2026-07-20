@@ -76,6 +76,17 @@ class GLC_AI {
 			);
 		}
 
+		$cities = class_exists( 'GLC_City' ) ? GLC_City::all() : [];
+		if ( $cities ) {
+			$out .= "\n## Cities we deliver to\n\n";
+			$out .= "Geolander delivers rental cars (free) in these cities — each has a dedicated page with local airport and route details:\n";
+			foreach ( $cities as $city ) {
+				$air  = GLC_City::airport( $city->ID );
+				$code = $air['code'] ? ' (' . $air['code'] . ' airport)' : '';
+				$out .= sprintf( "- [%s](%s)%s\n", GLC_City::city_name( $city->ID ), get_permalink( $city ), $code );
+			}
+		}
+
 		$out .= "\n## Key pages\n\n";
 		$out .= "- [Fleet & live prices]({$home}fleet/)\n";
 		$out .= "- [Machine-readable price list]({$home}pricing.md)\n";

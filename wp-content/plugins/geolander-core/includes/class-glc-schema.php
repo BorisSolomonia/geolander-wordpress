@@ -50,6 +50,12 @@ class GLC_Schema {
 				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
 				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
 			] );
+		} elseif ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
+			$graph[] = GLC_City::schema( get_the_ID() );
+			$graph[] = self::breadcrumbs( [
+				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
+				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
+			] );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$graph[] = self::fleet_list();
 		} elseif ( is_front_page() ) {

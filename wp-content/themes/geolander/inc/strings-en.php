@@ -109,6 +109,7 @@ return [
 	'quick_links'     => 'Quick links',
 	'contact_info'    => 'Contact info',
 	'follow_us'       => 'Follow us',
+	'we_deliver'       => 'We deliver to',
 	'rights'          => 'All rights reserved.',
 
 	'contact_title'    => 'Contact us',

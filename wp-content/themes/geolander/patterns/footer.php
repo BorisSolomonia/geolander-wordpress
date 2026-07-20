@@ -47,6 +47,22 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'facebook' ) ); ?>" rel="noopener">Facebook</a></li>
 			</ul>
 		</div>
+		<?php
+		// Delivery coverage — tells visitors which cities we serve AND internally
+		// links the city landing pages (local-SEO signal). Only shows cities that
+		// actually exist, so the footer never lists a page that isn't published.
+		$glc_cities = class_exists( 'GLC_City' ) ? GLC_City::all() : [];
+		?>
+		<?php if ( $glc_cities ) : ?>
+			<div>
+				<h3><?php echo esc_html( glc_t( 'we_deliver' ) ); ?></h3>
+				<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+					<?php foreach ( $glc_cities as $glc_city ) : ?>
+						<li><a href="<?php echo esc_url( get_permalink( $glc_city ) ); ?>"><?php echo esc_html( GLC_City::city_name( $glc_city->ID ) ); ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
 	</div>
 	<div style="border-top:1px solid color-mix(in srgb, var(--glc-glacier) 6%, transparent);">
 		<p style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:1.1rem;font-size:0.78rem;color:var(--glc-stone);margin-block:0;">
