@@ -88,7 +88,13 @@ function glc_fleet_image( string $path, int $parent, string $alt ): int {
 	$att_id = media_handle_sideload( [ 'name' => $upload_name, 'tmp_name' => $tmp_name ], $parent );
 	if ( is_wp_error( $att_id ) ) {
 		@unlink( $tmp_name );
-		WP_CLI::warning( '  image failed ' . basename( $path ) . ': ' . $att_id->get_error_message() );
+		// Self-diagnosis: report free disk + inodes at the moment of failure, so
+		// the log itself shows whether it's a full disk, exhausted inodes, or
+		// something else entirely (permissions), instead of us guessing.
+		$dir  = wp_get_upload_dir()['basedir'];
+		$free = @disk_free_space( $dir );
+		$diag = $free !== false ? ' [free disk: ' . size_format( $free ) . ']' : '';
+		WP_CLI::warning( '  image failed ' . basename( $path ) . ': ' . $att_id->get_error_message() . $diag );
 		return 0;
 	}
 	update_post_meta( $att_id, 'glc_source_hash', $hash );
@@ -155,6 +161,11 @@ foreach ( $dirs as $dir ) {
 		continue;
 	}
 	$existing ? $updated++ : $created++;
+
+	// Default to available (bookable). Without this the meta is unset and the
+	// card renders the "unavailable / booked" veil. add_post_meta(unique) only
+	// sets it if absent, so it never overrides a later admin/car.json choice.
+	add_post_meta( $post_id, 'glc_available', true, true );
 
 	// Optional specs / pricing.
 	$json = $dir . '/car.json';
