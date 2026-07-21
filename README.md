@@ -1,7 +1,7 @@
 # Geolander WordPress
 
 Native WordPress rebuild of the Geolander rental platform. Adventure-immersive.
-"golden path" UX, Georgian UI / English vehicle content, structured-data-first.
+"golden path" UX, Georgian UI / English vehicle content, structured-data-first..
 
 ## Run locally
 
