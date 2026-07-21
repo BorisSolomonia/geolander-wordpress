@@ -1,0 +1,44 @@
+{
+  "vehicle_asset": {
+    "id": "RAV4-2016-LTD-GRY",
+    "make": "Toyota",
+    "model": "RAV4",
+    "year": 2016,
+    "trim": "Limited",
+    "color": {
+      "exterior": "Magnetic Gray Metallic",
+      "hex_approximation": "#595b5e"
+    },
+    "specifications": {
+      "engine": "2.5-Liter 4-Cylinder DOHC 16-Valve with Dual VVT-i",
+      "horsepower": 176,
+      "transmission": "6-speed Electronically Controlled automatic Transmission with intelligence (ECT-i)",
+      "drivetrain": "AWD",
+      "wheels": "18-inch SuperChrome alloy wheels"
+    },
+    "key_features": {
+      "exterior": [
+        "LED headlights, daytime running lights, and taillights",
+        "Height-adjustable power liftgate",
+        "Power tilt/slide moonroof with sunshade"
+      ],
+      "interior": [
+        "SofTex-trimmed 8-way power-adjustable driver's seat",
+        "Entune Premium Audio with Integrated Navigation and App Suite",
+        "Smart Key System with Push Button Start",
+        "Frameless auto-dimming rearview mirror with HomeLink"
+      ],
+      "safety": [
+        "Toyota Safety Sense P (TSS-P)",
+        "Blind Spot Monitor (BSM)",
+        "Rear Cross-Traffic Alert (RCTA)"
+      ]
+    },
+    "production_and_photography_metadata": {
+      "asset_type": "production_vehicle",
+      "paint_enhancement_requirements": "Enhance metallic flakes in the Magnetic Gray paint during post-production; manage reflections on the broad, flat side panels.",
+      "tire_treatment": "Apply matte tire dressing to avoid harsh highlights during exterior shots.",
+      "lighting_conditions": "Optimum capture in golden hour or overcast environments to prevent blowout on the 18-inch SuperChrome wheels and emphasize the deep gray tones."
+    }
+  }
+}
