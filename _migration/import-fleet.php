@@ -40,12 +40,22 @@ if ( ! is_dir( $base ) ) {
 	WP_CLI::error( "Folder not found: {$base}\nCreate _migration/fleet-import/ with one sub-folder per car, then re-run." );
 }
 
-/** Sideload one image file, de-duplicated by content hash. Returns attachment ID or 0. */
+/**
+ * Sideload one image, de-duplicated by SOURCE content hash, after optimizing it.
+ *
+ * Photos are downscaled to max 1920px and re-encoded as JPEG q82 before upload.
+ * Car photos shipped as PNG are ~5-10x larger than they need to be, which fills
+ * the uploads volume and slows the site; this makes every import small and fast
+ * regardless of the source format. The optimization happens in the system temp
+ * dir (/tmp), so only the final small JPEG lands on the uploads volume.
+ *
+ * @return int Attachment ID, or 0 on failure.
+ */
 function glc_fleet_image( string $path, int $parent, string $alt ): int {
 	if ( ! is_file( $path ) ) {
 		return 0;
 	}
-	$hash     = md5_file( $path );
+	$hash     = md5_file( $path ); // hash of the ORIGINAL, so re-runs skip duplicates
 	$existing = get_posts( [
 		'post_type'      => 'attachment',
 		'posts_per_page' => 1,
@@ -57,11 +67,27 @@ function glc_fleet_image( string $path, int $parent, string $alt ): int {
 	if ( $existing ) {
 		return (int) $existing[0];
 	}
-	$tmp = wp_tempnam( basename( $path ) );
-	copy( $path, $tmp );
-	$att_id = media_handle_sideload( [ 'name' => basename( $path ), 'tmp_name' => $tmp ], $parent );
+
+	// Optimize into /tmp; fall back to the original file if the editor can't.
+	$upload_name = basename( $path );
+	$tmp_name    = wp_tempnam( $upload_name );
+	copy( $path, $tmp_name );
+
+	$editor = wp_get_image_editor( $path );
+	if ( ! is_wp_error( $editor ) ) {
+		$editor->resize( 1920, 1920, false ); // shrink to fit 1920x1920; never upscales
+		$editor->set_quality( 82 );
+		$saved = $editor->save( wp_tempnam( 'glc-opt' ), 'image/jpeg' );
+		if ( ! is_wp_error( $saved ) && ! empty( $saved['path'] ) && filesize( $saved['path'] ) > 0 ) {
+			@unlink( $tmp_name );
+			$tmp_name    = $saved['path'];
+			$upload_name = pathinfo( basename( $path ), PATHINFO_FILENAME ) . '.jpg';
+		}
+	}
+
+	$att_id = media_handle_sideload( [ 'name' => $upload_name, 'tmp_name' => $tmp_name ], $parent );
 	if ( is_wp_error( $att_id ) ) {
-		@unlink( $tmp );
+		@unlink( $tmp_name );
 		WP_CLI::warning( '  image failed ' . basename( $path ) . ': ' . $att_id->get_error_message() );
 		return 0;
 	}
