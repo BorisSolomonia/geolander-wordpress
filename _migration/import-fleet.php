@@ -172,6 +172,30 @@ foreach ( $dirs as $dir ) {
 	// Images: sorted so a NN- prefix controls order; first = featured.
 	$files = glob( $dir . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', GLOB_BRACE ) ?: [];
 	sort( $files, SORT_NATURAL | SORT_FLAG_CASE );
+
+	// Replace this car's previously-imported photos before re-importing. The
+	// folder is the source of truth for the car's images, so a re-run should
+	// mirror it — and deleting the old (possibly huge PNG) files FIRST reclaims
+	// disk space so the re-import fits without growing the volume. Only touches
+	// importer-created attachments (tagged glc_source_hash) attached to this car.
+	if ( $files ) {
+		$old = get_posts( [
+			'post_type'      => 'attachment',
+			'post_parent'    => $post_id,
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'meta_key'       => 'glc_source_hash',
+		] );
+		foreach ( $old as $oid ) {
+			wp_delete_attachment( (int) $oid, true );
+		}
+		delete_post_meta( $post_id, 'glc_gallery' );
+		if ( $old ) {
+			WP_CLI::log( '    (replaced ' . count( $old ) . ' old photo(s))' );
+		}
+	}
+
 	$gallery = [];
 	foreach ( $files as $file ) {
 		$att = glc_fleet_image( $file, $post_id, $title );
