@@ -25,16 +25,23 @@ class GLC_Pricing {
 	];
 
 	/**
-	 * Legacy import shape → canonical shape.
+	 * Legacy import shape → canonical shape. Defensive, not the root cause.
 	 *
 	 * `_migration/cars.json` stores a season as
 	 * `{"period": "Apr 01 - Oct 31", "prices": {"days1To2": 50, …}}` while this
-	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. Imported verbatim the
-	 * keys never match, so season_for_date() finds nothing for EVERY car and
-	 * rate_range() silently collapses each AggregateOffer to the headline price —
-	 * or, when that is empty too, to zero. That is the root of the published
-	 * "$0/day". Normalising on read makes both shapes work, and keeps the fix
-	 * independent of whether the data is ever re-imported.
+	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. `import.php` does
+	 * convert between the two, so the original fleet is stored correctly — but
+	 * anything that writes `glc_pricing` straight from a JSON payload (as
+	 * `import-fleet.php` does) is one shape mismatch away from a season table
+	 * that silently matches nothing, which collapses every AggregateOffer to the
+	 * headline price or, when that is empty too, to zero.
+	 *
+	 * Normalising on READ means the engine cannot be broken by whichever shape
+	 * happens to be in the database, now or after a future import.
+	 *
+	 * The actual cause of the published "$0/day" was simpler and is fixed in
+	 * `import-fleet.php`: every sidecar is named `car.json.json`, the importer
+	 * looked for `car.json`, and so no pricing was ever applied at all.
 	 */
 	public static function normalize( $pricing ): array {
 		if ( ! is_array( $pricing ) ) {

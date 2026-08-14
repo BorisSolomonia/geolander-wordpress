@@ -167,17 +167,60 @@ foreach ( $dirs as $dir ) {
 	// sets it if absent, so it never overrides a later admin/car.json choice.
 	add_post_meta( $post_id, 'glc_available', true, true );
 
-	// Optional specs / pricing.
-	$json = $dir . '/car.json';
+	/*
+	 * Optional specs / pricing.
+	 *
+	 * THIS LOOKUP IS WHY EVERY IMPORTED CAR PUBLISHED "$0/day".
+	 *
+	 * Every sidecar file in _migration/fleet-import/ is actually named
+	 * "car.json.json" — the classic result of saving a file on Windows with
+	 * "hide extensions for known file types" enabled. This asked for "car.json",
+	 * found nothing, and silently carried on: no registration plate, no seasonal
+	 * pricing, no body type and no specs were ever applied to a single one of
+	 * those cars.
+	 *
+	 * Downstream, that produced the zero prices in Product schema and in
+	 * /pricing.md, the cars missing from the price list entirely, and the
+	 * "duplicate" records that could not be told apart because none of them had
+	 * a plate. One extra ".json".
+	 *
+	 * So: accept the obvious variants and — more importantly — WARN LOUDLY when a
+	 * folder has no sidecar at all, rather than failing silently.
+	 */
+	$json        = '';
 	$has_pricing = false;
-	if ( is_file( $json ) ) {
+	foreach ( [ '/car.json', '/car.json.json', '/car.JSON' ] as $glc_candidate ) {
+		if ( is_file( $dir . $glc_candidate ) ) {
+			$json = $dir . $glc_candidate;
+			break;
+		}
+	}
+	// Last resort: any *.json* in the folder that is not the shipped example.
+	if ( ! $json ) {
+		foreach ( glob( $dir . '/*.json*' ) ?: [] as $glc_candidate ) {
+			if ( false === stripos( basename( $glc_candidate ), '_EXAMPLE' ) ) {
+				$json = $glc_candidate;
+				break;
+			}
+		}
+	}
+
+	if ( $json ) {
 		$data = json_decode( (string) file_get_contents( $json ), true );
 		if ( is_array( $data ) ) {
 			glc_fleet_apply_json( $post_id, $data );
 			$has_pricing = ! empty( $data['pricing'] );
+			if ( 'car.json' !== basename( $json ) ) {
+				WP_CLI::log( sprintf( '  ↪ used %s (expected car.json — rename it to avoid confusion)', basename( $json ) ) );
+			}
 		} else {
-			WP_CLI::warning( "  car.json in {$title} is not valid JSON — skipped its specs." );
+			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON — skipped its specs.', basename( $json ), $title ) );
 		}
+	} else {
+		WP_CLI::warning( sprintf(
+			'  NO car.json in "%s" — this car gets no plate, no specs and NO PRICE. Do not publish it in that state.',
+			$title
+		) );
 	}
 
 	// Images: sorted so a NN- prefix controls order; first = featured.
