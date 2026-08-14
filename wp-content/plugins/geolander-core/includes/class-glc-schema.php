@@ -56,6 +56,11 @@ class GLC_Schema {
 				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
 				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
 			] );
+		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
+			$graph[] = self::guide( get_the_ID() );
+			$graph[] = self::breadcrumbs( [
+				[ get_permalink(), get_the_title() ],
+			] );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$graph[] = self::fleet_list();
 		} elseif ( is_front_page() ) {
@@ -194,6 +199,32 @@ class GLC_Schema {
 			'image'       => has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'full' ) : null,
 			'url'         => get_permalink( $post_id ),
 			'address'     => [ '@type' => 'PostalAddress', 'addressCountry' => 'GE' ],
+		];
+	}
+
+	private static function guide( int $post_id ): array {
+		$image = has_post_thumbnail( $post_id )
+			? get_the_post_thumbnail_url( $post_id, 'full' )
+			: get_theme_file_uri( 'assets/img/hero.jpg' );
+
+		return [
+			'@type'            => 'Article',
+			'@id'              => get_permalink( $post_id ) . '#article',
+			'headline'         => get_the_title( $post_id ),
+			'description'      => get_post_meta( $post_id, 'glc_seo_description_en', true )
+				?: GLC_Content::excerpt( $post_id, 40 ),
+			'image'            => $image,
+			'url'              => get_permalink( $post_id ),
+			'mainEntityOfPage' => [ '@id' => get_permalink( $post_id ) ],
+			'datePublished'    => get_the_date( DATE_W3C, $post_id ),
+			'dateModified'     => get_the_modified_date( DATE_W3C, $post_id ),
+			'inLanguage'       => 'en',
+			'author'           => [ '@id' => home_url( '/#business' ) ],
+			'publisher'        => [ '@id' => home_url( '/#business' ) ],
+			'about'            => [
+				'@type' => 'TouristDestination',
+				'name'  => get_post_meta( $post_id, 'glc_guide_route', true ),
+			],
 		];
 	}
 

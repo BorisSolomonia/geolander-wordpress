@@ -28,15 +28,25 @@ class GLC_SEO {
 	 */
 	public static function title( array $parts ): array {
 		$en = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
+		$custom_title = is_singular() && $en
+			? trim( (string) get_post_meta( get_queried_object_id(), 'glc_seo_title_en', true ) )
+			: '';
 
-		if ( is_singular( 'car' ) ) {
+		if ( $custom_title ) {
+			// Keep visible post titles natural while allowing each landing page
+			// to target one precise, non-overlapping search intent.
+			$parts['title'] = $custom_title;
+		} elseif ( is_singular( 'car' ) ) {
 			$price = (float) get_post_meta( get_the_ID(), 'glc_price_from', true );
 			$parts['title'] = $en
-				? sprintf( 'Rent %s in Tbilisi from $%d/day', get_the_title(), $price )
+				? ( $price > 0
+					? sprintf( 'Rent %s in Tbilisi from $%d/day', get_the_title(), $price )
+					: sprintf( '%s Rental in Tbilisi, Georgia', get_the_title() ) )
 				: sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) );
 		} elseif ( is_post_type_archive( 'car' ) ) {
+			$count = (int) ( wp_count_posts( 'car' )->publish ?? 0 );
 			$parts['title'] = $en
-				? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — 15 Real 4x4s from $%d/day', GLC_Format::range()[0] )
+				? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, GLC_Format::range()[0] )
 				: glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' );
 		} elseif ( is_post_type_archive( 'place' ) ) {
 			$parts['title'] = $en
@@ -87,13 +97,19 @@ class GLC_SEO {
 	private static function description(): string {
 		if ( is_singular() ) {
 			$post = get_queried_object();
+			$en   = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
+			$custom_description = $en
+				? trim( (string) get_post_meta( $post->ID, 'glc_seo_description_en', true ) )
+				: '';
+			if ( $custom_description ) {
+				return wp_html_excerpt( $custom_description, 158, '…' );
+			}
 			// Localized body/excerpt so the description matches the page's hreflang.
 			$text = class_exists( 'GLC_Content' )
 				? GLC_Content::excerpt( $post, 40 )
 				: ( $post->post_excerpt ?: wp_strip_all_tags( $post->post_content ) );
 			if ( is_singular( 'car' ) ) {
 				$price = (float) get_post_meta( $post->ID, 'glc_price_from', true );
-				$en    = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
 				// Localized pages must not advertise themselves in English: hreflang
 				// declares them e.g. Georgian, so an English description contradicts
 				// the page and reads badly in localized search results.
@@ -144,7 +160,10 @@ class GLC_SEO {
 		}
 
 		printf( '<meta name="description" content="%s" />' . "\n", esc_attr( $description ) );
-		printf( '<meta property="og:type" content="%s" />' . "\n", is_singular( 'car' ) ? 'product' : 'website' );
+		$og_type = is_singular( 'car' )
+			? 'product'
+			: ( is_singular() && get_post_meta( get_queried_object_id(), 'glc_guide_route', true ) ? 'article' : 'website' );
+		printf( '<meta property="og:type" content="%s" />' . "\n", esc_attr( $og_type ) );
 		printf( '<meta property="og:title" content="%s" />' . "\n", esc_attr( $title ) );
 		printf( '<meta property="og:description" content="%s" />' . "\n", esc_attr( $description ) );
 		printf( '<meta property="og:url" content="%s" />' . "\n", esc_url( $url ) );
