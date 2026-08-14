@@ -224,7 +224,12 @@ foreach ( $dirs as $dir ) {
 	}
 
 	// Images: sorted so a NN- prefix controls order; first = featured.
-	$files = glob( $dir . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', GLOB_BRACE ) ?: [];
+	// GLOB_BRACE is not available in the Alpine-based WP-CLI image used by
+	// docker-compose. Filter one portable glob instead, case-insensitively.
+	$files = array_values( array_filter(
+		glob( $dir . '/*' ) ?: [],
+		static fn( $file ) => is_file( $file ) && preg_match( '/\.(?:jpe?g|png|webp)$/i', $file )
+	) );
 	sort( $files, SORT_NATURAL | SORT_FLAG_CASE );
 
 	// Replace this car's previously-imported photos before re-importing. The
