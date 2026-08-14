@@ -11,11 +11,11 @@ FROM wordpress:php8.3-apache
 # layers), which trips "AH00534: apache2: Configuration error: More than one MPM
 # loaded" and crash-loops the container. Removing them at build time doesn't
 # help — the runtime puts them back. So we strip them at startup instead: this
-# wrapper runs after the entrypoint, immediately before Apache, and is wired in
-# as CMD at the end of this file. (Verified against Railway runtime logs.)
-RUN printf '#!/bin/sh\nrm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*\nexec apache2-foreground "$@"\n' \
-		> /usr/local/bin/geolander-start.sh \
-	&& chmod +x /usr/local/bin/geolander-start.sh
+# wrapper runs first, strips the conflicting modules, then delegates to the
+# official WordPress entrypoint so its web-root initialization still runs.
+RUN printf '#!/bin/sh\nrm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*\nexec docker-entrypoint.sh "$@"\n' \
+		> /usr/local/bin/geolander-entrypoint.sh \
+	&& chmod +x /usr/local/bin/geolander-entrypoint.sh
 
 # Bake our code into the WordPress source tree; the entrypoint copies it
 # to the web root on container start.
@@ -33,12 +33,22 @@ RUN { \
 	} > /etc/apache2/conf-available/railway.conf \
 	&& a2enconf railway
 
+# Bound mod_php/prefork memory, reject verified abusive bootstrap endpoints,
+# prevent PHP execution from the persistent uploads volume, and provide
+# localhost-only worker/cgroup diagnostics for `railway ssh` investigations.
+COPY docker/apache-production.conf /etc/apache2/conf-available/geolander-production.conf
+COPY docker/memory-snapshot.sh /usr/local/bin/geolander-memory-snapshot
+RUN chmod +x /usr/local/bin/geolander-memory-snapshot \
+	&& a2enmod status \
+	&& a2enconf geolander-production
+
 # Healthcheck endpoint that always returns 200. WordPress itself answers
 # "/" with a 302 (install screen or canonical redirect), which Railway's
 # healthcheck treats as failure. This confirms Apache + PHP are serving;
 # the entrypoint copies it to the web root alongside WordPress core.
 RUN echo '<?php http_response_code(200); header("Content-Type: text/plain"); echo "ok";' \
 	> /usr/src/wordpress/health.php
+COPY docker/apache-status /usr/src/wordpress/_internal-apache-status
 
 # WP-CLI for one-time content import and maintenance via `railway ssh`.
 RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
@@ -53,6 +63,6 @@ RUN { \
 		echo 'opcache.validate_timestamps = 0'; \
 	} > /usr/local/etc/php/conf.d/geolander.ini
 
-# Strip the runtime-re-enabled extra MPMs, then start Apache. Replaces the base
-# image's `CMD ["apache2-foreground"]`. The stock entrypoint still runs first.
-CMD ["geolander-start.sh"]
+# Strip runtime-re-enabled MPMs before the stock initializer and Apache start.
+ENTRYPOINT ["geolander-entrypoint.sh"]
+CMD ["apache2-foreground"]
