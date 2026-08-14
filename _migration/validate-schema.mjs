@@ -114,7 +114,12 @@ for (const [page, url] of PAGES) {
 	console.log(`\n${page} — ${url}`);
 	let html;
 	try {
-		html = await (await fetch(url)).text();
+		const res = await fetch(url, { redirect: 'follow' });
+		if (!res.ok) {
+			err(page, `HTTP ${res.status}`);
+			continue;
+		}
+		html = await res.text();
 	} catch (e) {
 		err(page, `fetch failed: ${e.message}`);
 		continue;
