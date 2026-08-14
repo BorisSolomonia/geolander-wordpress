@@ -3,7 +3,7 @@
 Native WordPress rebuild of the Geolander rental platform. Adventure-immersive.
 "golden path" UX, Georgian UI / English vehicle content, structured-data-first..
 
-## Run locally
+## Run locally.
 
 ```
 docker compose up -d wordpress db
