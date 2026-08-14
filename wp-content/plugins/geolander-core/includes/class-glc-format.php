@@ -72,12 +72,23 @@ class GLC_Format {
 		return $d->format( self::rules( $locale )['date'] );
 	}
 
-	/** Headline range low/high as raw numbers, from settings. */
+	/**
+	 * Headline range low/high as raw numbers.
+	 *
+	 * The floor is derived from the cheapest actually-bookable car rather than the
+	 * settings value, because the two had drifted: the fleet title tag advertised
+	 * "$26" while the hero and llms.txt said "$28". A visitor who clicks a "$26"
+	 * snippet and lands on "$28" has been handed a free reason to distrust the
+	 * site. This is the one place that can guarantee copy, title, schema
+	 * priceRange and llms.txt agree. The settings value stays as the fallback for
+	 * a fleet with no priced cars at all.
+	 */
 	public static function range(): array {
-		return [
-			(float) GLC_Settings::get( 'price_min', 28 ),
-			(float) GLC_Settings::get( 'price_max', 120 ),
-		];
+		$min = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_floor() : 0.0;
+		if ( $min <= 0 ) {
+			$min = (float) GLC_Settings::get( 'price_min', 28 );
+		}
+		return [ $min, (float) GLC_Settings::get( 'price_max', 120 ) ];
 	}
 
 	/** Headline range rendered for the active locale, e.g. "$28 – $120". */

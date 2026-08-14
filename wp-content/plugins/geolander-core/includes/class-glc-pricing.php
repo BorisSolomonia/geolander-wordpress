@@ -24,6 +24,96 @@ class GLC_Pricing {
 		'd31p'   => '31+',
 	];
 
+	/**
+	 * Legacy import shape → canonical shape.
+	 *
+	 * `_migration/cars.json` stores a season as
+	 * `{"period": "Apr 01 - Oct 31", "prices": {"days1To2": 50, …}}` while this
+	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. Imported verbatim the
+	 * keys never match, so season_for_date() finds nothing for EVERY car and
+	 * rate_range() silently collapses each AggregateOffer to the headline price —
+	 * or, when that is empty too, to zero. That is the root of the published
+	 * "$0/day". Normalising on read makes both shapes work, and keeps the fix
+	 * independent of whether the data is ever re-imported.
+	 */
+	public static function normalize( $pricing ): array {
+		if ( ! is_array( $pricing ) ) {
+			return [];
+		}
+
+		static $tier_alias = [
+			'days1To2'   => 'd1_2',
+			'days3To4'   => 'd3_4',
+			'days5To7'   => 'd5_7',
+			'days8To12'  => 'd8_12',
+			'days13To18' => 'd13_18',
+			'days19To30' => 'd19_30',
+			'days31Plus' => 'd31p',
+		];
+
+		$out = [];
+		foreach ( $pricing as $season ) {
+			if ( ! is_array( $season ) ) {
+				continue;
+			}
+
+			$rates = $season['rates'] ?? $season['prices'] ?? [];
+			if ( is_array( $rates ) ) {
+				foreach ( $tier_alias as $legacy => $canonical ) {
+					if ( isset( $rates[ $legacy ] ) && ! isset( $rates[ $canonical ] ) ) {
+						$rates[ $canonical ] = $rates[ $legacy ];
+					}
+				}
+			}
+
+			$from  = (string) ( $season['from'] ?? '' );
+			$to    = (string) ( $season['to'] ?? '' );
+			$label = (string) ( $season['label'] ?? $season['period'] ?? '' );
+
+			// "Apr 01 - Oct 31" → from "04-01", to "10-31".
+			if ( ( '' === $from || '' === $to ) && $label
+				&& preg_match( '/^\s*([A-Za-z]{3,})\s+(\d{1,2})\s*[-–]\s*([A-Za-z]{3,})\s+(\d{1,2})\s*$/', $label, $m ) ) {
+				$month = static function ( string $name ): string {
+					$ts = strtotime( $name . ' 1 2001' );
+					return $ts ? gmdate( 'm', $ts ) : '';
+				};
+				$mf = $month( $m[1] );
+				$mt = $month( $m[3] );
+				if ( '' !== $mf && '' !== $mt ) {
+					$from = $mf . '-' . str_pad( $m[2], 2, '0', STR_PAD_LEFT );
+					$to   = $mt . '-' . str_pad( $m[4], 2, '0', STR_PAD_LEFT );
+				}
+			}
+
+			$out[] = [
+				'label' => $label,
+				'from'  => $from,
+				'to'    => $to,
+				'rates' => is_array( $rates ) ? $rates : [],
+			];
+		}
+		return $out;
+	}
+
+	/** The car's season table, normalised. */
+	public static function seasons( int $car_id ): array {
+		return self::normalize( get_post_meta( $car_id, 'glc_pricing', true ) );
+	}
+
+	/**
+	 * Is this car genuinely priced?
+	 *
+	 * Nothing that advertises a price — schema, meta description, /pricing.md,
+	 * /llms.txt, the fleet card — may render a number for a car where this
+	 * returns false. No price is a legitimate state; a price of zero is a false
+	 * statement about the business, and it was being served to search engines
+	 * and to every AI crawler robots.txt invites.
+	 */
+	public static function is_priced( int $car_id ): bool {
+		[ $low, $high ] = self::rate_range( $car_id );
+		return $low > 0 && $high > 0;
+	}
+
 	public static function tier_for_days( int $days ): string {
 		return match ( true ) {
 			$days <= 2  => 'd1_2',
@@ -79,8 +169,8 @@ class GLC_Pricing {
 			return null;
 		}
 
-		$pricing = get_post_meta( $car_id, 'glc_pricing', true );
-		if ( ! is_array( $pricing ) || ! $pricing ) {
+		$pricing = self::seasons( $car_id );
+		if ( ! $pricing ) {
 			return null;
 		}
 
@@ -115,23 +205,56 @@ class GLC_Pricing {
 		];
 	}
 
-	/** Lowest and highest day-rate across all seasons/tiers (for schema offers). */
+	/**
+	 * Lowest and highest day-rate across all seasons/tiers (for schema offers).
+	 *
+	 * Returns [0.0, 0.0] when the car has no usable rate anywhere — callers MUST
+	 * treat that as "unpriced" and omit the price entirely rather than printing
+	 * a zero. Use is_priced() for that check.
+	 */
 	public static function rate_range( int $car_id ): array {
-		$pricing = get_post_meta( $car_id, 'glc_pricing', true );
-		$rates   = [];
-		if ( is_array( $pricing ) ) {
-			foreach ( $pricing as $season ) {
-				foreach ( (array) ( $season['rates'] ?? [] ) as $r ) {
-					if ( (float) $r > 0 ) {
-						$rates[] = (float) $r;
-					}
+		$rates = [];
+		foreach ( self::seasons( $car_id ) as $season ) {
+			foreach ( (array) ( $season['rates'] ?? [] ) as $r ) {
+				if ( (float) $r > 0 ) {
+					$rates[] = (float) $r;
 				}
 			}
 		}
 		if ( ! $rates ) {
 			$from = (float) get_post_meta( $car_id, 'glc_price_from', true );
-			return [ $from, $from ];
+			return $from > 0 ? [ $from, $from ] : [ 0.0, 0.0 ];
 		}
 		return [ min( $rates ), max( $rates ) ];
+	}
+
+	/**
+	 * The cheapest day-rate across the whole published fleet — the single source
+	 * of truth for the advertised "from $N/day" floor.
+	 *
+	 * The site previously advertised $26 in one place and $28 in another because
+	 * the title tag read a settings value while the copy read another. Deriving
+	 * it from the cheapest actually-bookable car means the snippet, the hero, the
+	 * schema priceRange and llms.txt cannot disagree again.
+	 */
+	public static function fleet_floor(): float {
+		static $floor = null;
+		if ( null !== $floor ) {
+			return $floor;
+		}
+		$lows = [];
+		foreach ( get_posts( [
+			'post_type'      => 'car',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		] ) as $car_id ) {
+			[ $low ] = self::rate_range( (int) $car_id );
+			if ( $low > 0 ) {
+				$lows[] = $low;
+			}
+		}
+		$floor = $lows ? min( $lows ) : 0.0;
+		return $floor;
 	}
 }

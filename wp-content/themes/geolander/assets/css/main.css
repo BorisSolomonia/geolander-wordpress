@@ -1174,3 +1174,12 @@ body.single-car .glc-wa-bubble { display: none; }
 	color: var(--glc-ink-text);
 }
 .glc-light h2, .glc-light h3 { color: var(--glc-ink-text); }
+
+/* Breadcrumbs — visible trail matching the BreadcrumbList JSON-LD.
+   City pages emitted the markup with nothing on the page; car and place pages
+   render their own inline version. */
+.glc-breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.8rem;color:var(--glc-stone,#6b6b66);}
+.glc-breadcrumbs a{color:inherit;text-decoration:none;}
+.glc-breadcrumbs a:hover,.glc-breadcrumbs a:focus-visible{text-decoration:underline;}
+.glc-breadcrumbs [aria-current="page"]{color:var(--glc-ink,#14140f);font-weight:600;}
+.glc-breadcrumb-sep{opacity:.45;}

@@ -4,6 +4,13 @@
 defined( 'ABSPATH' ) || exit;
 
 return [
+	'from' => '起',
+	'nav_locations' => '城市',
+	'nav_where_drive' => '可行驶路线',
+	'nav_guides' => '指南',
+	'nav_trust' => '信任与条款',
+	'breadcrumb' => '导航路径',
+	'price_on_request' => '价格面议',
 	'nav_home'        => '首页',
 	'nav_fleet'       => '我们的车队',
 	'nav_places'      => '景点推荐',

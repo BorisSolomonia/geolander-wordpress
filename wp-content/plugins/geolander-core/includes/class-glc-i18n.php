@@ -137,6 +137,25 @@ class GLC_I18n {
 	}
 
 	public static function hooks() {
+		/*
+		 * P0 — the localized front page was in an infinite redirect loop.
+		 *
+		 * boot() strips the locale prefix, so a request for /ru/ reaches WP as "/".
+		 * localize_url() then filters home_url('/') to return "/ru/". Core's
+		 * redirect_canonical() computes the front page canonical as home_url('/') —
+		 * now "/ru/" — compares it with the stripped request path "/", finds a
+		 * mismatch and redirects to /ru/, which is stripped to "/" again. Loop.
+		 *
+		 * Every locale SUB-page was fine, because its permalink already carries the
+		 * prefix; only the six localized homepages failed — which is exactly the set
+		 * that every page's hreflang alternates point at. GLC_City already applies
+		 * this same guard for its custom rewrite; the front page never got one.
+		 *
+		 * Scoped to the front page so canonical redirects keep working everywhere
+		 * else, and only registered on non-default locales (hooks() runs for all,
+		 * but on 'en' localize_url() is a no-op so the mismatch cannot arise).
+		 */
+		add_filter( 'redirect_canonical', fn( $redirect ) => is_front_page() ? false : $redirect );
 		add_filter( 'home_url', [ __CLASS__, 'localize_url' ], 10, 2 );
 		add_filter( 'language_attributes', [ __CLASS__, 'language_attributes' ] );
 		add_action( 'wp_head', [ __CLASS__, 'hreflang' ], 1 );

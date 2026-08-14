@@ -15,9 +15,29 @@ class GLC_SEO {
 		// Trim sitemap noise: no author archives, no unused core taxonomy.
 		add_filter( 'wp_sitemaps_add_provider', fn( $provider, $name ) => 'users' === $name ? false : $provider, 10, 2 );
 		add_filter( 'wp_sitemaps_taxonomies', function ( $taxonomies ) {
-			unset( $taxonomies['category'], $taxonomies['post_tag'] );
+			/*
+			 * Core's category/post_tag were already dropped, but the three custom
+			 * taxonomies stayed in. With ~15 cars across ~5 brands and 2 body types,
+			 * plus ~6 place regions — and every one of them multiplied by 7 locales —
+			 * these archives are near-duplicates of /fleet/ and /places/ with no
+			 * unique title, copy or intent. That is a large slice of the crawlable
+			 * surface spent on pages that cannot win anything.
+			 *
+			 * They stay crawlable and followed (so internal equity still flows and
+			 * the cars remain reachable) but leave the sitemap and carry noindex —
+			 * see robots_archives(). Revisit /body-type/suv/ specifically once a real
+			 * 4x4 category page exists: it is a latent landing page, not junk.
+			 */
+			unset(
+				$taxonomies['category'],
+				$taxonomies['post_tag'],
+				$taxonomies['car_brand'],
+				$taxonomies['car_body_type'],
+				$taxonomies['place_region']
+			);
 			return $taxonomies;
 		} );
+		add_filter( 'wp_robots', [ __CLASS__, 'robots_archives' ] );
 		add_filter( 'robots_txt', [ __CLASS__, 'robots' ] );
 		add_action( 'wp_head', [ __CLASS__, 'gtag' ], 8 );
 	}
@@ -37,29 +57,64 @@ class GLC_SEO {
 			// to target one precise, non-overlapping search intent.
 			$parts['title'] = $custom_title;
 		} elseif ( is_singular( 'car' ) ) {
-			$price = (float) get_post_meta( get_the_ID(), 'glc_price_from', true );
+			// Price the title from the real rate table, and never print a zero:
+			// glc_price_from is empty on every imported car, which is exactly how
+			// "$0/day" reached live meta descriptions.
+			[ $price ] = GLC_Pricing::rate_range( get_the_ID() );
 			$parts['title'] = $en
 				? ( $price > 0
 					? sprintf( 'Rent %s in Tbilisi from $%d/day', get_the_title(), $price )
 					: sprintf( '%s Rental in Tbilisi, Georgia', get_the_title() ) )
-				: sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) );
+				: ( $price > 0
+					? sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) )
+					: sprintf( '%s — %s', get_the_title(), glc_ui( 'booking_title' ) ) );
 		} elseif ( is_post_type_archive( 'car' ) ) {
+			// "Real" is a trust word and must not sit beside an unverified count or
+			// a zero floor.
 			$count = (int) ( wp_count_posts( 'car' )->publish ?? 0 );
+			$floor = (float) GLC_Format::range()[0];
 			$parts['title'] = $en
-				? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, GLC_Format::range()[0] )
+				? ( $floor > 0
+					? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, $floor )
+					: sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s', $count ) )
 				: glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' );
 		} elseif ( is_post_type_archive( 'place' ) ) {
+			// Was hard-coded "36 Destinations" — silently false the moment a place
+			// is added or removed.
+			$places = (int) ( wp_count_posts( 'place' )->publish ?? 0 );
 			$parts['title'] = $en
-				? 'Places to Visit in Georgia by Car — 36 Destinations'
+				? sprintf( 'Places to Visit in Georgia by Car — %d Destinations', $places )
 				: glc_ui( 'places_title' ) . ' — ' . glc_ui( 'places_subtitle' );
 		} elseif ( is_front_page() ) {
 			// Front page has no separate 'site' part — brand goes inline.
+			$floor = (float) GLC_Format::range()[0];
 			$parts['title'] = $en
-				? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', GLC_Format::range()[0] )
+				? ( $floor > 0
+					? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', $floor )
+					: 'Car Rental in Tbilisi, Georgia — 4x4 Rental | Geolander' )
 				: glc_ui( 'hero_title' ) . ' | Geolander';
 			unset( $parts['tagline'] );
 		}
 		return $parts;
+	}
+
+	/**
+	 * noindex, follow on the thin taxonomy archives and on paginated / search
+	 * results — "follow" so the cars they list stay reachable and internal equity
+	 * keeps flowing, "noindex" because none of them is a page anyone should land
+	 * on from search.
+	 */
+	public static function robots_archives( array $robots ): array {
+		$thin = is_tax( [ 'car_brand', 'car_body_type', 'place_region' ] )
+			|| is_search()
+			|| is_paged();
+
+		if ( $thin ) {
+			$robots['noindex'] = true;
+			$robots['follow']  = true;
+			unset( $robots['index'] );
+		}
+		return $robots;
 	}
 
 	/**
@@ -109,7 +164,26 @@ class GLC_SEO {
 				? GLC_Content::excerpt( $post, 40 )
 				: ( $post->post_excerpt ?: wp_strip_all_tags( $post->post_content ) );
 			if ( is_singular( 'car' ) ) {
-				$price = (float) get_post_meta( $post->ID, 'glc_price_from', true );
+				// Same guard as the title: an unpriced car gets a description that
+				// simply omits the price rather than advertising "from $0/day".
+				[ $price ] = GLC_Pricing::rate_range( $post->ID );
+				if ( $price <= 0 ) {
+					$text = $en
+						? sprintf(
+							'Rent a %s in Tbilisi. 4x4, full insurance, free airport delivery. Ask on WhatsApp for an exact seasonal quote. %s',
+							get_the_title( $post ),
+							$text
+						)
+						: sprintf(
+							'%s — %s. %s, %s. %s',
+							get_the_title( $post ),
+							glc_ui( 'booking_title' ),
+							glc_ui( 'trust_insurance' ),
+							glc_ui( 'trust_delivery' ),
+							$text
+						);
+					return wp_html_excerpt( trim( $text ), 158, '…' );
+				}
 				// Localized pages must not advertise themselves in English: hreflang
 				// declares them e.g. Georgian, so an English description contradicts
 				// the page and reads badly in localized search results.

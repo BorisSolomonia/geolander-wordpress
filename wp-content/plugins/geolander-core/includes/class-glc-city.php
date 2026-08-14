@@ -107,15 +107,50 @@ class GLC_City {
 	 * GLC_Schema::output() so all JSON-LD stays in one @graph.
 	 */
 	public static function schema( int $id ): array {
-		return [
+		$city = self::city_name( $id );
+		$air  = self::airport( $id );
+
+		/*
+		 * The airport name and IATA code were already stored on every city and
+		 * never used anywhere. Airport intent is one of the highest-value clusters
+		 * in car rental, and an explicit IATA code (TBS / BUS / KUT) is a strong
+		 * disambiguation signal for search and AI grounding alike — which matters
+		 * here, because the unqualified word "Georgia" retrieves the US state.
+		 */
+		$area = [ [ '@type' => 'City', 'name' => $city ] ];
+		if ( $air['name'] || $air['code'] ) {
+			$area[] = array_filter( [
+				'@type'    => 'Airport',
+				'name'     => $air['name'] ?: null,
+				'iataCode' => $air['code'] ?: null,
+			] );
+		}
+
+		$phone = class_exists( 'GLC_Settings' ) ? GLC_Settings::get( 'phone' ) : '';
+
+		// No per-city `offers`: the rate is identical everywhere, so a per-city
+		// price would assert a distinction that does not exist. Fabricated
+		// granularity is worse than none.
+		return array_filter( [
 			'@type'       => 'Service',
 			'@id'         => get_permalink( $id ) . '#service',
 			'serviceType' => 'Car rental',
 			'name'        => get_the_title( $id ),
 			'url'         => get_permalink( $id ),
 			'provider'    => [ '@id' => home_url( '/#business' ) ],
-			'areaServed'  => [ '@type' => 'City', 'name' => get_the_title( $id ) === '' ? '' : self::city_name( $id ) ],
-		];
+			'areaServed'  => $area,
+			'availableChannel' => $phone ? [
+				'@type'        => 'ServiceChannel',
+				'serviceUrl'   => get_permalink( $id ),
+				'servicePhone' => $phone,
+			] : null,
+			'hoursAvailable' => [
+				'@type'     => 'OpeningHoursSpecification',
+				'dayOfWeek' => [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ],
+				'opens'     => '00:00',
+				'closes'    => '23:59',
+			],
+		] );
 	}
 
 	/** The bare city name (title minus the "Car Rental in " marketing prefix). */

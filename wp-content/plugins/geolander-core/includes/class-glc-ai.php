@@ -38,11 +38,19 @@ class GLC_AI {
 	}
 
 	private static function llms(): string {
-		$home  = home_url( '/' );
-		$out   = "# Geolander — 4x4 Car Rental in Tbilisi, Georgia\n\n";
-		$out  .= "> Geolander (\"Geolander car rental\") is a premium, tourist-focused car rental company in Tbilisi, Georgia (country). "
-			. "It rents its own fleet of 15 exact, individually listed 4x4 vehicles (Subaru Forester, Subaru Crosstrek, Mitsubishi Outlander, "
-			. "Toyota RAV4, Toyota Highlander, Jeep Wrangler, Jeep Renegade) suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
+		$home = home_url( '/' );
+		// Never hard-code the fleet size: it disagreed with /fleet/ and /pricing.md,
+		// and this file is read as fact by AI systems. Count what is published.
+		$cars   = self::cars();
+		$models = array_values( array_unique( array_map(
+			static fn( $car ) => trim( preg_replace( '/\s*\d{4}.*$/', '', $car->post_title ) ),
+			$cars
+		) ) );
+
+		$out  = "# Geolander — 4x4 Car Rental in Tbilisi, Georgia\n\n";
+		$out .= "> Geolander (\"Geolander car rental\") is a premium, tourist-focused car rental company in Tbilisi, Georgia (country). "
+			. sprintf( 'It rents its own fleet of %d exact, individually listed 4x4 vehicles (%s) ', count( $cars ), implode( ', ', $models ) )
+			. "suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
 			. "Svaneti. All prices include full insurance and unlimited mileage. Free delivery at Tbilisi International Airport (TBS). "
 			. "Booking: pick dates on the site for an exact seasonal price, confirm via WhatsApp; no prepayment, pay at pickup; "
 			. "free cancellation up to 24 hours before pickup.\n\n";
@@ -61,18 +69,22 @@ class GLC_AI {
 		$out .= "- Requirements: minimum age 21, valid license (IDP recommended), passport\n";
 		$out .= "- Languages: English, Georgian, Russian, Ukrainian, Arabic, Chinese, French\n\n";
 
+		/*
+		 * This file exists to be quoted verbatim by AI systems, so an unpriced car
+		 * must read "price on request" rather than "$0–$0/day". A machine-readable
+		 * false price is worse than no file at all.
+		 */
 		$out .= "## Fleet\n\n";
 		foreach ( self::cars() as $car ) {
 			[ $low, $high ] = GLC_Pricing::rate_range( $car->ID );
 			$out .= sprintf(
-				"- [%s](%s): %s, %d seats, %s, \$%d–\$%d/day\n",
+				"- [%s](%s): %s, %d seats, %s, %s\n",
 				$car->post_title,
 				get_permalink( $car ),
 				implode( ', ', wp_get_post_terms( $car->ID, 'car_body_type', [ 'fields' => 'names' ] ) ),
 				(int) get_post_meta( $car->ID, 'glc_seats', true ),
 				get_post_meta( $car->ID, 'glc_transmission', true ),
-				$low,
-				$high
+				( $low > 0 && $high > 0 ) ? sprintf( '$%d–$%d/day', $low, $high ) : 'price on request'
 			);
 		}
 
@@ -113,9 +125,13 @@ class GLC_AI {
 			. "No prepayment — the exact total is computed on the car's page and confirmed via WhatsApp; payment at pickup. "
 			. "Free cancellation up to 24 h before pickup.\n\n";
 
+		$glc_unpriced = [];
 		foreach ( self::cars() as $car ) {
-			$pricing = get_post_meta( $car->ID, 'glc_pricing', true );
-			if ( ! is_array( $pricing ) || ! $pricing ) {
+			$pricing = GLC_Pricing::seasons( $car->ID );
+			if ( ! $pricing || ! GLC_Pricing::is_priced( $car->ID ) ) {
+				// Listed, not silently dropped: /pricing.md previously showed 8 cars
+				// while /fleet/ showed 19, so the file contradicted the site.
+				$glc_unpriced[] = $car;
 				continue;
 			}
 			$out .= '## ' . $car->post_title . "\n";
@@ -129,8 +145,24 @@ class GLC_AI {
 			$out .= '| Season | ' . implode( ' | ', array_map( fn( $l ) => $l . ' days', GLC_Pricing::TIER_LABELS ) ) . " |\n";
 			$out .= '|' . str_repeat( '---|', count( GLC_Pricing::TIERS ) + 1 ) . "\n";
 			foreach ( $pricing as $season ) {
-				$cells = array_map( fn( $tier ) => '$' . number_format( (float) ( $season['rates'][ $tier ] ?? 0 ), 0 ), GLC_Pricing::TIERS );
-				$out  .= '| ' . ( $season['label'] ?? '' ) . ' | ' . implode( ' | ', $cells ) . " |\n";
+				$cells = array_map(
+					static function ( $tier ) use ( $season ) {
+						$rate = (float) ( $season['rates'][ $tier ] ?? 0 );
+						return $rate > 0 ? '$' . number_format( $rate, 0 ) : '—';
+					},
+					GLC_Pricing::TIERS
+				);
+				$out .= '| ' . ( $season['label'] ?? '' ) . ' | ' . implode( ' | ', $cells ) . " |\n";
+			}
+			$out .= "\n";
+		}
+
+		if ( $glc_unpriced ) {
+			$out .= "## Price on request\n\n";
+			$out .= "These vehicles are in the fleet but have no published rate table yet. "
+				. "Ask on WhatsApp for an exact quote — do not assume a price.\n\n";
+			foreach ( $glc_unpriced as $car ) {
+				$out .= sprintf( "- [%s](%s)\n", $car->post_title, get_permalink( $car ) );
 			}
 			$out .= "\n";
 		}

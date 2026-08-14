@@ -8,6 +8,13 @@
 defined( 'ABSPATH' ) || exit;
 
 return [
+	'from' => 'დან',
+	'nav_locations' => 'ლოკაციები',
+	'nav_where_drive' => 'სად შეგიძლიათ მგზავრობა',
+	'nav_guides' => 'გზამკვლევები',
+	'nav_trust' => 'ნდობა და პირობები',
+	'breadcrumb' => 'ნავიგაცია',
+	'price_on_request' => 'ფასი მოთხოვნით',
 	// Navigation.
 	'nav_home'        => 'მთავარი',
 	'nav_fleet'       => 'ჩვენი ავტოპარკი',

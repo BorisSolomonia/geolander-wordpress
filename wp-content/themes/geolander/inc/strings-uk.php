@@ -4,6 +4,13 @@
 defined( 'ABSPATH' ) || exit;
 
 return [
+	'from' => 'від',
+	'nav_locations' => 'Міста',
+	'nav_where_drive' => 'Де можна їздити',
+	'nav_guides' => 'Путівники',
+	'nav_trust' => 'Довіра та умови',
+	'breadcrumb' => 'Навігація',
+	'price_on_request' => 'Ціна за запитом',
 	'nav_home'        => 'Головна',
 	'nav_fleet'       => 'Наш автопарк',
 	'nav_places'      => 'Що подивитися',

@@ -178,12 +178,16 @@ class GLC_Blocks {
 				</div>
 				<?php
 				/*
-				 * No per-car price on cards by design: the fleet sells fit and the
-				 * trip, not a number, and the real price depends on season + rental
-				 * length anyway. The headline range lives on the front page, and the
-				 * exact seasonal quote lives on the car page. When the visitor has
-				 * already chosen dates we still show their real total — at that point
-				 * it's an answer to a question they asked, not a price tag.
+				 * The fleet sells fit and the trip, not a number — but the archive's
+				 * own title tag advertises "from $N/day", and the page was answering
+				 * the price question with silence. A price-shopper arriving from that
+				 * snippet found no price anywhere, which is a mismatch between promise
+				 * and page rather than restraint.
+				 *
+				 * With dates chosen: show their real total (an answer to a question
+				 * they asked). Without dates: show this car's honest "from" floor —
+				 * and nothing at all when it has no rate table, because a zero is a
+				 * false price, not a missing one.
 				 */
 				?>
 				<?php if ( $quote ) : ?>
@@ -192,6 +196,13 @@ class GLC_Blocks {
 							<span class="glc-price-unit"><?php echo esc_html( GLC_Format::money( $quote['per_day_avg'] ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
 						</span>
 					</div>
+				<?php else : ?>
+					<?php [ $glc_low ] = GLC_Pricing::rate_range( $id ); ?>
+					<?php if ( $glc_low > 0 ) : ?>
+						<div class="glc-card-price">
+							<span class="glc-price"><?php echo esc_html( glc_ui( 'from' ) ); ?> <?php echo esc_html( GLC_Format::money( $glc_low ) ); ?><span class="glc-price-unit"><?php echo esc_html( glc_ui( 'per_day' ) ); ?></span></span>
+						</div>
+					<?php endif; ?>
 				<?php endif; ?>
 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
 				<?php $glc_wa = self::whatsapp_link( $car ); ?>

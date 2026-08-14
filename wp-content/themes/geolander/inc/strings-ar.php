@@ -4,6 +4,13 @@
 defined( 'ABSPATH' ) || exit;
 
 return [
+	'from' => 'من',
+	'nav_locations' => 'المدن',
+	'nav_where_drive' => 'أين يمكنك القيادة',
+	'nav_guides' => 'أدلة',
+	'nav_trust' => 'الثقة والشروط',
+	'breadcrumb' => 'مسار التنقل',
+	'price_on_request' => 'السعر عند الطلب',
 	'nav_home'        => 'الرئيسية',
 	'nav_fleet'       => 'أسطولنا',
 	'nav_places'      => 'أماكن للزيارة',

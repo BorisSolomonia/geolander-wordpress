@@ -4,6 +4,13 @@
 defined( 'ABSPATH' ) || exit;
 
 return [
+	'from' => 'from',
+	'nav_locations' => 'Locations',
+	'nav_where_drive' => 'Where you can drive',
+	'nav_guides' => 'Guides',
+	'nav_trust' => 'Trust & policies',
+	'breadcrumb' => 'Breadcrumb',
+	'price_on_request' => 'Price on request',
 	'nav_home'        => 'Home',
 	'nav_fleet'       => 'Our Fleet',
 	'nav_places'      => 'Places to Visit',

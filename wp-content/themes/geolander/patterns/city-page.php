@@ -15,6 +15,15 @@ $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::u
 ?>
 <main style="width:min(100% - 2.5rem, 900px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
 
+	<?php
+	// City pages emitted BreadcrumbList markup with no visible breadcrumb, while
+	// car and place pages already had one. Rendered from GLC_Schema::current_trail(),
+	// the same source the JSON-LD reads, so markup and page cannot disagree.
+	if ( class_exists( 'GLC_Schema' ) ) {
+		echo GLC_Schema::breadcrumb_html(); // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+	?>
+
 	<?php if ( has_post_thumbnail( $glc_id ) ) : ?>
 		<div style="border-radius:var(--glc-radius);overflow:clip;aspect-ratio:21/9;">
 			<?php the_post_thumbnail( 'glc-hero', [ 'style' => 'width:100%;height:100%;object-fit:cover;', 'fetchpriority' => 'high' ] ); ?>
