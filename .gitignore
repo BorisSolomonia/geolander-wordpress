@@ -6,3 +6,4 @@ docs/*.png
 # OS noise
 Thumbs.db
 .DS_Store
+docs/seo/_to_delete/

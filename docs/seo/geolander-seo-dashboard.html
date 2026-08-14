@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="#2a78d6,#eb6834">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geolander — SEO Executive Dashboard</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --surface-0:#f4f4f2; --surface-1:#fcfcfb; --surface-2:#ececea;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#7a7975;
+    --rule:#dedcd6;
+    --series-1:#2a78d6; --series-2:#eb6834;
+    --crit:#c0392b; --warn:#b8860b; --good:#1baf7a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      --surface-0:#111110; --surface-1:#1a1a19; --surface-2:#242422;
+      --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8f8e85;
+      --rule:#35342f;
+      --series-1:#3987e5; --series-2:#d95926;
+      --crit:#e66767; --warn:#c98500; --good:#199e70;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface-0);color:var(--text-primary);
+    font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 72px}
+  header{border-bottom:1px solid var(--rule);padding-bottom:20px;margin-bottom:28px}
+  h1{font-size:1.6rem;margin:0 0 6px;letter-spacing:-.015em}
+  .sub{color:var(--text-secondary);font-size:.92rem;margin:0}
+  .flag{display:inline-block;margin-top:12px;padding:5px 10px;border-radius:6px;
+    background:var(--surface-2);border:1px solid var(--rule);
+    font-size:.78rem;color:var(--text-secondary);font-weight:600;letter-spacing:.02em}
+  h2{font-size:1.02rem;margin:38px 0 4px;letter-spacing:-.005em}
+  .note{color:var(--text-muted);font-size:.83rem;margin:0 0 14px}
+  section{background:var(--surface-1);border:1px solid var(--rule);border-radius:12px;
+    padding:20px 22px;margin-bottom:8px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+  .tile{background:var(--surface-1);border:1px solid var(--rule);border-radius:12px;padding:16px 18px}
+  .tile .n{font-size:2rem;font-weight:680;letter-spacing:-.03em;line-height:1.1;
+    font-variant-numeric:tabular-nums}
+  .tile .l{font-size:.8rem;color:var(--text-secondary);margin-top:5px;line-height:1.4}
+  .tile.crit .n{color:var(--crit)} .tile.warn .n{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600}
+  tr:last-child td{border-bottom:none}
+  .p0{color:var(--crit);font-weight:700} .p1{color:var(--warn);font-weight:700}
+  .chart{margin-top:6px}
+  .row{display:grid;grid-template-columns:190px 1fr;gap:12px;align-items:center;margin-bottom:9px}
+  .rlab{font-size:.85rem;color:var(--text-secondary);text-align:right}
+  .bars{position:relative;height:26px}
+  .bar{position:absolute;height:11px;border-radius:0 4px 4px 0;top:0}
+  .bar.after{top:15px}
+  .bval{position:absolute;font-size:.74rem;font-variant-numeric:tabular-nums;
+    color:var(--text-secondary);top:-2px;transform:translateX(6px)}
+  .bval.after{top:13px}
+  .legend{display:flex;gap:18px;margin:2px 0 16px 202px;font-size:.8rem;color:var(--text-secondary)}
+  .key{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:720px){.two{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr}.rlab{text-align:left}.legend{margin-left:0}}
+  ul{margin:8px 0 0;padding-left:19px} li{margin-bottom:7px;font-size:.89rem}
+  .q{font-style:italic;color:var(--text-secondary);border-left:2px solid var(--series-2);
+    padding-left:12px;margin:12px 0;font-size:.88rem}
+  code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.85em}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--rule);
+    color:var(--text-muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Geolander — SEO Executive Dashboard</h1>
+  <p class="sub">geo-lander.com · 4×4 car rental, Tbilisi · compiled 14 August 2026</p>
+  <span class="flag">RESEARCH &amp; PLAN ONLY — no changes made to the website</span>
+</header>
+
+<h2>Where we are</h2>
+<p class="note">Observed directly. No search volume, ranking or backlink figures appear anywhere — no tool capable of measuring them was available.</p>
+<div class="tiles">
+  <div class="tile crit"><div class="n">6 / 7</div><div class="l">Locale homepages returning <em>“Too many redirects”</em></div></div>
+  <div class="tile crit"><div class="n">$0</div><div class="l">Per-day price published for live vehicles, into search and the AI layer</div></div>
+  <div class="tile crit"><div class="n">19 vs ~14</div><div class="l">Vehicles claimed on <code>/fleet/</code> vs cars that exist</div></div>
+  <div class="tile warn"><div class="n">~85</div><div class="l">Unique words per vehicle page</div></div>
+  <div class="tile warn"><div class="n">0 / 10</div><div class="l">Third-party properties where Geolander appears</div></div>
+  <div class="tile"><div class="n">4</div><div class="l">Visibility probes run — all returned nothing</div></div>
+</div>
+
+<h2>Strategy scores, before and after adversarial review</h2>
+<p class="note">Three agents were tasked with refuting the core claims. All three succeeded. The top-scoring strategy fell from 84 to 64 — before implementation rather than six months into it.</p>
+<div class="legend">
+  <span class="key"><span class="sw" style="background:var(--series-1)"></span>Initial score</span>
+  <span class="key"><span class="sw" style="background:var(--series-2)"></span>After stress test</span>
+</div>
+<section class="chart">
+  <div class="row"><div class="rlab">A · Local commercial</div><div class="bars">
+    <div class="bar" style="width:78%;background:var(--series-1)"></div><span class="bval" style="left:78%">78</span>
+    <div class="bar after" style="width:82%;background:var(--series-2)"></div><span class="bval after" style="left:82%">82</span></div></div>
+  <div class="row"><div class="rlab">E · Technical &amp; conversion</div><div class="bars">
+    <div class="bar" style="width:71%;background:var(--series-1)"></div><span class="bval" style="left:71%">71</span>
+    <div class="bar after" style="width:74%;background:var(--series-2)"></div><span class="bval after" style="left:74%">74</span></div></div>
+  <div class="row"><div class="rlab">B · Landing pages</div><div class="bars">
+    <div class="bar" style="width:66%;background:var(--series-1)"></div><span class="bval" style="left:66%">66</span>
+    <div class="bar after" style="width:68%;background:var(--series-2)"></div><span class="bval after" style="left:68%">68</span></div></div>
+  <div class="row"><div class="rlab">D · Topical / journey</div><div class="bars">
+    <div class="bar" style="width:84%;background:var(--series-1)"></div><span class="bval" style="left:84%">84</span>
+    <div class="bar after" style="width:64%;background:var(--series-2)"></div><span class="bval after" style="left:64%">64</span></div></div>
+  <div class="row"><div class="rlab">C · Authority &amp; links</div><div class="bars">
+    <div class="bar" style="width:58%;background:var(--series-1)"></div><span class="bval" style="left:58%">58</span>
+    <div class="bar after" style="width:52%;background:var(--series-2)"></div><span class="bval after" style="left:52%">52</span></div></div>
+</section>
+
+<h2>The Golden Path</h2>
+<section>
+  <p style="font-size:1.02rem;margin:0 0 10px"><strong>Stop trying to rank and start trying to be verifiable.</strong></p>
+  <p style="margin:0;color:var(--text-secondary);font-size:.92rem">Fix what is broken, get onto the platforms where this market actually decides, publish the policies nobody else will commit to in writing, and let the rankings follow the trust rather than the other way round.</p>
+  <div class="q">Geolander’s offer already matches this market’s stated buying criteria almost line for line. The problem is not the offer. It is that nobody can find it, and nobody can verify it.</div>
+</section>
+
+<h2>The next seven days</h2>
+<section>
+<table>
+  <tr><th>#</th><th>Action</th><th>Owner</th><th>Time</th></tr>
+  <tr><td class="p0">P0</td><td>Fix the locale-homepage redirect loop — one <code>redirect_canonical</code> filter</td><td>Dev</td><td>1 h</td></tr>
+  <tr><td class="p0">P0</td><td>Stop publishing <code>$0</code> prices in schema, <code>/pricing.md</code> and meta descriptions</td><td>Dev</td><td>2 h</td></tr>
+  <tr><td class="p0">P0</td><td>Audit the Google Business Profile — fix the primary category first</td><td><strong>Boris</strong></td><td>30 min</td></tr>
+  <tr><td class="p0">P0</td><td>Screenshot the local pack from Tbilisi — 5 queries</td><td><strong>Boris</strong></td><td>15 min</td></tr>
+  <tr><td class="p0">P0</td><td>Decide the route-permission policy (Tusheti, Ushguli, Juta, Truso, Shatili, Goderdzi)</td><td><strong>Boris</strong></td><td>—</td></tr>
+  <tr><td class="p0">P0</td><td>Supply four numbers: deposit, insurance excess, liability limit, winter tyres</td><td><strong>Boris</strong></td><td>15 min</td></tr>
+  <tr><td class="p1">P1</td><td>Buy one locale-correct SERP capture (<code>gl=ge</code>, Tbilisi)</td><td>Either</td><td>1 h</td></tr>
+  <tr><td class="p1">P1</td><td>Export Search Console + GA4</td><td><strong>Boris</strong></td><td>35 min</td></tr>
+</table>
+</section>
+
+<h2>Where to compete — and where not to</h2>
+<div class="two">
+  <section>
+    <p class="note" style="margin-top:0"><strong style="color:var(--good)">COMPETE</strong></p>
+    <ul>
+      <li><strong>Route permission.</strong> No rental company answers it. Localrent restricts renters to paved roads only</li>
+      <li><strong>Google Business Profile + reviews.</strong> Wanderlog and wheree.com generate listings from it automatically, with no submission route</li>
+      <li><strong>Kazbegi / Stepantsminda.</strong> Localrent’s page there is literally blank</li>
+      <li><strong>A 4×4 category page.</strong> Localrent has none for Georgia at all</li>
+      <li><strong>Deposit &amp; insurance detail.</strong> Localrent’s terms page is robots-blocked</li>
+      <li><strong>AI answer engines.</strong> TripAdvisor blocks every major AI crawler; you welcome them</li>
+      <li><strong>Per-vehicle honesty.</strong> A 1,000-car operator cannot publish per-unit service history. You can</li>
+    </ul>
+  </section>
+  <section>
+    <p class="note" style="margin-top:0"><strong style="color:var(--crit)">DO NOT COMPETE</strong></p>
+    <ul>
+      <li><strong>Head terms.</strong> “rent a car tbilisi” returned seven results with zero Georgian operators</li>
+      <li><strong>Price.</strong> Localrent SUV from $19; Kayak quotes a $27 4×4 — under your $28 floor</li>
+      <li><strong>A Russian content programme.</strong> Refuted at high confidence — the most densely served layer, and the permission wedge is already owned there</li>
+      <li><strong>“You need a 4×4.”</strong> Gergeti is sealed, Ushguli concreted in 2024, and og.ge already owns that page</li>
+      <li><strong>Arabic, Chinese, French content.</strong> Total OTA walls, zero local penetration</li>
+      <li><strong>Bare-brand “Geolander.”</strong> Yokohama GEOLANDAR owns it</li>
+    </ul>
+  </section>
+</div>
+
+<h2>What we still don’t know</h2>
+<section>
+<ul>
+  <li><strong>Nobody has seen a real google.ge result set.</strong> Every search ran on a US-locale tool that returned a golf club for “car rental georgia country”</li>
+  <li><strong>The local pack was never observed</strong> — and it carries the highest-scoring strategy</li>
+  <li><strong>No search volume exists anywhere in this analysis.</strong> Not one figure</li>
+  <li><strong>No business economics</strong> — margin, utilisation and rental-duration mix are all unknown. If long rentals are the profit engine, an entire cluster missing from this plan becomes first priority</li>
+  <li><strong>Whether the site is indexed at all</strong> is unconfirmed</li>
+</ul>
+</section>
+
+<h2>The one habit that matters most</h2>
+<section>
+  <p style="margin:0;font-size:.95rem">Send the review request over WhatsApp after <strong>every single rental</strong>. It costs two minutes, compounds indefinitely, cannot be copied by a competitor, and simultaneously feeds the local pack, the auto-generated directory tier, the AI recommendation layer and the buyer’s decision.</p>
+  <p style="margin:12px 0 0;color:var(--text-secondary);font-size:.88rem">If only one thing from this engagement gets done, make it this.</p>
+</section>
+
+<footer>
+  Evidence: ~90 searches across 7 languages · ~40 competitor pages read in full · 64 customer-voice sources ·
+  the complete codebase · 15 research agents, 542 tool calls · 3 adversarial agents, all 3 refutations upheld.<br>
+  Full documents: EXECUTIVE-SEO-STRATEGY · GOLDEN-PATH · STRATEGY-STRESS-TEST · TECHNICAL-SEO-AUDIT ·
+  CUSTOMER-SEARCH-INTELLIGENCE · SERP-COMPETITOR-MAP · and 14 others.
+</footer>
+
+</div>
+</body>
+</html>
