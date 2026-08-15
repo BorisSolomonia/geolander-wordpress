@@ -111,6 +111,11 @@ return [
 	'places_subtitle'    => 'اكتشف أجمل الوجهات في جورجيا',
 	'all_regions'        => 'كل المناطق',
 	'view_on_map'        => 'عرض على الخريطة',
+	'place_driving_title'  => 'القيادة إلى %s',
+	'place_drive_plan'     => 'خطط للرحلة',
+	'place_driving_policy' => 'تحقق من الطقس والإغلاقات الرسمية وأضرار الطريق قبل المغادرة. إذن التأجير لا يتجاوز طريقًا مغلقًا أو غير آمن.',
+	'place_route_guides'   => 'اقرأ أدلة القيادة',
+	'place_choose_car'     => 'قارن سيارات 4x4 وAWD الفعلية',
 
 	'footer_desc'     => 'خدمة تأجير سيارات فاخرة في جورجيا. اكتشف جمال القوقاز براحة وموثوقية.',
 	'quick_links'     => 'روابط سريعة',
@@ -119,7 +124,7 @@ return [
 	'we_deliver'       => 'نوصل إلى',
 	'rights'          => 'جميع الحقوق محفوظة.',
 
-	'contact_title'    => 'اتصل بنا',
+	'contact_title'    => 'مكتب تأجير سيارات في متاتسميندا، تبليسي',
 	'contact_subtitle' => 'راسلنا لأي أسئلة أو عروض خاصة أو مساعدة',
 	'contact_whatsapp' => 'راسلنا على واتساب',
 	'contact_phone'    => 'اتصل بنا',
@@ -136,6 +141,7 @@ return [
 	'contact_form_error'    => 'تعذر إرسال رسالتك. حاول مرة أخرى أو تواصل معنا عبر واتساب.',
 	'contact_google_rating' => 'تقييم %s على خرائط Google',
 	'contact_map_title'     => 'مكتب Geolander على خرائط Google',
+	'office_location'       => 'يقع مكتبنا لتأجير سيارات 4x4 في قلب تبليسي — %1$s، %2$s.',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'تعال من أجل الطرق. وارجع بالذكريات.',

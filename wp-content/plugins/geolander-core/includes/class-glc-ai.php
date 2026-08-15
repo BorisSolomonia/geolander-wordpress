@@ -48,18 +48,23 @@ class GLC_AI {
 		) ) );
 
 		$out  = "# Geolander — 4x4 Car Rental in Tbilisi, Georgia\n\n";
-		$out .= "> Geolander (\"Geolander car rental\") is a premium, tourist-focused car rental company in Tbilisi, Georgia (country). "
-			. sprintf( 'It rents its own fleet of %d exact, individually listed 4x4 vehicles (%s) ', count( $cars ), implode( ', ', $models ) )
+		$out .= "> Geolander (\"Geolander car rental\") is a tourist-focused car rental company with an office in Mtatsminda, in the heart of Tbilisi, Georgia (country). "
+			. sprintf( 'It rents exact, individually listed vehicles, including %s, ', implode( ', ', $models ) )
 			. "suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
-			. "Svaneti. All prices include full insurance and unlimited mileage. Free delivery at Tbilisi International Airport (TBS). "
+			. "Svaneti. Prices include full insurance with no deductible and free winter tires. Free delivery at Tbilisi International Airport (TBS). "
 			. "Booking: pick dates on the site for an exact seasonal price, confirm via WhatsApp; no prepayment, pay at pickup; "
 			. "free cancellation up to 24 hours before pickup.\n\n";
 
 		$out .= "Key facts:\n";
 		$out .= "- Address: " . GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ) . ", Georgia\n";
+		$out .= "- District: " . GLC_Settings::get( 'office_district' ) . " — in the heart of Tbilisi\n";
 		$out .= "- Phone / WhatsApp: " . GLC_Settings::get( 'phone' ) . "\n";
 		$out .= "- Email: " . GLC_Settings::get( 'email' ) . "\n";
 		$out .= "- Hours: " . GLC_Settings::get( 'business_hours' ) . "\n";
+		$out .= "- Security deposit: none; no card preauthorization hold\n";
+		$out .= "- Insurance: no deductible; third-party liability limit 30,000 GEL; single-vehicle accidents covered\n";
+		$out .= "- Route policy: all vehicles and routes, except during bad weather, road closures, or damaged-road conditions\n";
+		$out .= "- Cross-border: Armenia is allowed; confirm trip documents and insurance before departure\n";
 		[ $glc_low, $glc_high ] = GLC_Format::range();
 		$out .= sprintf(
 			"- Prices: from \$%d to \$%d per day (USD), seasonal + duration-tiered; long rentals cost less per day\n",
@@ -67,7 +72,7 @@ class GLC_AI {
 			$glc_high
 		);
 		$out .= "- Requirements: minimum age 21, valid license (IDP recommended), passport\n";
-		$out .= "- Languages: English, Georgian, Russian, Ukrainian, Arabic, Chinese, French\n\n";
+		$out .= "- Website languages: English, Georgian, Russian, Ukrainian, Arabic, Chinese, French\n\n";
 
 		/*
 		 * This file exists to be quoted verbatim by AI systems, so an unpriced car
@@ -120,9 +125,9 @@ class GLC_AI {
 	private static function pricing(): string {
 		$out  = "# Geolander Car Rental — Price List (USD per day)\n\n";
 		$out .= 'Last generated: ' . current_datetime()->format( 'Y-m-d' ) . "\n\n";
-		$out .= "Every price includes full insurance, unlimited mileage within Georgia, winter tires in season, a free second driver, and free Tbilisi Airport delivery. "
+		$out .= "Every price includes full insurance with no deductible, free winter tires, and free Tbilisi Airport delivery. Third-party liability is limited to 30,000 GEL. "
 			. "The daily rate depends on the season and the TOTAL rental length (longer = cheaper per day). "
-			. "No prepayment — the exact total is computed on the car's page and confirmed via WhatsApp; payment at pickup. "
+			. "No security deposit or card preauthorization hold. No prepayment — the exact total is computed on the car's page and confirmed via WhatsApp; payment at pickup. "
 			. "Free cancellation up to 24 h before pickup.\n\n";
 
 		$glc_unpriced = [];

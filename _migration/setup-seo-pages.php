@@ -69,6 +69,13 @@ function glc_ul( array $items ): string {
 	$li = implode( '', array_map( fn( $i ) => "<!-- wp:list-item --><li>{$i}</li><!-- /wp:list-item -->", $items ) );
 	return "<!-- wp:list --><ul class=\"wp-block-list\">{$li}</ul><!-- /wp:list -->";
 }
+function glc_route_table( array $roads ): string {
+	$rows = implode( '', array_map(
+		fn( $road ) => "<tr><td>{$road}</td><td>Permitted unless bad weather, an official closure, or road damage makes the route unsafe or unavailable</td><td>All Geolander vehicles</td><td>Included</td><td>No rental-season limit; live road conditions control access</td></tr>",
+		$roads
+	) );
+	return '<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Road</th><th>Permission</th><th>Vehicles</th><th>Insurance</th><th>When</th></tr></thead><tbody>' . $rows . '</tbody></table></figure><!-- /wp:table -->';
+}
 
 WP_CLI::log( '' );
 WP_CLI::log( '=== Geolander SEO pages ===' );
@@ -147,10 +154,10 @@ glc_seo_upsert(
 	)
 	. glc_p( 'Most rental companies in Georgia quietly forbid the roads people actually come here to drive. We would rather tell you exactly where our cars may go, in writing, before you book.' )
 	. glc_h( 'Road by road' )
-	. glc_needs( 'For each road below: permitted yes / no / conditional · which of our vehicles · whether insurance applies · the months it is open. Replace this list with a table carrying those four columns.' )
-	. glc_ul( $roads )
+	. glc_route_table( $roads )
 	. glc_h( 'What "permitted" means for your insurance' )
-	. glc_needs( 'State plainly whether cover continues on a permitted unpaved road, and what changes if it does not.' )
+	. glc_p( 'Insurance continues on permitted routes. Do not proceed when bad weather, an official road closure, or road damage makes the route unsafe or unavailable.' )
+	. glc_p( '<em>Policy confirmed by the business owner on 15 August 2026. Road status can change after publication.</em>' )
 	. glc_h( 'Do we use GPS trackers?' )
 	. glc_needs( 'Answer yes or no. Travellers already assume every Georgian rental car is tracked, so silence reads as a yes.' )
 	. glc_h( 'If you are not sure, ask us before you book' )
@@ -171,12 +178,11 @@ glc_seo_upsert(
 		. '<br><br>The differentiator here is not the amount. It is the enumerated list of the only reasons money is '
 		. 'ever kept, plus the handover protocol.'
 	)
-	. glc_needs( 'The deposit amount, or a plain statement that there is none.' )
-	. glc_needs( 'Cash or card · held or charged · the exact release timeline.' )
+	. glc_p( '<strong>There is no security deposit.</strong> Geolander does not take a cash deposit, charge a card deposit, or place a preauthorization hold.' )
 	. glc_h( 'The only reasons we would keep any of it' )
-	. glc_needs( 'An enumerated, exhaustive list. A vague "approved roads" clause is precisely how travellers report being caught out.' )
+	. glc_p( 'There is no deposit to retain. Traffic fines or losses caused by an excluded use are separate obligations under the rental terms; they are not deductions from a held deposit.' )
 	. glc_h( 'How we hand the car over' )
-	. glc_p( 'We photograph and video the car with you at pickup and again at return, and send you the file on WhatsApp. Travellers already advise each other to record a video at pickup — we would rather do it for you, so the evidence is in your phone, not only ours.' )
+	. glc_needs( 'Confirm whether Geolander photographs or videos the car at pickup and return, whether the customer receives the files, and how existing damage is acknowledged.' )
 	. glc_h( 'Traffic fines' )
 	. glc_needs( 'Do you hold the deposit until fines clear? Is there an admin fee? How and when are customers notified, and what evidence do you send?' )
 	. glc_h( 'If you disagree with a charge' )
@@ -192,23 +198,29 @@ glc_seo_upsert(
 	glc_note(
 		'"Full insurance" is the exact phrase travellers say betrayed them — and it is currently the phrase on the '
 		. 'homepage, while /terms/ section 2 says CDW <em>with a deductible</em> and full cover for an extra fee. '
-		. 'This page has to resolve that contradiction, and /terms/ must be rewritten to match it. '
+		. 'The owner has now confirmed the deductible and liability limit, and /terms/ is rewritten by setup-pages.php to match. '
 		. 'Competitors publish concrete figures ("$100 deductible… civil liability $30,000"); we publish an adjective.'
 	)
 	. glc_h( 'What is included as standard' )
-	. glc_needs( 'The exact cover included in the headline price.' )
+	. glc_p( 'Full insurance is included in the rental price. Single-vehicle accidents are covered.' )
 	. glc_h( 'The excess, as a number' )
-	. glc_needs( 'The deductible in USD or GEL.' )
+	. glc_p( 'There is no insurance deductible.' )
 	. glc_h( 'Third-party liability limit, as a number' )
-	. glc_needs( 'The cap. One traveller compared Georgia\'s limit against EU norms and could not get a straight answer from anyone in the market.' )
+	. glc_p( 'Third-party liability cover is limited to <strong>30,000 GEL</strong>.' )
 	. glc_h( 'What is not covered' )
-	. glc_needs( 'Name the exclusions travellers actually get caught by: tyres, alloys, windscreen and glass, underbody, roof, interior, single-vehicle accidents, off-contract roads.' )
+	. glc_needs( 'Clarify the owner\'s phrase "no interior is covered": does it mean interior damage is covered or excluded? Also confirm tyres, alloys, windscreen/glass, underbody, and roof.' )
 	. glc_h( 'What voids cover entirely' )
-	. glc_needs( 'Be specific, and cross-link the road permissions page.' )
+	. glc_ul( [
+		'Driving in the wrong lane',
+		'Running a red light',
+		'Speeding',
+		'Failing to inform Geolander of the location of an incident',
+	] )
+	. glc_p( 'Route cover also cannot be relied on during bad weather, an official road closure, or damaged-road conditions.' )
 	. glc_h( 'If you have an accident' )
 	. glc_needs( 'Step by step, including whether police attendance is mandatory and who to call first.' ),
 	'draft',
-	[ 'glc_seo_title_en' => 'What Our Insurance Actually Covers — Excess, Limits &amp; Exclusions | Geolander' ]
+	[ 'glc_seo_title_en' => 'What Our Insurance Actually Covers — Excess, Limits &amp; Exclusions' ]
 );
 
 WP_CLI::log( '' );

@@ -30,6 +30,11 @@ $glc_cards = [
 		<div class="glc-kicker"><?php echo glc_sign( 'contact_title', '24/7 · WHATSAPP · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'contact_title' ) ); ?></h1>
 		<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'contact_subtitle' ) ); ?></p>
+		<p style="margin:0;max-width:62ch;">
+			<a href="<?php echo esc_url( $glc_map ); ?>" target="_blank" rel="noopener" style="color:var(--glc-glacier);font-weight:700;">
+				<?php echo esc_html( sprintf( glc_t( 'office_location' ), GLC_Settings::get( 'office_district' ), GLC_Settings::get( 'address' ) ) ); ?>
+			</a>
+		</p>
 	</div>
 
 	<div class="glc-stagger" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;">

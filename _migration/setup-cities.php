@@ -55,14 +55,14 @@ $cities = [
 		'airport_name' => 'Tbilisi International', 'airport_code' => 'TBS',
 		'delivery' => 'Free delivery to Tbilisi Airport & city hotels',
 		'body' =>
-			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. We deliver your car free of charge to Tbilisi International Airport (TBS) or to any hotel or address in the city — usually within the hour once your dates are confirmed on WhatsApp. Every rental is a real 4x4 with full insurance, unlimited mileage, and no security deposit; you pay at pickup, not online.' ) .
+			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. Our rental office is in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. We deliver your car free of charge to Tbilisi International Airport (TBS) or to hotels and addresses in the city once your dates are confirmed on WhatsApp. Full insurance and free winter tyres are included, there is no security deposit, and you pay at pickup rather than online.' ) .
 			glc_city_h( 'Where a Tbilisi rental takes you' ) .
-			glc_city_p( 'From Tbilisi the whole country is within a day\'s drive, and a proper 4x4 opens the routes an ordinary car cannot:' ) .
+			glc_city_p( 'Tbilisi is a practical starting point for routes across Georgia. The right vehicle depends on the road surface and current conditions:' ) .
 			glc_city_ul( [
 				'<strong>Kazbegi &amp; Gudauri</strong> — the Georgian Military Highway north to Gergeti Trinity Church (about 3 hours).',
 				'<strong>Kakheti wine country</strong> — Sighnaghi, Telavi and the Alazani Valley to the east.',
-				'<strong>Davit Gareja</strong> — the desert cave monastery on the Azerbaijan border, where the last gravel stretch really wants 4x4.',
-				'<strong>Tusheti</strong> — for the experienced: the Abano Pass, one of the world\'s most demanding mountain roads (summer only, ask us first).',
+				'<strong>Davit Gareja</strong> — the desert cave monastery near the Azerbaijan border, reached by a route whose surface should be checked before departure.',
+				'<strong>Tusheti</strong> — for experienced mountain-road drivers, only while the Abano Pass is officially open and conditions are safe.',
 			] ) .
 			glc_city_h( 'Driving in and out of Tbilisi' ) .
 			glc_city_p( 'City traffic is busy and parking near the old town is tight, so many travellers collect the car on the day they leave for the mountains rather than for city sightseeing. Tell us your plan on WhatsApp and we will suggest the pickup timing that saves you a parking headache.' ),
@@ -93,7 +93,7 @@ $cities = [
 		'airport_name' => 'Kutaisi International', 'airport_code' => 'KUT',
 		'delivery' => 'Free pickup at Kutaisi Airport arrivals',
 		'body' =>
-			glc_city_p( 'Kutaisi International Airport (KUT) is how most budget travellers reach Georgia — the Wizz Air and low-cost hub for the whole region. The catch is that the airport sits well outside the city with little around it, so a car waiting at arrivals is the single best way to start your trip. We meet you at the terminal with the keys; full insurance, unlimited mileage, no deposit, pay on arrival.' ) .
+			glc_city_p( 'Kutaisi International Airport (KUT) is a major arrival point for budget travellers reaching Georgia. The airport sits outside the city, so collecting a car at arrivals is a practical way to begin a western Georgia itinerary. We meet you at the terminal with the keys; full insurance, no deposit, pay on arrival.' ) .
 			glc_city_h( 'Kutaisi is the gateway to western Georgia' ) .
 			glc_city_p( 'Skip the taxi queues and drive straight into the west, which is greener, wilder and less visited than the east:' ) .
 			glc_city_ul( [
@@ -146,7 +146,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა თბილისში',
 			'body'  =>
-				glc_tp( 'თბილისი არის ის ადგილი, საიდანაც საქართველოში მოგზაურობა უმეტესად იწყება — და სწორედ აქ არის Geolander-ის ბაზა. მანქანას უფასოდ მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS) ან ქალაქის ნებისმიერ სასტუმროსა თუ მისამართზე — ჩვეულებრივ ერთ საათში, მას შემდეგ რაც თარიღებს WhatsApp-ით დაადასტურებთ. ყველა მანქანა ნამდვილი 4x4-ია, სრული დაზღვევით, შეუზღუდავი გარბენით და დეპოზიტის გარეშე; გადახდა ხდება მანქანის მიღებისას, არა ონლაინ.' ) .
+				glc_tp( 'თბილისი არის ის ადგილი, საიდანაც საქართველოში მოგზაურობა უმეტესად იწყება — და სწორედ აქ არის Geolander-ის ბაზა. ჩვენი ოფისი თბილისის ცენტრში, მთაწმინდაზე, ვეძინის ქუჩა 8/5-ში მდებარეობს. მანქანას უფასოდ მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS), სასტუმროში ან ქალაქის მისამართზე, როდესაც თარიღებს WhatsApp-ით დაადასტურებთ. სრული დაზღვევა და ზამთრის საბურავები უფასოდაა ჩართული, დეპოზიტი არ არის და გადახდა მანქანის მიღებისას ხდება.' ) .
 				glc_th( 'სად წაგიყვანთ თბილისში დაქირავებული მანქანა' ) .
 				glc_tp( 'თბილისიდან მთელი ქვეყანა ერთი დღის სავალზეა, ხოლო კარგი 4x4 ხსნის იმ გზებს, რომლებზეც ჩვეულებრივი მანქანა ვერ ავა:' ) .
 				glc_tul( [
@@ -161,7 +161,7 @@ $trans = [
 		'ru' => [
 			'title' => 'Аренда автомобиля в Тбилиси',
 			'body'  =>
-				glc_tp( 'Тбилиси — отправная точка большинства путешествий по Грузии, и здесь же база Geolander. Мы бесплатно доставим автомобиль в Тбилисский международный аэропорт (TBS) или к любому отелю или адресу в городе — обычно в течение часа после подтверждения дат в WhatsApp. Каждая машина — настоящий внедорожник с полной страховкой, без ограничения пробега и без залога; оплата при получении, а не онлайн.' ) .
+				glc_tp( 'Тбилиси — отправная точка большинства путешествий по Грузии, и здесь же база Geolander. Наш офис находится в самом центре Тбилиси, на Мтацминде, по адресу улица Ведзини 8/5. Мы бесплатно доставим автомобиль в Тбилисский международный аэропорт (TBS), к отелю или адресу в городе после подтверждения дат в WhatsApp. Полная страховка и зимние шины включены бесплатно, залога нет, оплата при получении.' ) .
 				glc_th( 'Куда вас увезёт машина из Тбилиси' ) .
 				glc_tp( 'Из Тбилиси вся страна в пределах одного дня пути, а хороший внедорожник открывает маршруты, недоступные обычной машине:' ) .
 				glc_tul( [
@@ -210,7 +210,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა ქუთაისის აეროპორტში',
 			'body'  =>
-				glc_tp( 'ქუთაისის საერთაშორისო აეროპორტი (KUT) არის ის, საიდანაც ბიუჯეტური მოგზაურების უმეტესობა აღწევს საქართველოში — Wizz Air-ისა და დაბალბიუჯეტიანი ფრენების ჰაბი მთელი რეგიონისთვის. სირთულე ისაა, რომ აეროპორტი ქალაქის გარეთ, ცარიელ ადგილას მდებარეობს, ამიტომ ჩამოსვლისთანავე მოცდენილი მანქანა თქვენი მოგზაურობის დაწყების საუკეთესო გზაა. ჩამოსვლისას გხვდებით ტერმინალთან გასაღებით; სრული დაზღვევა, შეუზღუდავი გარბენი, დეპოზიტის გარეშე, გადახდა ჩამოსვლისას.' ) .
+				glc_tp( 'ქუთაისის საერთაშორისო აეროპორტი (KUT) დასავლეთ საქართველოში ჩამოსვლის მნიშვნელოვანი პუნქტია. აეროპორტი ქალაქის გარეთ მდებარეობს, ამიტომ ჩამოსვლისას მანქანის მიღება მოგზაურობის დაწყების პრაქტიკული გზაა. ტერმინალთან გასაღებით დაგხვდებით; სრული დაზღვევა, დეპოზიტის გარეშე, გადახდა ჩამოსვლისას.' ) .
 				glc_th( 'ქუთაისი — დასავლეთ საქართველოს კარიბჭე' ) .
 				glc_tp( 'გამოტოვეთ ტაქსის რიგები და პირდაპირ დასავლეთში გაემართეთ, რომელიც უფრო მწვანე, ველური და ნაკლებად ნანახია, ვიდრე აღმოსავლეთი:' ) .
 				glc_tul( [

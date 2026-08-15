@@ -20,6 +20,11 @@ $glc_default2 = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
 		<h1><?php echo esc_html( glc_t( 'hero_title' ) ); ?></h1>
 		<p class="glc-hero-slogan"><?php echo esc_html( glc_t( 'slogan' ) ); ?></p>
 		<p class="glc-hero-sub"><?php echo esc_html( glc_t( 'hero_subtitle' ) ); ?></p>
+		<p style="margin:0;">
+			<a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener" style="color:var(--glc-glacier);font-weight:700;">
+				<?php echo esc_html( sprintf( glc_t( 'office_location' ), GLC_Settings::get( 'office_district' ), GLC_Settings::get( 'address' ) ) ); ?>
+			</a>
+		</p>
 		<?php // One honest range instead of a price on every car. ?>
 		<p class="glc-hero-range">
 			<?php echo esc_html( glc_t( 'price_range_label' ) ); ?>

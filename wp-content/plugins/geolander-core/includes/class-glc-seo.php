@@ -56,6 +56,10 @@ class GLC_SEO {
 			// Keep visible post titles natural while allowing each landing page
 			// to target one precise, non-overlapping search intent.
 			$parts['title'] = $custom_title;
+		} elseif ( is_singular( 'place' ) ) {
+			$parts['title'] = $en
+				? sprintf( 'Driving to %s in Georgia', get_the_title() )
+				: sprintf( glc_ui( 'place_driving_title' ), get_the_title() );
 		} elseif ( is_singular( 'car' ) ) {
 			// Price the title from the real rate table, and never print a zero:
 			// glc_price_from is empty on every imported car, which is exactly how
@@ -69,14 +73,13 @@ class GLC_SEO {
 					? sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) )
 					: sprintf( '%s — %s', get_the_title(), glc_ui( 'booking_title' ) ) );
 		} elseif ( is_post_type_archive( 'car' ) ) {
-			// "Real" is a trust word and must not sit beside an unverified count or
-			// a zero floor.
-			$count = (int) ( wp_count_posts( 'car' )->publish ?? 0 );
+			// Duplicate plates are unresolved, so a published-post count must not
+			// be presented as the number of physical vehicles.
 			$floor = (float) GLC_Format::range()[0];
 			$parts['title'] = $en
 				? ( $floor > 0
-					? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, $floor )
-					: sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s', $count ) )
+					? sprintf( '4x4 Car Rental Fleet in Tbilisi from $%d/day', $floor )
+					: '4x4 Car Rental Fleet in Tbilisi, Georgia' )
 				: glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' );
 		} elseif ( is_post_type_archive( 'place' ) ) {
 			// Was hard-coded "36 Destinations" — silently false the moment a place
@@ -205,12 +208,26 @@ class GLC_SEO {
 						$text
 					);
 			}
+			if ( is_singular( 'place' ) ) {
+				$text = $en
+					? sprintf(
+						'Plan the drive to %s in Georgia: destination context, map, road conditions, driving guides, and exact rental cars from Tbilisi. %s',
+						get_the_title( $post ),
+						$text
+					)
+					: sprintf( '%s. %s', sprintf( glc_ui( 'place_driving_title' ), get_the_title( $post ) ), $text );
+			}
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$text = glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' ) . ' ' . glc_ui( 'trust_insurance' ) . ', ' . glc_ui( 'trust_delivery' ) . '.';
 		} elseif ( is_post_type_archive( 'place' ) ) {
 			$text = glc_ui( 'places_subtitle' ) . ' — ' . glc_ui( 'route_1' ) . ', ' . glc_ui( 'route_2' ) . ', ' . glc_ui( 'route_3' ) . ', ' . glc_ui( 'route_4' ) . '.';
 		} elseif ( is_front_page() ) {
-			$text = glc_ui( 'hero_subtitle' ) . ' — Geolander, Tbilisi.';
+			$text = sprintf(
+				'%s — Geolander car rental in the heart of Tbilisi, in %s at %s.',
+				glc_ui( 'hero_subtitle' ),
+				GLC_Settings::get( 'office_district' ),
+				GLC_Settings::get( 'address' )
+			);
 		} else {
 			$text = get_bloginfo( 'description' );
 		}

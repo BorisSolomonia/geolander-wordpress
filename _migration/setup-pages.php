@@ -45,10 +45,11 @@ $terms = implode( '', [
 		'Minimum age: 21 years',
 		'Valid driving license (international license recommended for non-Georgian licenses)',
 		'Valid passport or national ID',
-		'Credit or debit card for security deposit',
+		'No security deposit: no cash deposit, card charge, or card preauthorization hold',
 	] ),
 	glc_h( '2. Insurance' ),
-	glc_p( 'Basic insurance (CDW — Collision Damage Waiver) is included in all rental prices. This covers third-party liability and collision damage with a deductible. Additional full coverage insurance is available for an extra fee.' ),
+	glc_p( 'Full insurance is included in the rental price with no insurance deductible. Third-party liability cover is limited to 30,000 GEL. Single-vehicle accidents are covered.' ),
+	glc_p( 'Insurance does not apply when the renter drives in the wrong lane, runs a red light, exceeds the speed limit, or fails to inform Geolander of the location of an incident.' ),
 	glc_h( '3. Fuel Policy' ),
 	glc_p( 'Vehicles are provided with a full tank of fuel and must be returned with a full tank. If the vehicle is returned with less fuel, a refueling charge will apply.' ),
 	glc_h( '4. Mileage' ),
@@ -60,7 +61,7 @@ $terms = implode( '', [
 		'No-show: full rental period charge applies',
 	] ),
 	glc_h( '6. Cross-Border Travel' ),
-	glc_p( 'Travel outside Georgia requires prior written approval and may incur additional insurance fees. Please contact us at least 48 hours before your intended departure to arrange necessary documentation.' ),
+	glc_p( 'Travel to Armenia is allowed. Contact Geolander before departure to confirm the documents and cross-border insurance required for your dates. No permission for any other country is stated on this page.' ),
 	glc_h( '7. Vehicle Return' ),
 	glc_ul( [
 		'Vehicles must be returned to the agreed location at the agreed time',
@@ -68,14 +69,17 @@ $terms = implode( '', [
 		'The vehicle must be returned in the same condition as received',
 	] ),
 	glc_h( '8. Prohibited Uses' ),
+	glc_p( 'All Geolander vehicles may use planned routes and insurance continues, except when bad weather, road closures, or a damaged road make the route unavailable or unsafe.' ),
 	glc_ul( [
-		'Off-road driving (unless vehicle is specifically approved)',
+		'Driving on a route affected by bad weather, an official road closure, or road damage',
+		'Driving in the wrong lane, running a red light, or speeding',
+		'Failing to inform Geolander of the location of an incident',
 		'Driving under the influence of alcohol or drugs',
 		'Sub-renting or lending the vehicle to unauthorized drivers',
 		'Participation in races or speed tests',
 	] ),
 	glc_h( '9. Liability' ),
-	glc_p( 'The renter is responsible for any traffic violations, parking fines, or toll charges incurred during the rental period. The renter is liable for damage exceeding the insurance deductible.' ),
+	glc_p( 'The renter remains responsible for traffic violations, parking fines, toll charges, and losses caused by an excluded use listed above. There is no security deposit and no insurance deductible.' ),
 	glc_h( '10. Contact' ),
 	glc_p( 'For any questions about these terms, please contact us via WhatsApp or email at info@geo-lander.com.' ),
 ] );
@@ -103,7 +107,7 @@ $travel .= glc_ul( [
 	'Georgia drives on the right; major road signs use Georgian and Latin script',
 	'Speed limits: 60 km/h in cities, 90 km/h outside, 110 km/h on highways',
 	'Zero tolerance for drink-driving (0.03% limit)',
-	'Mountain roads (Kazbegi, Svaneti, Tusheti) can require 4x4 — all Geolander vehicles are mountain-ready',
+	'Main roads do not automatically require 4x4; vehicle choice depends on the exact route, surface, weather, closure status, and road damage',
 	'Fuel is widely available on main routes; fill up before remote mountain sections',
 ] );
 glc_upsert_page( 'travel-info', 'სამოგზაურო ინფორმაცია', $travel );
@@ -120,7 +124,13 @@ glc_upsert_page( 'music', 'ქართული მუსიკა', $music );
 
 /* -------------------------------------------------------------- Contact */
 
-glc_upsert_page( 'contact', 'დაგვიკავშირდით', '', 'page-contact' );
+$contact_id = glc_upsert_page( 'contact', 'დაგვიკავშირდით', '', 'page-contact' );
+update_post_meta( $contact_id, 'glc_seo_title_en', 'Car Rental Office in Mtatsminda, Tbilisi' );
+update_post_meta(
+	$contact_id,
+	'glc_seo_description_en',
+	'Visit Geolander car rental in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. Open the verified Google Maps listing or contact us directly.'
+);
 
 /* ----------------------------------------------------------------- Blog */
 

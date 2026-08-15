@@ -1,1 +1,110 @@
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is Geolander?","acceptedAnswer":{"@type":"Answer","text":"Geolander is a premium, tourist-focused car rental company based in Tbilisi, Georgia. We offer free Tbilisi airport delivery, a 4x4 fleet built for Caucasus mountain routes, included insurance, and 24/7 support in English and Georgian. Geolander is a single accountable company — not a marketplace of third-party suppliers."}},{"@type":"Question","name":"What documents do I need to rent a car?","acceptedAnswer":{"@type":"Answer","text":"You need a valid driver's license (international license recommended for non-Georgian licenses), passport, and a credit or debit card. Minimum age is 21 years."}},{"@type":"Question","name":"Is insurance included in the rental price?","acceptedAnswer":{"@type":"Answer","text":"Yes, basic insurance is included in all our rental prices. This covers third-party liability and collision damage with a deductible. Additional full coverage options are available."}},{"@type":"Question","name":"Can I pick up the car at Tbilisi Airport?","acceptedAnswer":{"@type":"Answer","text":"Absolutely! We offer free delivery and pickup at Tbilisi International Airport (TBS). Just provide your flight details and we'll be waiting for you."}},{"@type":"Question","name":"What is the best car to rent for driving to Kazbegi and the Georgian mountains?","acceptedAnswer":{"@type":"Answer","text":"A 4x4 SUV is the best choice for Kazbegi, Gudauri, Svaneti, and Tusheti, because mountain roads can be steep, unpaved, and weather-affected. Geolander's 4x4 fleet is selected specifically for these routes, and our team will recommend the right vehicle for your itinerary."}},{"@type":"Question","name":"Do I need a 4x4 to drive in Georgia?","acceptedAnswer":{"@type":"Answer","text":"For cities and main highways a standard car is fine, but a 4x4 is strongly recommended for mountain regions like Svaneti, Tusheti, Kazbegi, and Khevsureti, where roads are rough or unpaved. Geolander helps you match the vehicle to your route."}},{"@type":"Question","name":"Is it safe to drive in Georgia as a tourist?","acceptedAnswer":{"@type":"Answer","text":"Yes, driving in Georgia is manageable for tourists who stay alert on mountain roads. Georgia drives on the right, road signs use both Georgian and Latin script on major routes, and Geolander provides 24/7 roadside assistance and route guidance for added peace of mind."}},{"@type":"Question","name":"What fuel policy do you have?","acceptedAnswer":{"@type":"Answer","text":"We operate a full-to-full fuel policy. You receive the car with a full tank and should return it full. If returned without a full tank, a refueling fee applies."}},{"@type":"Question","name":"Can I drive to neighboring countries?","acceptedAnswer":{"@type":"Answer","text":"Cross-border travel requires prior arrangement and additional documentation. Please contact us in advance to discuss your travel plans to Armenia, Azerbaijan, or Turkey."}},{"@type":"Question","name":"What happens if the car breaks down?","acceptedAnswer":{"@type":"Answer","text":"We provide 24/7 roadside assistance. If anything happens, call our support number and we'll arrange help immediately, including a replacement vehicle if needed."}},{"@type":"Question","name":"How far in advance should I book a rental car in Georgia?","acceptedAnswer":{"@type":"Answer","text":"Book at least a few days ahead in low season and 2–3 weeks ahead for summer (June–September) and the New Year period, when demand for 4x4s peaks. Geolander confirms most bookings within minutes via WhatsApp."}},{"@type":"Question","name":"How do I book a car?","acceptedAnswer":{"@type":"Answer","text":"Simply browse our fleet, select your dates, and send us a booking request via WhatsApp. We'll confirm availability and finalize your reservation within minutes."}},{"@type":"Question","name":"Is there a cancellation policy?","acceptedAnswer":{"@type":"Answer","text":"Free cancellation up to 24 hours before your pickup time. Cancellations within 24 hours may incur a fee equal to one day's rental."}}]}
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Geolander?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Geolander is a local car rental company based in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. It rents exact, individually photographed vehicles and offers free Tbilisi Airport delivery, included insurance, and direct WhatsApp support."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to leave a security deposit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Geolander requires no security deposit, cash deposit, card charge, or card preauthorization hold."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What documents do I need to rent a car?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You need a valid driving license, with an international driving permit recommended for non-Georgian licenses, plus a valid passport or national identity document."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What insurance is included?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Full insurance is included with no insurance deductible. Third-party liability is limited to 30,000 GEL, and single-vehicle accidents are covered. Cover does not apply to wrong-lane driving, running a red light, speeding, or failing to tell Geolander where an incident occurred."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I pick up the car at Tbilisi Airport?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Geolander offers free delivery at Tbilisi International Airport (TBS). Contact Geolander to arrange delivery for your booking."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where is the Geolander office?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Geolander office is in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street, Tbilisi 0108."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a 4x4 to drive in Georgia?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not for every trip. Cities and many main highways are suitable for ordinary cars in normal conditions. Vehicle choice should follow the exact road surface, weather, closure status, road damage, and any unpaved mountain section in your itinerary."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I drive a Geolander car on mountain routes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Geolander permits all its vehicles on planned routes with insurance, unless bad weather, an official road closure, or road damage makes the route unavailable or unsafe."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are winter tyres included?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Winter tyres are provided free of charge."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I drive a Geolander rental to Armenia?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, travel to Armenia is allowed. Contact Geolander before departure to confirm the required documents and cross-border insurance for your trip."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the fuel policy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Vehicles are supplied with a full tank and should be returned with a full tank. A refuelling charge applies when a vehicle is returned with less fuel."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I book a car?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Browse the exact vehicles, choose your dates, and send the prepared booking request through WhatsApp. Geolander then confirms availability directly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the cancellation policy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cancellation is free up to 24 hours before pickup. A cancellation within 24 hours may incur a charge equal to one rental day."
+      }
+    }
+  ]
+}

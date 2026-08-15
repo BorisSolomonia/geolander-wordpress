@@ -111,6 +111,11 @@ return [
 	'places_subtitle'    => 'Discover the most beautiful destinations in Georgia',
 	'all_regions'        => 'All regions',
 	'view_on_map'        => 'View on map',
+	'place_driving_title'  => 'Driving to %s',
+	'place_drive_plan'     => 'Plan the drive',
+	'place_driving_policy' => 'Check weather, official closures, and road damage before departure. Rental permission never overrides a closed or unsafe road.',
+	'place_route_guides'   => 'Read driving guides',
+	'place_choose_car'     => 'Compare exact 4x4 and AWD cars',
 
 	'footer_desc'     => 'Premium car rental service in Georgia. Explore the beauty of the Caucasus with comfort and reliability.',
 	'quick_links'     => 'Quick links',
@@ -119,7 +124,7 @@ return [
 	'we_deliver'       => 'We deliver to',
 	'rights'          => 'All rights reserved.',
 
-	'contact_title'    => 'Contact us',
+	'contact_title'    => 'Car rental office in Mtatsminda, Tbilisi',
 	'contact_subtitle' => 'Write to us with questions, custom offers, or for any help',
 	'contact_whatsapp' => 'Message us on WhatsApp',
 	'contact_phone'    => 'Call us',
@@ -136,6 +141,7 @@ return [
 	'contact_form_error'    => 'We could not send your message. Try again or contact us on WhatsApp.',
 	'contact_google_rating' => '%s rating on Google Maps',
 	'contact_map_title'     => 'Geolander office on Google Maps',
+	'office_location'       => 'Our 4x4 rental office is in the heart of Tbilisi — %1$s, %2$s.',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Come for the roads. Leave with the memories.',

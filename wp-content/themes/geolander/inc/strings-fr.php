@@ -111,6 +111,11 @@ return [
 	'places_subtitle'    => 'Découvrez les plus belles destinations de Géorgie',
 	'all_regions'        => 'Toutes les régions',
 	'view_on_map'        => 'Voir sur la carte',
+	'place_driving_title'  => 'Aller à %s en voiture',
+	'place_drive_plan'     => 'Préparer le trajet',
+	'place_driving_policy' => 'Vérifiez la météo, les fermetures officielles et l’état de la route avant le départ. Une autorisation de location ne permet jamais d’emprunter une route fermée ou dangereuse.',
+	'place_route_guides'   => 'Lire les guides de conduite',
+	'place_choose_car'     => 'Comparer les vrais 4x4 et AWD',
 
 	'footer_desc'     => 'Service premium de location de voitures en Géorgie. Découvrez la beauté du Caucase avec confort et fiabilité.',
 	'quick_links'     => 'Liens rapides',
@@ -119,7 +124,7 @@ return [
 	'we_deliver'       => 'Livraison à',
 	'rights'          => 'Tous droits réservés.',
 
-	'contact_title'    => 'Contactez-nous',
+	'contact_title'    => 'Agence de location à Mtatsminda, Tbilissi',
 	'contact_subtitle' => 'Écrivez-nous pour toute question, offre personnalisée ou assistance',
 	'contact_whatsapp' => 'Écrire sur WhatsApp',
 	'contact_phone'    => 'Appeler',
@@ -136,6 +141,7 @@ return [
 	'contact_form_error'    => 'Votre message n’a pas pu être envoyé. Réessayez ou contactez-nous sur WhatsApp.',
 	'contact_google_rating' => 'Note de %s sur Google Maps',
 	'contact_map_title'     => 'Bureau Geolander sur Google Maps',
+	'office_location'       => 'Notre agence de location de 4x4 se trouve au cœur de Tbilissi — %1$s, %2$s.',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Venez pour les routes. Repartez avec les souvenirs.',

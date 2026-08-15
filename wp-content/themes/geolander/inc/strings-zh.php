@@ -111,6 +111,11 @@ return [
 	'places_subtitle'    => '探索格鲁吉亚最美的目的地',
 	'all_regions'        => '所有地区',
 	'view_on_map'        => '在地图上查看',
+	'place_driving_title'  => '自驾前往%s',
+	'place_drive_plan'     => '规划驾驶路线',
+	'place_driving_policy' => '出发前请检查天气、官方封路信息和道路损坏情况。租车许可不能凌驾于封闭或不安全的道路状况之上。',
+	'place_route_guides'   => '阅读驾驶指南',
+	'place_choose_car'     => '比较真实的 4x4 和 AWD 车辆',
 
 	'footer_desc'     => '格鲁吉亚高端租车服务。舒适可靠地探索高加索之美。',
 	'quick_links'     => '快捷链接',
@@ -119,7 +124,7 @@ return [
 	'we_deliver'       => '送车城市',
 	'rights'          => '版权所有。',
 
-	'contact_title'    => '联系我们',
+	'contact_title'    => '第比利斯姆塔茨明达汽车租赁办公室',
 	'contact_subtitle' => '如有任何问题、定制方案或需要帮助，请联系我们',
 	'contact_whatsapp' => '在 WhatsApp 上联系',
 	'contact_phone'    => '致电我们',
@@ -136,6 +141,7 @@ return [
 	'contact_form_error'    => '无法发送您的留言。请重试或通过 WhatsApp 联系我们。',
 	'contact_google_rating' => 'Google 地图评分 %s',
 	'contact_map_title'     => 'Google 地图上的 Geolander 办公室',
+	'office_location'       => '我们的 4x4 租车办公室位于第比利斯市中心 — %1$s，%2$s。',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => '为道路而来，带回忆而归。',

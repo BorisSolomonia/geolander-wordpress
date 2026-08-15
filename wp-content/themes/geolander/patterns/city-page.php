@@ -48,6 +48,14 @@ $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::u
 		<?php echo wp_kses_post( wpautop( GLC_Content::body( $glc_id ) ) ); ?>
 	</div>
 
+	<?php if ( 'tbilisi' === get_post_field( 'post_name', $glc_id ) ) : ?>
+		<p style="margin:0;padding:1rem 1.2rem;border-inline-start:4px solid var(--glc-sage);background:var(--glc-surface);">
+			<a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener" style="color:inherit;font-weight:700;">
+				<?php echo esc_html( sprintf( glc_t( 'office_location' ), GLC_Settings::get( 'office_district' ), GLC_Settings::get( 'address' ) ) ); ?>
+			</a>
+		</p>
+	<?php endif; ?>
+
 	<?php if ( $glc_wa ) : ?>
 		<a class="wp-element-button glc-btn" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener" style="justify-self:start;background:var(--glc-success);color:var(--glc-paper);">
 			💬 <?php echo esc_html( glc_t( 'ask_whatsapp' ) ); ?>
