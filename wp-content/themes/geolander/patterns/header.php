@@ -31,7 +31,8 @@ $glc_nav = [];
 foreach ( $glc_nav_candidates as $glc_path => $glc_label ) {
 	// /fleet/ and /places/ are CPT archives, not pages — always present.
 	$glc_always = in_array( $glc_path, [ '/fleet/', '/places/' ], true );
-	if ( $glc_always || get_page_by_path( trim( $glc_path, '/' ) ) instanceof WP_Post ) {
+	$glc_page   = get_page_by_path( trim( $glc_path, '/' ) );
+	if ( $glc_always || ( $glc_page instanceof WP_Post && 'publish' === $glc_page->post_status ) ) {
 		$glc_nav[ home_url( $glc_path ) ] = $glc_label;
 	}
 }
@@ -47,7 +48,7 @@ $glc_tel   = preg_replace( '/[^+0-9]/', '', $glc_phone );
 <div class="glc-header">
 	<div class="glc-header-inner">
 		<a class="glc-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Geolander">
-			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="140" height="44" />
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="71" height="44" />
 		</a>
 		<nav class="glc-nav" aria-label="Main">
 			<?php foreach ( $glc_nav as $glc_url => $glc_label ) : ?>

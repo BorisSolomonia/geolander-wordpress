@@ -21,7 +21,7 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 <footer class="glc-footer">
 	<div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:3.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2.5rem;">
 		<div style="display:grid;gap:1rem;align-content:start;">
-			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="150" height="47" style="height:47px;width:auto;" loading="lazy" />
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="76" height="47" style="height:47px;width:auto;" loading="lazy" />
 			<p style="font-size:0.88rem;color:var(--glc-stone);margin:0;"><?php echo esc_html( glc_t( 'footer_desc' ) ); ?></p>
 		</div>
 		<div>
