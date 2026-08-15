@@ -126,6 +126,16 @@ return [
 	'contact_email'    => 'راسلنا بالبريد',
 	'contact_hours'    => 'ساعات العمل',
 	'contact_address'  => 'العنوان',
+	'contact_form_title'    => 'أرسل لنا رسالة',
+	'contact_form_name'     => 'الاسم',
+	'contact_form_email'    => 'البريد الإلكتروني',
+	'contact_form_phone'    => 'الهاتف (اختياري)',
+	'contact_form_message'  => 'الرسالة',
+	'contact_form_send'     => 'المتابعة عبر واتساب',
+	'contact_form_sent'     => 'شكرًا — تم إرسال رسالتك.',
+	'contact_form_error'    => 'تعذر إرسال رسالتك. حاول مرة أخرى أو تواصل معنا عبر واتساب.',
+	'contact_google_rating' => 'تقييم %s على خرائط Google',
+	'contact_map_title'     => 'مكتب Geolander على خرائط Google',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'تعال من أجل الطرق. وارجع بالذكريات.',

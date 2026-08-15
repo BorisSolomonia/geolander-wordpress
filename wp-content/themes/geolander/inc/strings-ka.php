@@ -142,6 +142,16 @@ return [
 	'contact_email'   => 'მოგვწერეთ',
 	'contact_hours'   => 'სამუშაო საათები',
 	'contact_address' => 'მისამართი',
+	'contact_form_title'    => 'მოგვწერეთ შეტყობინება',
+	'contact_form_name'     => 'სახელი',
+	'contact_form_email'    => 'ელფოსტა',
+	'contact_form_phone'    => 'ტელეფონი (არასავალდებულო)',
+	'contact_form_message'  => 'შეტყობინება',
+	'contact_form_send'     => 'WhatsApp-ზე გაგრძელება',
+	'contact_form_sent'     => 'გმადლობთ — თქვენი შეტყობინება გაიგზავნა.',
+	'contact_form_error'    => 'შეტყობინება ვერ გაიგზავნა. სცადეთ ხელახლა ან მოგვწერეთ WhatsApp-ზე.',
+	'contact_google_rating' => '%s შეფასება Google Maps-ზე',
+	'contact_map_title'     => 'Geolander-ის ოფისი Google Maps-ზე',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'ჩამოდით გზებისთვის. წაიღეთ მოგონებები.',

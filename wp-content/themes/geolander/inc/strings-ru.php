@@ -126,6 +126,16 @@ return [
 	'contact_email'    => 'Написать на почту',
 	'contact_hours'    => 'Часы работы',
 	'contact_address'  => 'Адрес',
+	'contact_form_title'    => 'Напишите нам',
+	'contact_form_name'     => 'Имя',
+	'contact_form_email'    => 'Электронная почта',
+	'contact_form_phone'    => 'Телефон (необязательно)',
+	'contact_form_message'  => 'Сообщение',
+	'contact_form_send'     => 'Продолжить в WhatsApp',
+	'contact_form_sent'     => 'Спасибо — ваше сообщение отправлено.',
+	'contact_form_error'    => 'Не удалось отправить сообщение. Попробуйте снова или напишите нам в WhatsApp.',
+	'contact_google_rating' => 'Рейтинг %s в Google Картах',
+	'contact_map_title'     => 'Офис Geolander на Google Картах',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Приезжайте за дорогами. Увозите воспоминания.',

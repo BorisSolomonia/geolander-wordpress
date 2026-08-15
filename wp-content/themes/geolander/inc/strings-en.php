@@ -126,6 +126,16 @@ return [
 	'contact_email'    => 'Email us',
 	'contact_hours'    => 'Business hours',
 	'contact_address'  => 'Address',
+	'contact_form_title'    => 'Send us a message',
+	'contact_form_name'     => 'Name',
+	'contact_form_email'    => 'Email',
+	'contact_form_phone'    => 'Phone (optional)',
+	'contact_form_message'  => 'Message',
+	'contact_form_send'     => 'Continue on WhatsApp',
+	'contact_form_sent'     => 'Thank you — your message has been sent.',
+	'contact_form_error'    => 'We could not send your message. Try again or contact us on WhatsApp.',
+	'contact_google_rating' => '%s rating on Google Maps',
+	'contact_map_title'     => 'Geolander office on Google Maps',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Come for the roads. Leave with the memories.',

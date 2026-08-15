@@ -126,6 +126,16 @@ return [
 	'contact_email'    => 'Envoyer un e-mail',
 	'contact_hours'    => 'Horaires',
 	'contact_address'  => 'Adresse',
+	'contact_form_title'    => 'Envoyez-nous un message',
+	'contact_form_name'     => 'Nom',
+	'contact_form_email'    => 'E-mail',
+	'contact_form_phone'    => 'Téléphone (facultatif)',
+	'contact_form_message'  => 'Message',
+	'contact_form_send'     => 'Continuer sur WhatsApp',
+	'contact_form_sent'     => 'Merci — votre message a été envoyé.',
+	'contact_form_error'    => 'Votre message n’a pas pu être envoyé. Réessayez ou contactez-nous sur WhatsApp.',
+	'contact_google_rating' => 'Note de %s sur Google Maps',
+	'contact_map_title'     => 'Bureau Geolander sur Google Maps',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Venez pour les routes. Repartez avec les souvenirs.',

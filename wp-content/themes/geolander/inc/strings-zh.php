@@ -126,6 +126,16 @@ return [
 	'contact_email'    => '发送邮件',
 	'contact_hours'    => '营业时间',
 	'contact_address'  => '地址',
+	'contact_form_title'    => '给我们留言',
+	'contact_form_name'     => '姓名',
+	'contact_form_email'    => '电子邮箱',
+	'contact_form_phone'    => '电话（选填）',
+	'contact_form_message'  => '留言',
+	'contact_form_send'     => '在 WhatsApp 中继续',
+	'contact_form_sent'     => '谢谢 — 您的留言已发送。',
+	'contact_form_error'    => '无法发送您的留言。请重试或通过 WhatsApp 联系我们。',
+	'contact_google_rating' => 'Google 地图评分 %s',
+	'contact_map_title'     => 'Google 地图上的 Geolander 办公室',
 
 	// Positioning + fleet card CTA.
 	'slogan'            => '为道路而来，带回忆而归。',
