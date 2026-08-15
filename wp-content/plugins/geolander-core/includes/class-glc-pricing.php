@@ -264,4 +264,26 @@ class GLC_Pricing {
 		$floor = $lows ? min( $lows ) : 0.0;
 		return $floor;
 	}
+
+	/** Highest real day-rate across published, priced vehicles. */
+	public static function fleet_ceiling(): float {
+		static $ceiling = null;
+		if ( null !== $ceiling ) {
+			return $ceiling;
+		}
+		$highs = [];
+		foreach ( get_posts( [
+			'post_type'      => 'car',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		] ) as $car_id ) {
+			[ , $high ] = self::rate_range( (int) $car_id );
+			if ( $high > 0 ) {
+				$highs[] = $high;
+			}
+		}
+		$ceiling = $highs ? max( $highs ) : 0.0;
+		return $ceiling;
+	}
 }

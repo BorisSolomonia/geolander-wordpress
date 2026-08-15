@@ -85,10 +85,14 @@ class GLC_Format {
 	 */
 	public static function range(): array {
 		$min = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_floor() : 0.0;
+		$max = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_ceiling() : 0.0;
 		if ( $min <= 0 ) {
 			$min = (float) GLC_Settings::get( 'price_min', 28 );
 		}
-		return [ $min, (float) GLC_Settings::get( 'price_max', 120 ) ];
+		if ( $max <= 0 ) {
+			$max = (float) GLC_Settings::get( 'price_max', 120 );
+		}
+		return [ $min, $max ];
 	}
 
 	/** Headline range rendered for the active locale, e.g. "$28 – $120". */

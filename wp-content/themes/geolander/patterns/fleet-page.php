@@ -10,7 +10,7 @@ $glc_to    = isset( $_GET['to'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_GET[
 ?>
 <main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:2rem;">
 	<div class="glc-section-head" style="margin-bottom:0;">
-		<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', '15 × 4X4 · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+		<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'REAL CARS · REAL PHOTOS · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h1>
 		<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_subtitle' ) ); ?></p>
 	</div>
