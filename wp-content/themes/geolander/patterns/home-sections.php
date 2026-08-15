@@ -12,13 +12,13 @@
 
 	<section class="glc-reveal" id="fleet">
 		<div class="glc-section-head">
-			<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', '15 × 4X4 · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'REAL CARS · REAL PHOTOS' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h2>
 			<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_subtitle' ) ); ?></p>
 		</div>
 		<?php echo do_blocks( '<!-- wp:geolander/fleet-grid {"count":6} /-->' ); ?>
 		<p style="margin-top:1.6rem;text-align:center;">
-			<a class="wp-element-button glc-btn" href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" style="background:transparent;border:1px solid var(--glc-accent);color:var(--glc-accent);"><?php echo esc_html( glc_t( 'view_all' ) ); ?> — 15 →</a>
+			<a class="wp-element-button glc-btn" href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" style="background:transparent;border:1px solid var(--glc-accent);color:var(--glc-accent);"><?php echo esc_html( glc_t( 'view_all' ) ); ?> →</a>
 		</p>
 	</section>
 
@@ -78,7 +78,13 @@
 
 	<section class="glc-reveal">
 		<div class="glc-section-head">
-			<div class="glc-kicker"><?php echo glc_sign( 'testimonials_title', '★ 5.0' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<?php if ( GLC_Settings::get( 'google_rating' ) && GLC_Settings::get( 'google_maps_url' ) ) : ?>
+				<div class="glc-kicker">
+					<a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">
+						<?php echo glc_sign( 'testimonials_title', sprintf( glc_t( 'contact_google_rating' ), GLC_Settings::get( 'google_rating' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					</a>
+				</div>
+			<?php endif; ?>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'testimonials_title' ) ); ?></h2>
 		</div>
 		<?php echo do_blocks( '<!-- wp:geolander/testimonials /-->' ); ?>
