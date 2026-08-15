@@ -44,6 +44,16 @@ foreach ($slug in @(
 	}
 }
 
+if ($migration -notmatch 'glc-related-guides' -or $migration -notmatch 'Related mountain driving guides') {
+	throw 'Mountain guides must link to each other.'
+}
+
+foreach ($stale in @('Only with prior approval', 'standard terms prohibit off-road driving', 'route approval still depends')) {
+	if ($migration -match [regex]::Escape($stale)) {
+		throw "Route guide still contradicts owner-confirmed route policy: $stale"
+	}
+}
+
 if ($seo -notmatch "glc_seo_title_en" -or $seo -notmatch "glc_seo_description_en") {
 	throw 'SEO layer does not consume custom title and description metadata.'
 }

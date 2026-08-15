@@ -94,7 +94,7 @@ $guides = [
 <h2 class="wp-block-heading">Winter safety checklist</h2>
 <!-- /wp:heading -->
 <!-- wp:list -->
-<ul class="wp-block-list"><li>Confirm the vehicle has season-appropriate tires and ask whether chains are supplied or required for the forecast.</li><li>Carry water, warm layers, a charged phone and an offline map.</li><li>Use engine braking gently on descents; avoid sudden steering, throttle or braking inputs.</li><li>Never stop in an avalanche channel, blind bend or active traffic lane for photos.</li><li>Save the rental support number and Georgia's emergency number, 112.</li><li>Check your rental agreement before taking any unpaved side road.</li></ul>
+<ul class="wp-block-list"><li>Confirm the vehicle has season-appropriate tires and ask whether chains are supplied or required for the forecast.</li><li>Carry water, warm layers, a charged phone and an offline map.</li><li>Use engine braking gently on descents; avoid sudden steering, throttle or braking inputs.</li><li>Never stop in an avalanche channel, blind bend or active traffic lane for photos.</li><li>Save the rental support number and Georgia's emergency number, 112.</li><li>Do not enter a road affected by bad weather, an official closure, or road damage.</li></ul>
 <!-- /wp:list -->
 
 <!-- wp:heading {"level":2} -->
@@ -145,7 +145,7 @@ HTML,
 <p>An AWD crossover is a comfortable choice for the main approach to <a href="/places/mestia/">Mestia</a> in normal conditions. For <a href="/places/ushguli/">Ushguli</a>, prioritize ground clearance, tire condition and a true 4x4 system. The official Georgia Travel guidance for Chazhashi in the Ushguli community says an off-road vehicle is necessary from Mestia and warns that bad weather can make the road nearly impassable.</p>
 <!-- /wp:paragraph -->
 <!-- wp:paragraph -->
-<p>A <a href="/fleet/jeep-wrangler-2017-ys-105-sy/">Jeep Wrangler 4x4</a> or <a href="/fleet/toyota-4runner-2021-white/">Toyota 4Runner</a> provides extra clearance for the rougher extension. For a paved-road-focused trip ending in Mestia, compare the more efficient <a href="/fleet/subaru-forester-2020-ll802ml/">Subaru Forester AWD</a>. Always confirm your intended roads with Geolander before pickup because insurance and vehicle permissions follow the rental agreement.</p>
+<p>A <a href="/fleet/jeep-wrangler-2017-ys-105-sy/">Jeep Wrangler 4x4</a> or <a href="/fleet/toyota-4runner-2021-white/">Toyota 4Runner</a> provides extra clearance for the rougher extension. For a paved-road-focused trip ending in Mestia, compare the more efficient <a href="/fleet/subaru-forester-2020-ll802ml/">Subaru Forester AWD</a>. Geolander permits all its vehicles on planned routes with insurance; bad weather, an official closure, or road damage still overrides that permission.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -166,7 +166,7 @@ HTML,
 <h2 class="wp-block-heading">Reserve a real 4x4 for Svaneti</h2>
 <!-- /wp:heading -->
 <!-- wp:paragraph -->
-<p>With Geolander, the exact car shown in the listing is the car you receive. There is no anonymous “or similar” substitution. Tell us whether Mestia is your endpoint or Ushguli is part of the plan, and we can recommend the right clearance and luggage capacity. Insurance is included and Tbilisi airport delivery is free; route approval still depends on the vehicle and current conditions.</p>
+<p>With Geolander, the exact car shown in the listing is the car you receive. There is no anonymous “or similar” substitution. Tell us whether Mestia is your endpoint or Ushguli is part of the plan, and we can recommend the right clearance and luggage capacity. Insurance is included and Tbilisi airport delivery is free; current weather, closures, and road damage still control whether a route is safe to use.</p>
 <!-- /wp:paragraph -->
 <!-- wp:buttons -->
 <div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/fleet/">Compare Svaneti 4x4s</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/contact/">Check your Svaneti route</a></div><!-- /wp:button --></div>
@@ -185,12 +185,12 @@ HTML,
 		'route'       => 'Abano Pass to Omalo in Tusheti',
 		'content'     => <<<'HTML'
 <!-- wp:paragraph {"fontSize":"large"} -->
-<p class="has-large-font-size"><strong>Tusheti is not a casual rental-car detour.</strong> The road from Kakheti over the Abano Pass to Omalo is seasonal, unpaved, exposed and officially suitable only for an off-road vehicle. Drive it only with explicit approval for the exact rental vehicle, strong mountain-road experience, a favorable forecast and confirmation that the pass is open.</p>
+<p class="has-large-font-size"><strong>Tusheti is not a casual rental-car detour.</strong> The road from Kakheti over the Abano Pass to Omalo is seasonal, unpaved, exposed and officially suitable only for an off-road vehicle. Drive it only with strong mountain-road experience, a favorable forecast, and confirmation that the pass is open and undamaged.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:group {"backgroundColor":"surface","style":{"border":{"radius":"14px"},"spacing":{"padding":{"top":"var:preset|spacing|40","right":"var:preset|spacing|40","bottom":"var:preset|spacing|40","left":"var:preset|spacing|40"}}}} -->
 <div class="wp-block-group has-surface-background-color has-background" style="border-radius:14px;padding-top:var(--wp--preset--spacing--40);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--40)"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Tusheti road at a glance</h2><!-- /wp:heading -->
-<!-- wp:list --><ul class="wp-block-list"><li><strong>Route:</strong> Tbilisi → Telavi/Akhmeta → Kvemo Alvani/Pshaveli → Abano Pass → Omalo.</li><li><strong>Season:</strong> plan within the official visitor season, generally June through October, and verify the actual opening before travel.</li><li><strong>Vehicle:</strong> approved high-clearance 4x4 only; an ordinary car or low AWD crossover is not appropriate.</li><li><strong>Experience:</strong> hire a local driver if exposed, narrow mountain roads are outside your experience.</li></ul><!-- /wp:list --></div>
+<!-- wp:list --><ul class="wp-block-list"><li><strong>Route:</strong> Tbilisi → Telavi/Akhmeta → Kvemo Alvani/Pshaveli → Abano Pass → Omalo.</li><li><strong>Season:</strong> plan within the official visitor season, generally June through October, and verify the actual opening before travel.</li><li><strong>Vehicle:</strong> official visitor guidance calls for an off-road vehicle; choose high clearance even though Geolander's rental policy does not impose a model-specific route ban.</li><li><strong>Experience:</strong> hire a local driver if exposed, narrow mountain roads are outside your experience.</li></ul><!-- /wp:list --></div>
 <!-- /wp:group -->
 
 <!-- wp:heading {"level":2} -->
@@ -207,10 +207,10 @@ HTML,
 <h2 class="wp-block-heading">Can you take a Geolander rental to Tusheti?</h2>
 <!-- /wp:heading -->
 <!-- wp:paragraph -->
-<p><strong>Only with prior approval for the specific vehicle and dates.</strong> Geolander's standard terms prohibit off-road driving unless the vehicle is specifically approved. A reservation, 4x4 badge or insurance inclusion does not automatically authorize the Abano Pass. Share the complete route before booking so we can confirm whether an appropriate vehicle is available and explain the applicable conditions.</p>
+<p><strong>Yes, while the road is officially open and conditions are safe.</strong> Geolander permits all its vehicles on planned routes and insurance continues. Do not proceed during bad weather, an official closure, or when road damage makes the route unsafe or unavailable. Vehicle permission does not override police, protected-area, or road-authority instructions.</p>
 <!-- /wp:paragraph -->
 <!-- wp:paragraph -->
-<p>If approved, a high-clearance platform such as the <a href="/fleet/toyota-4runner-2021-white/">Toyota 4Runner</a> or <a href="/fleet/jeep-wrangler-2017-ys-105-sy/">Jeep Wrangler</a> is the relevant category. Final suitability depends on tires, maintenance, load and current conditions—not the model name alone. Read the <a href="/terms/">rental terms</a> and get the route confirmation in writing.</p>
+<p>A high-clearance platform such as the <a href="/fleet/toyota-4runner-2021-white/">Toyota 4Runner</a> or <a href="/fleet/jeep-wrangler-2017-ys-105-sy/">Jeep Wrangler</a> is the relevant category. Final suitability depends on tires, maintenance, load and current conditions—not the model name alone. Read the <a href="/terms/">rental terms</a> and confirm the latest road status before departure.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -227,7 +227,7 @@ HTML,
 <h2 class="wp-block-heading">Tusheti preparation checklist</h2>
 <!-- /wp:heading -->
 <!-- wp:list -->
-<ul class="wp-block-list"><li>Get written rental approval for Abano Pass and every planned onward road.</li><li>Verify opening and weather with official/local sources immediately before departure.</li><li>Fuel fully in Kakheti and carry water, food, warm layers and offline navigation.</li><li>Inspect the spare tire, jack and basic emergency equipment before leaving pavement.</li><li>Travel in daylight and avoid the pass during heavy rain, fog, snow or after a closure notice.</li><li>Yield early at passing places; never reverse toward an exposed edge under pressure.</li><li>Tell your accommodation when to expect you and save Georgia's emergency number, 112.</li></ul>
+<ul class="wp-block-list"><li>Verify opening, weather, and road damage with official/local sources immediately before departure.</li><li>Fuel fully in Kakheti and carry water, food, warm layers and offline navigation.</li><li>Inspect the spare tire, jack and basic emergency equipment before leaving pavement.</li><li>Travel in daylight and avoid the pass during heavy rain, fog, snow or after a closure notice.</li><li>Yield early at passing places; never reverse toward an exposed edge under pressure.</li><li>Tell your accommodation when to expect you and save Georgia's emergency number, 112.</li></ul>
 <!-- /wp:list -->
 
 <!-- wp:heading {"level":2} -->
@@ -241,18 +241,38 @@ HTML,
 <h2 class="wp-block-heading">Discuss Tusheti before you reserve</h2>
 <!-- /wp:heading -->
 <!-- wp:paragraph -->
-<p>Send Geolander your dates, passenger count, luggage and intended villages. We will tell you plainly whether self-drive approval is possible for an exact car. If it is not, we will recommend a safer plan rather than hide the restriction in fine print.</p>
+<p>Send Geolander your dates, passenger count, luggage and intended villages. We will recommend the most suitable exact car and discuss current conditions. If weather, a closure, road damage, or driver experience makes self-drive unsafe, we will say so plainly rather than hide the risk in fine print.</p>
 <!-- /wp:paragraph -->
 <!-- wp:buttons -->
-<div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact/">Ask about Tusheti approval</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/fleet/">View high-clearance 4x4s</a></div><!-- /wp:button --></div>
+<div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact/">Ask about Tusheti conditions</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/fleet/">View high-clearance 4x4s</a></div><!-- /wp:button --></div>
 <!-- /wp:buttons -->
 
 <!-- wp:paragraph {"fontSize":"small"} -->
-<p class="has-small-font-size"><em>This guide does not grant road access or insurance coverage. Official restrictions, your signed rental agreement and written vehicle approval control the trip.</em></p>
+<p class="has-small-font-size"><em>Geolander's route policy does not override official restrictions. Current weather, closures, road damage, police instructions, and protected-area rules control the trip.</em></p>
 <!-- /wp:paragraph -->
 HTML,
 	],
 ];
+
+// GL-024: the three mountain guides previously formed isolated silos. Keep the
+// links in the idempotent source so rerunning this publisher cannot erase them.
+foreach ( $guides as &$guide ) {
+	$items = [];
+	foreach ( $guides as $related ) {
+		if ( $related['slug'] === $guide['slug'] ) {
+			continue;
+		}
+		$items[] = sprintf(
+			'<li><a href="/%s/">%s</a></li>',
+			esc_attr( $related['slug'] ),
+			esc_html( $related['title'] )
+		);
+	}
+	$guide['content'] .= "\n<!-- glc-related-guides -->\n"
+		. '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Related mountain driving guides</h2><!-- /wp:heading -->'
+		. '<!-- wp:list --><ul class="wp-block-list">' . implode( '', $items ) . '</ul><!-- /wp:list -->';
+}
+unset( $guide );
 
 $published = [];
 foreach ( $guides as $guide ) {

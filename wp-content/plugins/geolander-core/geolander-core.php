@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Geolander Core
  * Description: Fleet, places, testimonials, seasonal pricing, booking (WhatsApp / BOG iPay), and structured data for Geolander car rental.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Geolander
  * Text Domain: geolander
  * Requires at least: 6.5
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GLC_VERSION', '1.0.1' );
+define( 'GLC_VERSION', '1.0.2' );
 define( 'GLC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GLC_URL', plugin_dir_url( __FILE__ ) );
 
@@ -31,6 +31,7 @@ require_once GLC_DIR . 'includes/class-glc-format.php';
 require_once GLC_DIR . 'includes/class-glc-content.php';
 require_once GLC_DIR . 'includes/class-glc-city.php';
 require_once GLC_DIR . 'includes/class-glc-contact.php';
+require_once GLC_DIR . 'includes/class-glc-landings.php';
 
 add_action( 'plugins_loaded', function () {
 	GLC_I18n::boot();
@@ -49,6 +50,7 @@ add_action( 'plugins_loaded', function () {
 	GLC_Content::init();
 	GLC_City::init();
 	GLC_Contact::init();
+	GLC_Landings::init();
 } );
 
 register_activation_hook( __FILE__, function () {
