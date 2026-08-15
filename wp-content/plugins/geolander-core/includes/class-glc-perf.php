@@ -27,9 +27,16 @@ class GLC_Perf {
 	/** Public TTL for a browser; CDN edge TTL via s-maxage. */
 	private const MAXAGE   = 300;    // 5 min at the browser
 	private const S_MAXAGE = 86400;  // 1 day at the edge
+	private const REVISION_LIMIT = 5;
 
 	public static function init() {
 		add_action( 'send_headers', [ __CLASS__, 'cache_headers' ] );
+		add_filter( 'wp_revisions_to_keep', [ __CLASS__, 'revision_limit' ] );
+	}
+
+	/** Keep editor history useful without allowing revision tables to grow forever. */
+	public static function revision_limit( int $limit ): int {
+		return self::REVISION_LIMIT;
 	}
 
 	public static function cache_headers( $wp ): void {

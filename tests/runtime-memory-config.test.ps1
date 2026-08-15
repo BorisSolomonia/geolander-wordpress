@@ -4,6 +4,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $apacheConfigPath = Join-Path $repoRoot 'docker/apache-production.conf'
 $snapshotPath = Join-Path $repoRoot 'docker/memory-snapshot.sh'
 $dockerfilePath = Join-Path $repoRoot 'Dockerfile'
+$perfPath = Join-Path $repoRoot 'wp-content/plugins/geolander-core/includes/class-glc-perf.php'
 
 function Assert-Matches {
 	param(
@@ -28,6 +29,7 @@ if (-not (Test-Path -LiteralPath $snapshotPath)) {
 $apacheConfig = Get-Content -Raw -LiteralPath $apacheConfigPath
 $dockerfile = Get-Content -Raw -LiteralPath $dockerfilePath
 $snapshot = Get-Content -Raw -LiteralPath $snapshotPath
+$perf = Get-Content -Raw -LiteralPath $perfPath
 
 # Keep mod_php/prefork inside a predictable memory envelope. These values are
 # deliberately contract-tested because the upstream image defaults are suited
@@ -58,5 +60,9 @@ Assert-Matches $dockerfile 'CMD \["apache2-foreground"\]' 'WordPress initializat
 Assert-Matches $snapshot 'memory\.current' 'Snapshot must report current cgroup memory.'
 Assert-Matches $snapshot 'memory\.events' 'Snapshot must report cgroup OOM events.'
 Assert-Matches $snapshot '/_internal-apache-status\?auto' 'Snapshot must report Apache worker state.'
+
+# Revision snapshots were the dominant source of database growth in production.
+Assert-Matches $perf "add_filter\(\s*'wp_revisions_to_keep'.*?REVISION_LIMIT" 'WordPress revisions must remain bounded.'
+Assert-Matches $perf 'private const REVISION_LIMIT\s*=\s*5\s*;' 'Revision retention must remain capped at five.'
 
 Write-Output 'Runtime memory configuration contract passed.'

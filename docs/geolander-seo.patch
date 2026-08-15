@@ -1,0 +1,1531 @@
+--- a/wp-content/plugins/geolander-core/includes/class-glc-ai.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-ai.php
+@@ -38,11 +38,19 @@
+ 	}
+ 
+ 	private static function llms(): string {
+-		$home  = home_url( '/' );
+-		$out   = "# Geolander — 4x4 Car Rental in Tbilisi, Georgia\n\n";
+-		$out  .= "> Geolander (\"Geolander car rental\") is a premium, tourist-focused car rental company in Tbilisi, Georgia (country). "
+-			. "It rents its own fleet of 15 exact, individually listed 4x4 vehicles (Subaru Forester, Subaru Crosstrek, Mitsubishi Outlander, "
+-			. "Toyota RAV4, Toyota Highlander, Jeep Wrangler, Jeep Renegade) suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
++		$home = home_url( '/' );
++		// Never hard-code the fleet size: it disagreed with /fleet/ and /pricing.md,
++		// and this file is read as fact by AI systems. Count what is published.
++		$cars   = self::cars();
++		$models = array_values( array_unique( array_map(
++			static fn( $car ) => trim( preg_replace( '/\s*\d{4}.*$/', '', $car->post_title ) ),
++			$cars
++		) ) );
++
++		$out  = "# Geolander — 4x4 Car Rental in Tbilisi, Georgia\n\n";
++		$out .= "> Geolander (\"Geolander car rental\") is a premium, tourist-focused car rental company in Tbilisi, Georgia (country). "
++			. sprintf( 'It rents its own fleet of %d exact, individually listed 4x4 vehicles (%s) ', count( $cars ), implode( ', ', $models ) )
++			. "suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
+ 			. "Svaneti. All prices include full insurance and unlimited mileage. Free delivery at Tbilisi International Airport (TBS). "
+ 			. "Booking: pick dates on the site for an exact seasonal price, confirm via WhatsApp; no prepayment, pay at pickup; "
+ 			. "free cancellation up to 24 hours before pickup.\n\n";
+@@ -61,18 +69,22 @@
+ 		$out .= "- Requirements: minimum age 21, valid license (IDP recommended), passport\n";
+ 		$out .= "- Languages: English, Georgian, Russian, Ukrainian, Arabic, Chinese, French\n\n";
+ 
++		/*
++		 * This file exists to be quoted verbatim by AI systems, so an unpriced car
++		 * must read "price on request" rather than "$0–$0/day". A machine-readable
++		 * false price is worse than no file at all.
++		 */
+ 		$out .= "## Fleet\n\n";
+ 		foreach ( self::cars() as $car ) {
+ 			[ $low, $high ] = GLC_Pricing::rate_range( $car->ID );
+ 			$out .= sprintf(
+-				"- [%s](%s): %s, %d seats, %s, \$%d–\$%d/day\n",
++				"- [%s](%s): %s, %d seats, %s, %s\n",
+ 				$car->post_title,
+ 				get_permalink( $car ),
+ 				implode( ', ', wp_get_post_terms( $car->ID, 'car_body_type', [ 'fields' => 'names' ] ) ),
+ 				(int) get_post_meta( $car->ID, 'glc_seats', true ),
+ 				get_post_meta( $car->ID, 'glc_transmission', true ),
+-				$low,
+-				$high
++				( $low > 0 && $high > 0 ) ? sprintf( '$%d–$%d/day', $low, $high ) : 'price on request'
+ 			);
+ 		}
+ 
+@@ -113,9 +125,13 @@
+ 			. "No prepayment — the exact total is computed on the car's page and confirmed via WhatsApp; payment at pickup. "
+ 			. "Free cancellation up to 24 h before pickup.\n\n";
+ 
++		$glc_unpriced = [];
+ 		foreach ( self::cars() as $car ) {
+-			$pricing = get_post_meta( $car->ID, 'glc_pricing', true );
+-			if ( ! is_array( $pricing ) || ! $pricing ) {
++			$pricing = GLC_Pricing::seasons( $car->ID );
++			if ( ! $pricing || ! GLC_Pricing::is_priced( $car->ID ) ) {
++				// Listed, not silently dropped: /pricing.md previously showed 8 cars
++				// while /fleet/ showed 19, so the file contradicted the site.
++				$glc_unpriced[] = $car;
+ 				continue;
+ 			}
+ 			$out .= '## ' . $car->post_title . "\n";
+@@ -129,8 +145,24 @@
+ 			$out .= '| Season | ' . implode( ' | ', array_map( fn( $l ) => $l . ' days', GLC_Pricing::TIER_LABELS ) ) . " |\n";
+ 			$out .= '|' . str_repeat( '---|', count( GLC_Pricing::TIERS ) + 1 ) . "\n";
+ 			foreach ( $pricing as $season ) {
+-				$cells = array_map( fn( $tier ) => '$' . number_format( (float) ( $season['rates'][ $tier ] ?? 0 ), 0 ), GLC_Pricing::TIERS );
+-				$out  .= '| ' . ( $season['label'] ?? '' ) . ' | ' . implode( ' | ', $cells ) . " |\n";
++				$cells = array_map(
++					static function ( $tier ) use ( $season ) {
++						$rate = (float) ( $season['rates'][ $tier ] ?? 0 );
++						return $rate > 0 ? '$' . number_format( $rate, 0 ) : '—';
++					},
++					GLC_Pricing::TIERS
++				);
++				$out .= '| ' . ( $season['label'] ?? '' ) . ' | ' . implode( ' | ', $cells ) . " |\n";
++			}
++			$out .= "\n";
++		}
++
++		if ( $glc_unpriced ) {
++			$out .= "## Price on request\n\n";
++			$out .= "These vehicles are in the fleet but have no published rate table yet. "
++				. "Ask on WhatsApp for an exact quote — do not assume a price.\n\n";
++			foreach ( $glc_unpriced as $car ) {
++				$out .= sprintf( "- [%s](%s)\n", $car->post_title, get_permalink( $car ) );
+ 			}
+ 			$out .= "\n";
+ 		}
+--- a/wp-content/plugins/geolander-core/includes/class-glc-blocks.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-blocks.php
+@@ -178,12 +178,16 @@
+ 				</div>
+ 				<?php
+ 				/*
+-				 * No per-car price on cards by design: the fleet sells fit and the
+-				 * trip, not a number, and the real price depends on season + rental
+-				 * length anyway. The headline range lives on the front page, and the
+-				 * exact seasonal quote lives on the car page. When the visitor has
+-				 * already chosen dates we still show their real total — at that point
+-				 * it's an answer to a question they asked, not a price tag.
++				 * The fleet sells fit and the trip, not a number — but the archive's
++				 * own title tag advertises "from $N/day", and the page was answering
++				 * the price question with silence. A price-shopper arriving from that
++				 * snippet found no price anywhere, which is a mismatch between promise
++				 * and page rather than restraint.
++				 *
++				 * With dates chosen: show their real total (an answer to a question
++				 * they asked). Without dates: show this car's honest "from" floor —
++				 * and nothing at all when it has no rate table, because a zero is a
++				 * false price, not a missing one.
+ 				 */
+ 				?>
+ 				<?php if ( $quote ) : ?>
+@@ -192,6 +196,13 @@
+ 							<span class="glc-price-unit"><?php echo esc_html( GLC_Format::money( $quote['per_day_avg'] ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
+ 						</span>
+ 					</div>
++				<?php else : ?>
++					<?php [ $glc_low ] = GLC_Pricing::rate_range( $id ); ?>
++					<?php if ( $glc_low > 0 ) : ?>
++						<div class="glc-card-price">
++							<span class="glc-price"><?php echo esc_html( glc_ui( 'from' ) ); ?> <?php echo esc_html( GLC_Format::money( $glc_low ) ); ?><span class="glc-price-unit"><?php echo esc_html( glc_ui( 'per_day' ) ); ?></span></span>
++						</div>
++					<?php endif; ?>
+ 				<?php endif; ?>
+ 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
+ 				<?php $glc_wa = self::whatsapp_link( $car ); ?>
+--- a/wp-content/plugins/geolander-core/includes/class-glc-city.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-city.php
+@@ -107,15 +107,50 @@
+ 	 * GLC_Schema::output() so all JSON-LD stays in one @graph.
+ 	 */
+ 	public static function schema( int $id ): array {
+-		return [
++		$city = self::city_name( $id );
++		$air  = self::airport( $id );
++
++		/*
++		 * The airport name and IATA code were already stored on every city and
++		 * never used anywhere. Airport intent is one of the highest-value clusters
++		 * in car rental, and an explicit IATA code (TBS / BUS / KUT) is a strong
++		 * disambiguation signal for search and AI grounding alike — which matters
++		 * here, because the unqualified word "Georgia" retrieves the US state.
++		 */
++		$area = [ [ '@type' => 'City', 'name' => $city ] ];
++		if ( $air['name'] || $air['code'] ) {
++			$area[] = array_filter( [
++				'@type'    => 'Airport',
++				'name'     => $air['name'] ?: null,
++				'iataCode' => $air['code'] ?: null,
++			] );
++		}
++
++		$phone = class_exists( 'GLC_Settings' ) ? GLC_Settings::get( 'phone' ) : '';
++
++		// No per-city `offers`: the rate is identical everywhere, so a per-city
++		// price would assert a distinction that does not exist. Fabricated
++		// granularity is worse than none.
++		return array_filter( [
+ 			'@type'       => 'Service',
+ 			'@id'         => get_permalink( $id ) . '#service',
+ 			'serviceType' => 'Car rental',
+ 			'name'        => get_the_title( $id ),
+ 			'url'         => get_permalink( $id ),
+ 			'provider'    => [ '@id' => home_url( '/#business' ) ],
+-			'areaServed'  => [ '@type' => 'City', 'name' => get_the_title( $id ) === '' ? '' : self::city_name( $id ) ],
+-		];
++			'areaServed'  => $area,
++			'availableChannel' => $phone ? [
++				'@type'        => 'ServiceChannel',
++				'serviceUrl'   => get_permalink( $id ),
++				'servicePhone' => $phone,
++			] : null,
++			'hoursAvailable' => [
++				'@type'     => 'OpeningHoursSpecification',
++				'dayOfWeek' => [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ],
++				'opens'     => '00:00',
++				'closes'    => '23:59',
++			],
++		] );
+ 	}
+ 
+ 	/** The bare city name (title minus the "Car Rental in " marketing prefix). */
+--- a/wp-content/plugins/geolander-core/includes/class-glc-format.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-format.php
+@@ -72,12 +72,23 @@
+ 		return $d->format( self::rules( $locale )['date'] );
+ 	}
+ 
+-	/** Headline range low/high as raw numbers, from settings. */
++	/**
++	 * Headline range low/high as raw numbers.
++	 *
++	 * The floor is derived from the cheapest actually-bookable car rather than the
++	 * settings value, because the two had drifted: the fleet title tag advertised
++	 * "$26" while the hero and llms.txt said "$28". A visitor who clicks a "$26"
++	 * snippet and lands on "$28" has been handed a free reason to distrust the
++	 * site. This is the one place that can guarantee copy, title, schema
++	 * priceRange and llms.txt agree. The settings value stays as the fallback for
++	 * a fleet with no priced cars at all.
++	 */
+ 	public static function range(): array {
+-		return [
+-			(float) GLC_Settings::get( 'price_min', 28 ),
+-			(float) GLC_Settings::get( 'price_max', 120 ),
+-		];
++		$min = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_floor() : 0.0;
++		if ( $min <= 0 ) {
++			$min = (float) GLC_Settings::get( 'price_min', 28 );
++		}
++		return [ $min, (float) GLC_Settings::get( 'price_max', 120 ) ];
+ 	}
+ 
+ 	/** Headline range rendered for the active locale, e.g. "$28 – $120". */
+--- a/wp-content/plugins/geolander-core/includes/class-glc-i18n.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-i18n.php
+@@ -137,6 +137,25 @@
+ 	}
+ 
+ 	public static function hooks() {
++		/*
++		 * P0 — the localized front page was in an infinite redirect loop.
++		 *
++		 * boot() strips the locale prefix, so a request for /ru/ reaches WP as "/".
++		 * localize_url() then filters home_url('/') to return "/ru/". Core's
++		 * redirect_canonical() computes the front page canonical as home_url('/') —
++		 * now "/ru/" — compares it with the stripped request path "/", finds a
++		 * mismatch and redirects to /ru/, which is stripped to "/" again. Loop.
++		 *
++		 * Every locale SUB-page was fine, because its permalink already carries the
++		 * prefix; only the six localized homepages failed — which is exactly the set
++		 * that every page's hreflang alternates point at. GLC_City already applies
++		 * this same guard for its custom rewrite; the front page never got one.
++		 *
++		 * Scoped to the front page so canonical redirects keep working everywhere
++		 * else, and only registered on non-default locales (hooks() runs for all,
++		 * but on 'en' localize_url() is a no-op so the mismatch cannot arise).
++		 */
++		add_filter( 'redirect_canonical', fn( $redirect ) => is_front_page() ? false : $redirect );
+ 		add_filter( 'home_url', [ __CLASS__, 'localize_url' ], 10, 2 );
+ 		add_filter( 'language_attributes', [ __CLASS__, 'language_attributes' ] );
+ 		add_action( 'wp_head', [ __CLASS__, 'hreflang' ], 1 );
+--- a/wp-content/plugins/geolander-core/includes/class-glc-pricing.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-pricing.php
+@@ -24,6 +24,96 @@
+ 		'd31p'   => '31+',
+ 	];
+ 
++	/**
++	 * Legacy import shape → canonical shape.
++	 *
++	 * `_migration/cars.json` stores a season as
++	 * `{"period": "Apr 01 - Oct 31", "prices": {"days1To2": 50, …}}` while this
++	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. Imported verbatim the
++	 * keys never match, so season_for_date() finds nothing for EVERY car and
++	 * rate_range() silently collapses each AggregateOffer to the headline price —
++	 * or, when that is empty too, to zero. That is the root of the published
++	 * "$0/day". Normalising on read makes both shapes work, and keeps the fix
++	 * independent of whether the data is ever re-imported.
++	 */
++	public static function normalize( $pricing ): array {
++		if ( ! is_array( $pricing ) ) {
++			return [];
++		}
++
++		static $tier_alias = [
++			'days1To2'   => 'd1_2',
++			'days3To4'   => 'd3_4',
++			'days5To7'   => 'd5_7',
++			'days8To12'  => 'd8_12',
++			'days13To18' => 'd13_18',
++			'days19To30' => 'd19_30',
++			'days31Plus' => 'd31p',
++		];
++
++		$out = [];
++		foreach ( $pricing as $season ) {
++			if ( ! is_array( $season ) ) {
++				continue;
++			}
++
++			$rates = $season['rates'] ?? $season['prices'] ?? [];
++			if ( is_array( $rates ) ) {
++				foreach ( $tier_alias as $legacy => $canonical ) {
++					if ( isset( $rates[ $legacy ] ) && ! isset( $rates[ $canonical ] ) ) {
++						$rates[ $canonical ] = $rates[ $legacy ];
++					}
++				}
++			}
++
++			$from  = (string) ( $season['from'] ?? '' );
++			$to    = (string) ( $season['to'] ?? '' );
++			$label = (string) ( $season['label'] ?? $season['period'] ?? '' );
++
++			// "Apr 01 - Oct 31" → from "04-01", to "10-31".
++			if ( ( '' === $from || '' === $to ) && $label
++				&& preg_match( '/^\s*([A-Za-z]{3,})\s+(\d{1,2})\s*[-–]\s*([A-Za-z]{3,})\s+(\d{1,2})\s*$/', $label, $m ) ) {
++				$month = static function ( string $name ): string {
++					$ts = strtotime( $name . ' 1 2001' );
++					return $ts ? gmdate( 'm', $ts ) : '';
++				};
++				$mf = $month( $m[1] );
++				$mt = $month( $m[3] );
++				if ( '' !== $mf && '' !== $mt ) {
++					$from = $mf . '-' . str_pad( $m[2], 2, '0', STR_PAD_LEFT );
++					$to   = $mt . '-' . str_pad( $m[4], 2, '0', STR_PAD_LEFT );
++				}
++			}
++
++			$out[] = [
++				'label' => $label,
++				'from'  => $from,
++				'to'    => $to,
++				'rates' => is_array( $rates ) ? $rates : [],
++			];
++		}
++		return $out;
++	}
++
++	/** The car's season table, normalised. */
++	public static function seasons( int $car_id ): array {
++		return self::normalize( get_post_meta( $car_id, 'glc_pricing', true ) );
++	}
++
++	/**
++	 * Is this car genuinely priced?
++	 *
++	 * Nothing that advertises a price — schema, meta description, /pricing.md,
++	 * /llms.txt, the fleet card — may render a number for a car where this
++	 * returns false. No price is a legitimate state; a price of zero is a false
++	 * statement about the business, and it was being served to search engines
++	 * and to every AI crawler robots.txt invites.
++	 */
++	public static function is_priced( int $car_id ): bool {
++		[ $low, $high ] = self::rate_range( $car_id );
++		return $low > 0 && $high > 0;
++	}
++
+ 	public static function tier_for_days( int $days ): string {
+ 		return match ( true ) {
+ 			$days <= 2  => 'd1_2',
+@@ -79,8 +169,8 @@
+ 			return null;
+ 		}
+ 
+-		$pricing = get_post_meta( $car_id, 'glc_pricing', true );
+-		if ( ! is_array( $pricing ) || ! $pricing ) {
++		$pricing = self::seasons( $car_id );
++		if ( ! $pricing ) {
+ 			return null;
+ 		}
+ 
+@@ -115,23 +205,56 @@
+ 		];
+ 	}
+ 
+-	/** Lowest and highest day-rate across all seasons/tiers (for schema offers). */
++	/**
++	 * Lowest and highest day-rate across all seasons/tiers (for schema offers).
++	 *
++	 * Returns [0.0, 0.0] when the car has no usable rate anywhere — callers MUST
++	 * treat that as "unpriced" and omit the price entirely rather than printing
++	 * a zero. Use is_priced() for that check.
++	 */
+ 	public static function rate_range( int $car_id ): array {
+-		$pricing = get_post_meta( $car_id, 'glc_pricing', true );
+-		$rates   = [];
+-		if ( is_array( $pricing ) ) {
+-			foreach ( $pricing as $season ) {
+-				foreach ( (array) ( $season['rates'] ?? [] ) as $r ) {
+-					if ( (float) $r > 0 ) {
+-						$rates[] = (float) $r;
+-					}
++		$rates = [];
++		foreach ( self::seasons( $car_id ) as $season ) {
++			foreach ( (array) ( $season['rates'] ?? [] ) as $r ) {
++				if ( (float) $r > 0 ) {
++					$rates[] = (float) $r;
+ 				}
+ 			}
+ 		}
+ 		if ( ! $rates ) {
+ 			$from = (float) get_post_meta( $car_id, 'glc_price_from', true );
+-			return [ $from, $from ];
++			return $from > 0 ? [ $from, $from ] : [ 0.0, 0.0 ];
+ 		}
+ 		return [ min( $rates ), max( $rates ) ];
+ 	}
++
++	/**
++	 * The cheapest day-rate across the whole published fleet — the single source
++	 * of truth for the advertised "from $N/day" floor.
++	 *
++	 * The site previously advertised $26 in one place and $28 in another because
++	 * the title tag read a settings value while the copy read another. Deriving
++	 * it from the cheapest actually-bookable car means the snippet, the hero, the
++	 * schema priceRange and llms.txt cannot disagree again.
++	 */
++	public static function fleet_floor(): float {
++		static $floor = null;
++		if ( null !== $floor ) {
++			return $floor;
++		}
++		$lows = [];
++		foreach ( get_posts( [
++			'post_type'      => 'car',
++			'posts_per_page' => -1,
++			'fields'         => 'ids',
++			'no_found_rows'  => true,
++		] ) as $car_id ) {
++			[ $low ] = self::rate_range( (int) $car_id );
++			if ( $low > 0 ) {
++				$lows[] = $low;
++			}
++		}
++		$floor = $lows ? min( $lows ) : 0.0;
++		return $floor;
++	}
+ }
+--- a/wp-content/plugins/geolander-core/includes/class-glc-schema.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-schema.php
+@@ -35,32 +35,20 @@
+ 		$graph[] = self::business();
+ 		$graph[] = self::website();
+ 
++		// The trail is built once by current_trail() and reused by the visible
++		// breadcrumb bar, so markup and page can never drift apart.
+ 		if ( is_singular( 'car' ) ) {
+ 			$graph[] = self::car( get_the_ID() );
+-			// Car titles are model names — never translated. Only the crumb label is.
+-			$graph[] = self::breadcrumbs( [
+-				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
+-				[ get_permalink(), get_the_title() ],
+-			] );
++			$graph[] = self::breadcrumbs( self::current_trail() );
+ 		} elseif ( is_singular( 'place' ) ) {
+ 			$graph[] = self::place( get_the_ID() );
+-			// glc_ui(), not __(): the plugin ships no .mo files, so __() would emit
+-			// English on every locale. Place titles come from the content resolver.
+-			$graph[] = self::breadcrumbs( [
+-				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
+-				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
+-			] );
++			$graph[] = self::breadcrumbs( self::current_trail() );
+ 		} elseif ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
+ 			$graph[] = GLC_City::schema( get_the_ID() );
+-			$graph[] = self::breadcrumbs( [
+-				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
+-				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
+-			] );
++			$graph[] = self::breadcrumbs( self::current_trail() );
+ 		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
+ 			$graph[] = self::guide( get_the_ID() );
+-			$graph[] = self::breadcrumbs( [
+-				[ get_permalink(), get_the_title() ],
+-			] );
++			$graph[] = self::breadcrumbs( self::current_trail() );
+ 		} elseif ( is_post_type_archive( 'car' ) ) {
+ 			$graph[] = self::fleet_list();
+ 		} elseif ( is_front_page() ) {
+@@ -73,14 +61,67 @@
+ 		printf(
+ 			"<script type=\"application/ld+json\">%s</script>\n",
+ 			wp_json_encode(
+-				[ '@context' => 'https://schema.org', '@graph' => array_values( array_filter( $graph ) ) ],
++				[
++					'@context' => 'https://schema.org',
++					'@graph'   => array_values( array_filter( array_map( [ __CLASS__, 'prune' ], $graph ) ) ),
++				],
+ 				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+ 			)
+ 		);
+ 	}
+ 
++	/**
++	 * Drop null/empty properties recursively.
++	 *
++	 * Several nodes build optional properties with `?: null` and the offers node
++	 * is now null for unpriced cars. Emitting `"offers": null` or `"color": null`
++	 * is noise at best and, for offers specifically, ambiguous — pruning means an
++	 * absent price is genuinely absent rather than declared empty.
++	 */
++	private static function prune( $value ) {
++		if ( ! is_array( $value ) ) {
++			return $value;
++		}
++		$is_list = array_is_list( $value );
++		$out     = [];
++		foreach ( $value as $key => $item ) {
++			$item = self::prune( $item );
++			if ( null === $item || '' === $item || [] === $item ) {
++				continue;
++			}
++			$out[ $key ] = $item;
++		}
++		// Re-index lists so a pruned element can't turn a JSON array into an object.
++		return $is_list ? array_values( $out ) : $out;
++	}
++
+ 	private static function business(): array {
+ 		$logo = get_theme_file_uri( 'assets/img/logo.png' );
++
++		/*
++		 * `image` was the logo. For a local business entity a real photograph of
++		 * the premises or the fleet is a stronger corroborating signal than a
++		 * wordmark — and it is what the Google Business Profile should show too.
++		 * `logo` stays the logo, which is what that property is for.
++		 */
++		$image = get_theme_file_uri( 'assets/img/hero.jpg' );
++
++		/*
++		 * areaServed was Country:Georgia alone, while the business explicitly
++		 * delivers to four named cities and publishes a page for each. Declaring
++		 * the actual service footprint costs one loop and makes the entity legible
++		 * to both local search and AI grounding.
++		 */
++		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
++		if ( class_exists( 'GLC_City' ) ) {
++			foreach ( GLC_City::all() as $city ) {
++				$name = GLC_City::city_name( $city->ID );
++				if ( $name ) {
++					$area[] = [ '@type' => 'City', 'name' => $name ];
++				}
++			}
++		}
++
+ 		return [
+ 			'@type'      => 'AutoRental',
+ 			'@id'        => home_url( '/#business' ),
+@@ -91,7 +132,7 @@
+ 			'description'=> get_bloginfo( 'description' ),
+ 			'url'        => home_url( '/' ),
+ 			'logo'       => $logo,
+-			'image'      => $logo,
++			'image'      => $image,
+ 			'telephone'  => GLC_Settings::get( 'phone' ),
+ 			'email'      => GLC_Settings::get( 'email' ),
+ 			// Reads the settings range, so schema can't drift from the site copy.
+@@ -120,7 +161,7 @@
+ 				GLC_Settings::get( 'instagram' ),
+ 				GLC_Settings::get( 'facebook' ),
+ 			] ) ),
+-			'areaServed' => [ '@type' => 'Country', 'name' => 'Georgia' ],
++			'areaServed' => $area,
+ 		];
+ 	}
+ 
+@@ -152,6 +193,34 @@
+ 		$brand = wp_get_post_terms( $post_id, 'car_brand', [ 'fields' => 'names' ] );
+ 		$year  = get_post_meta( $post_id, 'glc_year', true );
+ 
++		/*
++		 * A Product offer advertising lowPrice 0 is not a missing price — it is a
++		 * false price, and it was being published to Google's structured-data
++		 * pipeline and to every AI crawler robots.txt invites. When the car has no
++		 * usable rate the offers node is omitted entirely: describing the vehicle
++		 * without quoting a price is honest; quoting zero is not.
++		 */
++		$currency = GLC_Settings::get( 'payment_currency', 'USD' );
++		$offers   = ( $low > 0 && $high > 0 ) ? [
++			'@type'         => 'AggregateOffer',
++			'priceCurrency' => $currency,
++			'lowPrice'      => $low,
++			'highPrice'     => $high,
++			'offerCount'    => count( GLC_Pricing::TIERS ),
++			'availability'  => get_post_meta( $post_id, 'glc_available', true )
++				? 'https://schema.org/InStock'
++				: 'https://schema.org/OutOfStock',
++			'url'           => get_permalink( $post_id ),
++			'seller'        => [ '@id' => home_url( '/#business' ) ],
++			'priceSpecification' => [
++				'@type'             => 'UnitPriceSpecification',
++				'price'             => $low,
++				'priceCurrency'     => $currency,
++				'unitCode'          => 'DAY',
++				'referenceQuantity' => [ '@type' => 'QuantitativeValue', 'value' => 1, 'unitCode' => 'DAY' ],
++			],
++		] : null;
++
+ 		return [
+ 			'@type'               => [ 'Product', 'Car' ],
+ 			'@id'                 => get_permalink( $post_id ) . '#car',
+@@ -168,29 +237,17 @@
+ 			'vehicleTransmission' => get_post_meta( $post_id, 'glc_transmission', true ) ?: null,
+ 			'fuelType'            => get_post_meta( $post_id, 'glc_fuel_type', true ) ?: null,
+ 			'seatingCapacity'     => (int) get_post_meta( $post_id, 'glc_seats', true ) ?: null,
+-			'offers'              => [
+-				'@type'         => 'AggregateOffer',
+-				'priceCurrency' => GLC_Settings::get( 'payment_currency', 'USD' ),
+-				'lowPrice'      => $low,
+-				'highPrice'     => $high,
+-				'offerCount'    => count( GLC_Pricing::TIERS ),
+-				'availability'  => get_post_meta( $post_id, 'glc_available', true )
+-					? 'https://schema.org/InStock'
+-					: 'https://schema.org/OutOfStock',
+-				'url'           => get_permalink( $post_id ),
+-				'seller'        => [ '@id' => home_url( '/#business' ) ],
+-				'priceSpecification' => [
+-					'@type'             => 'UnitPriceSpecification',
+-					'price'             => $low,
+-					'priceCurrency'     => GLC_Settings::get( 'payment_currency', 'USD' ),
+-					'unitCode'          => 'DAY',
+-					'referenceQuantity' => [ '@type' => 'QuantitativeValue', 'value' => 1, 'unitCode' => 'DAY' ],
+-				],
+-			],
++			'offers'              => $offers,
+ 		];
+ 	}
+ 
+ 	private static function place( int $post_id ): array {
++		// The place CPT already stores coordinates and they were never used, so the
++		// node claimed authority over a national landmark with an address of
++		// "Georgia" and nothing else. Real coordinates make the claim substantive.
++		$lat = (float) get_post_meta( $post_id, 'glc_lat', true );
++		$lng = (float) get_post_meta( $post_id, 'glc_lng', true );
++
+ 		return [
+ 			'@type'       => 'TouristAttraction',
+ 			'@id'         => get_permalink( $post_id ) . '#place',
+@@ -199,6 +256,9 @@
+ 			'image'       => has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'full' ) : null,
+ 			'url'         => get_permalink( $post_id ),
+ 			'address'     => [ '@type' => 'PostalAddress', 'addressCountry' => 'GE' ],
++			'geo'         => ( $lat && $lng )
++				? [ '@type' => 'GeoCoordinates', 'latitude' => $lat, 'longitude' => $lng ]
++				: null,
+ 		];
+ 	}
+ 
+@@ -269,6 +329,63 @@
+ 		];
+ 	}
+ 
++	/**
++	 * The breadcrumb trail for the current request, or [] when there isn't one.
++	 *
++	 * Shared by the JSON-LD node and the visible breadcrumb bar so the markup
++	 * always describes something the visitor can actually see — Google expects
++	 * structured data to correspond to visible page content, and the site emitted
++	 * BreadcrumbList with no breadcrumb anywhere on the page.
++	 */
++	public static function current_trail(): array {
++		if ( is_singular( 'car' ) ) {
++			return [
++				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
++				[ get_permalink(), get_the_title() ],
++			];
++		}
++		if ( is_singular( 'place' ) ) {
++			return [
++				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
++				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
++			];
++		}
++		if ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
++			return [
++				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
++				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
++			];
++		}
++		if ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
++			return [ [ get_permalink(), get_the_title() ] ];
++		}
++		return [];
++	}
++
++	/** Visible breadcrumb bar matching current_trail(). */
++	public static function breadcrumb_html(): string {
++		$trail = self::current_trail();
++		if ( ! $trail ) {
++			return '';
++		}
++		$items = [ sprintf(
++			'<a href="%s">%s</a>',
++			esc_url( home_url( '/' ) ),
++			esc_html( get_bloginfo( 'name' ) )
++		) ];
++		$last  = count( $trail ) - 1;
++		foreach ( $trail as $i => [ $url, $name ] ) {
++			$items[] = $i === $last
++				? '<span aria-current="page">' . esc_html( $name ) . '</span>'
++				: sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $name ) );
++		}
++		return sprintf(
++			'<nav class="glc-breadcrumbs" aria-label="%s">%s</nav>',
++			esc_attr( glc_ui( 'breadcrumb' ) ),
++			implode( '<span class="glc-breadcrumb-sep" aria-hidden="true">/</span>', $items )
++		);
++	}
++
+ 	private static function breadcrumbs( array $trail ): array {
+ 		$items = [ [
+ 			'@type'    => 'ListItem',
+--- a/wp-content/plugins/geolander-core/includes/class-glc-seo.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-seo.php
+@@ -15,9 +15,29 @@
+ 		// Trim sitemap noise: no author archives, no unused core taxonomy.
+ 		add_filter( 'wp_sitemaps_add_provider', fn( $provider, $name ) => 'users' === $name ? false : $provider, 10, 2 );
+ 		add_filter( 'wp_sitemaps_taxonomies', function ( $taxonomies ) {
+-			unset( $taxonomies['category'], $taxonomies['post_tag'] );
++			/*
++			 * Core's category/post_tag were already dropped, but the three custom
++			 * taxonomies stayed in. With ~15 cars across ~5 brands and 2 body types,
++			 * plus ~6 place regions — and every one of them multiplied by 7 locales —
++			 * these archives are near-duplicates of /fleet/ and /places/ with no
++			 * unique title, copy or intent. That is a large slice of the crawlable
++			 * surface spent on pages that cannot win anything.
++			 *
++			 * They stay crawlable and followed (so internal equity still flows and
++			 * the cars remain reachable) but leave the sitemap and carry noindex —
++			 * see robots_archives(). Revisit /body-type/suv/ specifically once a real
++			 * 4x4 category page exists: it is a latent landing page, not junk.
++			 */
++			unset(
++				$taxonomies['category'],
++				$taxonomies['post_tag'],
++				$taxonomies['car_brand'],
++				$taxonomies['car_body_type'],
++				$taxonomies['place_region']
++			);
+ 			return $taxonomies;
+ 		} );
++		add_filter( 'wp_robots', [ __CLASS__, 'robots_archives' ] );
+ 		add_filter( 'robots_txt', [ __CLASS__, 'robots' ] );
+ 		add_action( 'wp_head', [ __CLASS__, 'gtag' ], 8 );
+ 	}
+@@ -37,25 +57,41 @@
+ 			// to target one precise, non-overlapping search intent.
+ 			$parts['title'] = $custom_title;
+ 		} elseif ( is_singular( 'car' ) ) {
+-			$price = (float) get_post_meta( get_the_ID(), 'glc_price_from', true );
++			// Price the title from the real rate table, and never print a zero:
++			// glc_price_from is empty on every imported car, which is exactly how
++			// "$0/day" reached live meta descriptions.
++			[ $price ] = GLC_Pricing::rate_range( get_the_ID() );
+ 			$parts['title'] = $en
+ 				? ( $price > 0
+ 					? sprintf( 'Rent %s in Tbilisi from $%d/day', get_the_title(), $price )
+ 					: sprintf( '%s Rental in Tbilisi, Georgia', get_the_title() ) )
+-				: sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) );
++				: ( $price > 0
++					? sprintf( '%s — %s · $%d%s', get_the_title(), glc_ui( 'booking_title' ), $price, glc_ui( 'from_per_day' ) )
++					: sprintf( '%s — %s', get_the_title(), glc_ui( 'booking_title' ) ) );
+ 		} elseif ( is_post_type_archive( 'car' ) ) {
++			// "Real" is a trust word and must not sit beside an unverified count or
++			// a zero floor.
+ 			$count = (int) ( wp_count_posts( 'car' )->publish ?? 0 );
++			$floor = (float) GLC_Format::range()[0];
+ 			$parts['title'] = $en
+-				? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, GLC_Format::range()[0] )
++				? ( $floor > 0
++					? sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s from $%d/day', $count, $floor )
++					: sprintf( 'Car Rental Fleet in Tbilisi, Georgia — %d Real 4x4s', $count ) )
+ 				: glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' );
+ 		} elseif ( is_post_type_archive( 'place' ) ) {
++			// Was hard-coded "36 Destinations" — silently false the moment a place
++			// is added or removed.
++			$places = (int) ( wp_count_posts( 'place' )->publish ?? 0 );
+ 			$parts['title'] = $en
+-				? 'Places to Visit in Georgia by Car — 36 Destinations'
++				? sprintf( 'Places to Visit in Georgia by Car — %d Destinations', $places )
+ 				: glc_ui( 'places_title' ) . ' — ' . glc_ui( 'places_subtitle' );
+ 		} elseif ( is_front_page() ) {
+ 			// Front page has no separate 'site' part — brand goes inline.
++			$floor = (float) GLC_Format::range()[0];
+ 			$parts['title'] = $en
+-				? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', GLC_Format::range()[0] )
++				? ( $floor > 0
++					? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', $floor )
++					: 'Car Rental in Tbilisi, Georgia — 4x4 Rental | Geolander' )
+ 				: glc_ui( 'hero_title' ) . ' | Geolander';
+ 			unset( $parts['tagline'] );
+ 		}
+@@ -63,6 +99,25 @@
+ 	}
+ 
+ 	/**
++	 * noindex, follow on the thin taxonomy archives and on paginated / search
++	 * results — "follow" so the cars they list stay reachable and internal equity
++	 * keeps flowing, "noindex" because none of them is a page anyone should land
++	 * on from search.
++	 */
++	public static function robots_archives( array $robots ): array {
++		$thin = is_tax( [ 'car_brand', 'car_body_type', 'place_region' ] )
++			|| is_search()
++			|| is_paged();
++
++		if ( $thin ) {
++			$robots['noindex'] = true;
++			$robots['follow']  = true;
++			unset( $robots['index'] );
++		}
++		return $robots;
++	}
++
++	/**
+ 	 * robots.txt: point crawlers at the sitemap and explicitly welcome
+ 	 * the AI crawlers behind ChatGPT, Claude, Perplexity, and Gemini
+ 	 * grounding — AI answer visibility is a business channel here.
+@@ -109,7 +164,26 @@
+ 				? GLC_Content::excerpt( $post, 40 )
+ 				: ( $post->post_excerpt ?: wp_strip_all_tags( $post->post_content ) );
+ 			if ( is_singular( 'car' ) ) {
+-				$price = (float) get_post_meta( $post->ID, 'glc_price_from', true );
++				// Same guard as the title: an unpriced car gets a description that
++				// simply omits the price rather than advertising "from $0/day".
++				[ $price ] = GLC_Pricing::rate_range( $post->ID );
++				if ( $price <= 0 ) {
++					$text = $en
++						? sprintf(
++							'Rent a %s in Tbilisi. 4x4, full insurance, free airport delivery. Ask on WhatsApp for an exact seasonal quote. %s',
++							get_the_title( $post ),
++							$text
++						)
++						: sprintf(
++							'%s — %s. %s, %s. %s',
++							get_the_title( $post ),
++							glc_ui( 'booking_title' ),
++							glc_ui( 'trust_insurance' ),
++							glc_ui( 'trust_delivery' ),
++							$text
++						);
++					return wp_html_excerpt( trim( $text ), 158, '…' );
++				}
+ 				// Localized pages must not advertise themselves in English: hreflang
+ 				// declares them e.g. Georgian, so an English description contradicts
+ 				// the page and reads badly in localized search results.
+--- a/wp-content/themes/geolander/assets/css/main.css
++++ b/wp-content/themes/geolander/assets/css/main.css
+@@ -1174,3 +1174,12 @@
+ 	color: var(--glc-ink-text);
+ }
+ .glc-light h2, .glc-light h3 { color: var(--glc-ink-text); }
++
++/* Breadcrumbs — visible trail matching the BreadcrumbList JSON-LD.
++   City pages emitted the markup with nothing on the page; car and place pages
++   render their own inline version. */
++.glc-breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.8rem;color:var(--glc-stone,#6b6b66);}
++.glc-breadcrumbs a{color:inherit;text-decoration:none;}
++.glc-breadcrumbs a:hover,.glc-breadcrumbs a:focus-visible{text-decoration:underline;}
++.glc-breadcrumbs [aria-current="page"]{color:var(--glc-ink,#14140f);font-weight:600;}
++.glc-breadcrumb-sep{opacity:.45;}
+--- a/wp-content/themes/geolander/inc/strings-ar.php
++++ b/wp-content/themes/geolander/inc/strings-ar.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'من',
++	'nav_locations' => 'المدن',
++	'nav_where_drive' => 'أين يمكنك القيادة',
++	'nav_guides' => 'أدلة',
++	'nav_trust' => 'الثقة والشروط',
++	'breadcrumb' => 'مسار التنقل',
++	'price_on_request' => 'السعر عند الطلب',
+ 	'nav_home'        => 'الرئيسية',
+ 	'nav_fleet'       => 'أسطولنا',
+ 	'nav_places'      => 'أماكن للزيارة',
+--- a/wp-content/themes/geolander/inc/strings-en.php
++++ b/wp-content/themes/geolander/inc/strings-en.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'from',
++	'nav_locations' => 'Locations',
++	'nav_where_drive' => 'Where you can drive',
++	'nav_guides' => 'Guides',
++	'nav_trust' => 'Trust & policies',
++	'breadcrumb' => 'Breadcrumb',
++	'price_on_request' => 'Price on request',
+ 	'nav_home'        => 'Home',
+ 	'nav_fleet'       => 'Our Fleet',
+ 	'nav_places'      => 'Places to Visit',
+--- a/wp-content/themes/geolander/inc/strings-fr.php
++++ b/wp-content/themes/geolander/inc/strings-fr.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'à partir de',
++	'nav_locations' => 'Villes',
++	'nav_where_drive' => 'Où vous pouvez rouler',
++	'nav_guides' => 'Guides',
++	'nav_trust' => 'Confiance et conditions',
++	'breadcrumb' => 'Fil d’Ariane',
++	'price_on_request' => 'Prix sur demande',
+ 	'nav_home'        => 'Accueil',
+ 	'nav_fleet'       => 'Notre flotte',
+ 	'nav_places'      => 'À visiter',
+--- a/wp-content/themes/geolander/inc/strings-ka.php
++++ b/wp-content/themes/geolander/inc/strings-ka.php
+@@ -8,6 +8,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'დან',
++	'nav_locations' => 'ლოკაციები',
++	'nav_where_drive' => 'სად შეგიძლიათ მგზავრობა',
++	'nav_guides' => 'გზამკვლევები',
++	'nav_trust' => 'ნდობა და პირობები',
++	'breadcrumb' => 'ნავიგაცია',
++	'price_on_request' => 'ფასი მოთხოვნით',
+ 	// Navigation.
+ 	'nav_home'        => 'მთავარი',
+ 	'nav_fleet'       => 'ჩვენი ავტოპარკი',
+--- a/wp-content/themes/geolander/inc/strings-ru.php
++++ b/wp-content/themes/geolander/inc/strings-ru.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'от',
++	'nav_locations' => 'Города',
++	'nav_where_drive' => 'Где можно ездить',
++	'nav_guides' => 'Гиды',
++	'nav_trust' => 'Доверие и условия',
++	'breadcrumb' => 'Навигация',
++	'price_on_request' => 'Цена по запросу',
+ 	'nav_home'        => 'Главная',
+ 	'nav_fleet'       => 'Наш автопарк',
+ 	'nav_places'      => 'Что посмотреть',
+--- a/wp-content/themes/geolander/inc/strings-uk.php
++++ b/wp-content/themes/geolander/inc/strings-uk.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => 'від',
++	'nav_locations' => 'Міста',
++	'nav_where_drive' => 'Де можна їздити',
++	'nav_guides' => 'Путівники',
++	'nav_trust' => 'Довіра та умови',
++	'breadcrumb' => 'Навігація',
++	'price_on_request' => 'Ціна за запитом',
+ 	'nav_home'        => 'Головна',
+ 	'nav_fleet'       => 'Наш автопарк',
+ 	'nav_places'      => 'Що подивитися',
+--- a/wp-content/themes/geolander/inc/strings-zh.php
++++ b/wp-content/themes/geolander/inc/strings-zh.php
+@@ -4,6 +4,13 @@
+ defined( 'ABSPATH' ) || exit;
+ 
+ return [
++	'from' => '起',
++	'nav_locations' => '城市',
++	'nav_where_drive' => '可行驶路线',
++	'nav_guides' => '指南',
++	'nav_trust' => '信任与条款',
++	'breadcrumb' => '导航路径',
++	'price_on_request' => '价格面议',
+ 	'nav_home'        => '首页',
+ 	'nav_fleet'       => '我们的车队',
+ 	'nav_places'      => '景点推荐',
+--- a/wp-content/themes/geolander/patterns/city-page.php
++++ b/wp-content/themes/geolander/patterns/city-page.php
+@@ -15,6 +15,15 @@
+ ?>
+ <main style="width:min(100% - 2.5rem, 900px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
+ 
++	<?php
++	// City pages emitted BreadcrumbList markup with no visible breadcrumb, while
++	// car and place pages already had one. Rendered from GLC_Schema::current_trail(),
++	// the same source the JSON-LD reads, so markup and page cannot disagree.
++	if ( class_exists( 'GLC_Schema' ) ) {
++		echo GLC_Schema::breadcrumb_html(); // phpcs:ignore WordPress.Security.EscapeOutput
++	}
++	?>
++
+ 	<?php if ( has_post_thumbnail( $glc_id ) ) : ?>
+ 		<div style="border-radius:var(--glc-radius);overflow:clip;aspect-ratio:21/9;">
+ 			<?php the_post_thumbnail( 'glc-hero', [ 'style' => 'width:100%;height:100%;object-fit:cover;', 'fetchpriority' => 'high' ] ); ?>
+--- a/wp-content/themes/geolander/patterns/header.php
++++ b/wp-content/themes/geolander/patterns/header.php
+@@ -4,15 +4,43 @@
+  * Slug: geolander/header
+  * Inserter: no
+  */
+-$glc_nav = [
+-	home_url( '/' )             => glc_t( 'nav_home' ),
+-	home_url( '/fleet/' )       => glc_t( 'nav_fleet' ),
+-	home_url( '/places/' )      => glc_t( 'nav_places' ),
+-	home_url( '/travel-info/' ) => glc_t( 'nav_travel_info' ),
+-	home_url( '/music/' )       => glc_t( 'nav_music' ),
+-	home_url( '/terms/' )       => glc_t( 'nav_terms' ),
+-	home_url( '/contact/' )     => glc_t( 'nav_contact' ),
++/*
++ * Primary navigation.
++ *
++ * Three of the seven slots used to go to tourist content (Places, Travel Info,
++ * Georgian Music) and none went to a city page or a policy page — so the pages
++ * that actually earn money were supported only by site-wide footer links, the
++ * weakest internal link there is. This order leads with commercial and
++ * decision-stage destinations and demotes the rest to the footer.
++ *
++ * Candidates whose page does not exist yet are skipped, so the nav upgrades
++ * itself as the coverage hub, the permission page and the trust pages are
++ * published — and never links to a 404 in the meantime.
++ */
++$glc_nav_candidates = [
++	'/fleet/'               => glc_t( 'nav_fleet' ),
++	'/where-you-can-drive/' => glc_t( 'nav_where_drive' ),
++	'/car-rental/'          => glc_t( 'nav_locations' ),
++	'/guides/'              => glc_t( 'nav_guides' ),
++	'/trust/'               => glc_t( 'nav_trust' ),
++	'/places/'              => glc_t( 'nav_places' ),
++	'/contact/'             => glc_t( 'nav_contact' ),
+ ];
++
++$glc_nav = [];
++foreach ( $glc_nav_candidates as $glc_path => $glc_label ) {
++	// /fleet/ and /places/ are CPT archives, not pages — always present.
++	$glc_always = in_array( $glc_path, [ '/fleet/', '/places/' ], true );
++	if ( $glc_always || get_page_by_path( trim( $glc_path, '/' ) ) instanceof WP_Post ) {
++		$glc_nav[ home_url( $glc_path ) ] = $glc_label;
++	}
++}
++if ( ! $glc_nav ) { // Defensive: never render an empty nav.
++	$glc_nav = [
++		home_url( '/fleet/' )   => glc_t( 'nav_fleet' ),
++		home_url( '/contact/' ) => glc_t( 'nav_contact' ),
++	];
++}
+ $glc_phone = GLC_Settings::get( 'phone' );
+ $glc_tel   = preg_replace( '/[^+0-9]/', '', $glc_phone );
+ ?>
+--- a/wp-content/themes/geolander/style.css
++++ b/wp-content/themes/geolander/style.css
+@@ -3,7 +3,7 @@
+ Theme URI: https://geo-lander.com
+ Author: Geolander
+ Description: Adventure-immersive block theme for Geolander premium 4x4 rental in Georgia. Georgian UI, English vehicle content, golden-path booking UX.
+-Version: 1.1.2
++Version: 1.2.0
+ Requires at least: 6.7
+ Tested up to: 7.0
+ Requires PHP: 8.1
+--- a/_migration/validate-schema.mjs
++++ b/_migration/validate-schema.mjs
+@@ -1,14 +1,41 @@
+-/* Structural JSON-LD validator for Geolander pages.
+- * Checks JSON validity + Google rich-results required/recommended fields
+- * for Product, FAQPage, LocalBusiness(AutoRental), BreadcrumbList. */
++/* Structural JSON-LD validator + SEO regression guard for Geolander pages.
++ *
++ * Checks JSON validity and Google rich-results required/recommended fields for
++ * Product, FAQPage, LocalBusiness(AutoRental) and BreadcrumbList — then guards
++ * the three defects that reached production and that none of the above would
++ * have caught:
++ *
++ *   1. A published car advertising a price of ZERO. The site shipped
++ *      `lowPrice: 0` into Product schema, into meta descriptions and into
++ *      /pricing.md — straight to Google and to every AI crawler robots.txt
++ *      invites. Nothing asserted "a published car has a real price", so nothing
++ *      ever failed. Now something does.
++ *   2. "$0" appearing anywhere in the machine-readable surfaces, which exist
++ *      precisely to be quoted verbatim.
++ *   3. The localized homepages returning a redirect loop. Every page's hreflang
++ *      points at those six URLs, so a loop there poisons the whole site's
++ *      alternates while every individual page still looks perfectly fine.
++ *
++ * Usage: node _migration/validate-schema.mjs [baseUrl]
++ */
++
++const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
++
++/* Locales that must return 200 at their bare root. `en` is the unprefixed
++ * default, covered by the home page check. */
++const LOCALES = ['ka', 'ru', 'uk', 'ar', 'zh', 'fr'];
++
++/* Machine-readable surfaces that must never quote a zero price. */
++const AI_FILES = ['/llms.txt', '/pricing.md'];
+ 
+ const PAGES = [
+-	['home', 'http://localhost:8080/'],
+-	['fleet', 'http://localhost:8080/fleet/'],
+-	['car-wrangler', 'http://localhost:8080/fleet/jeep-wrangler-2017-ys-105-sy/'],
+-	['car-forester', 'http://localhost:8080/fleet/subaru-forester-2020-ll802ml/'],
+-	['place', 'http://localhost:8080/places/gergeti-trinity-church/'],
+-	['contact', 'http://localhost:8080/contact/'],
++	['home', `${BASE}/`],
++	['fleet', `${BASE}/fleet/`],
++	['car-wrangler', `${BASE}/fleet/jeep-wrangler-2017-ys-105-sy/`],
++	['car-forester', `${BASE}/fleet/subaru-forester-2020-ll802ml/`],
++	['place', `${BASE}/places/gergeti-trinity-church/`],
++	['city-tbilisi', `${BASE}/car-rental-tbilisi/`],
++	['contact', `${BASE}/contact/`],
+ ];
+ 
+ let errors = 0, warnings = 0, checks = 0;
+@@ -23,13 +50,30 @@
+ 	if (!node.name) err(page, 'Product missing name'); else ok();
+ 	if (!node.image || (Array.isArray(node.image) && !node.image.length)) err(page, `Product "${node.name}" missing image`); else ok();
+ 	const offers = node.offers;
+-	if (!offers) { err(page, `Product "${node.name}" missing offers`); return; }
++	/* An ABSENT offers node is legitimate and deliberate: a car with no rate
++	 * table must not advertise a price. That costs merchant-listing eligibility,
++	 * which is a warning — not a lie, which would be an error. */
++	if (!offers) {
++		warn(page, `Product "${node.name}" has no offers — car is unpriced, so it cannot be eligible for merchant listings. Add a rate table or unpublish it.`);
++		return;
++	}
+ 	ok();
+ 	if (!offers.priceCurrency) err(page, 'Offer missing priceCurrency'); else ok();
+ 	if (offers['@type'] === 'AggregateOffer') {
+-		if (offers.lowPrice == null || offers.lowPrice <= 0) err(page, 'AggregateOffer missing/zero lowPrice'); else ok();
+-		if (offers.highPrice == null) warn(page, 'AggregateOffer missing highPrice'); else ok();
+-	} else if (offers.price == null) err(page, 'Offer missing price'); else ok();
++		/* THE regression guard. A zero price is not a missing price — it is a
++		 * false statement about the business, published to search and to AI. */
++		if (offers.lowPrice == null || Number(offers.lowPrice) <= 0) {
++			err(page, `AggregateOffer for "${node.name}" has zero/absent lowPrice — never publish a price of 0. Omit the offers node instead.`);
++		} else ok();
++		if (offers.highPrice != null && Number(offers.highPrice) <= 0) {
++			err(page, `AggregateOffer for "${node.name}" has zero highPrice`);
++		} else if (offers.highPrice == null) { warn(page, 'AggregateOffer missing highPrice'); } else ok();
++		if (offers.priceSpecification && Number(offers.priceSpecification.price) <= 0) {
++			err(page, `priceSpecification for "${node.name}" has zero price`);
++		} else ok();
++	} else if (offers.price == null || Number(offers.price) <= 0) {
++		err(page, `Offer for "${node.name}" missing or zero price`);
++	} else ok();
+ 	if (!offers.availability) warn(page, 'Offer missing availability'); else ok();
+ 	if (!node.brand) warn(page, `Product "${node.name}" missing brand`); else ok();
+ 	if (!node.description) warn(page, `Product "${node.name}" missing description`); else ok();
+@@ -102,5 +146,44 @@
+ 	}
+ }
+ 
++/* ------------------------------------------------ Regression guards ----- */
++
++console.log('\nmachine-readable surfaces — no zero prices');
++for (const path of AI_FILES) {
++	const url = BASE + path;
++	let body;
++	try {
++		const res = await fetch(url);
++		if (!res.ok) { err(path, `HTTP ${res.status}`); continue; }
++		body = await res.text();
++	} catch (e) {
++		err(path, `fetch failed: ${e.message}`);
++		continue;
++	}
++	// "$0", "$0/day", "$0–$0" — any zero-dollar quotation at all.
++	const zeros = body.match(/\$0(?![.\d])/g);
++	if (zeros) {
++		err(path, `contains ${zeros.length} zero-price quotation(s) — this file is read verbatim by AI systems`);
++	} else ok();
++	if (/\$\d+–\$0|\$0–/.test(body)) { err(path, 'contains a zero-bounded price range'); } else ok();
++}
++
++console.log('\nlocalized homepages — no redirect loop');
++for (const locale of LOCALES) {
++	const url = `${BASE}/${locale}/`;
++	try {
++		// `redirect: 'follow'` throws on a loop; that is exactly what we want to catch.
++		const res = await fetch(url, { redirect: 'follow' });
++		if (!res.ok) {
++			err(locale, `${url} → HTTP ${res.status} (locale homepages are every page's hreflang targets)`);
++		} else ok();
++	} catch (e) {
++		err(locale, `${url} → ${e.message} — this is the redirect-loop regression, see GLC_I18n::hooks()`);
++	}
++}
++
+ console.log(`\n===== ${checks} checks, ${errors} errors, ${warnings} warnings =====`);
++if (errors) {
++	console.log('FAILED — do not deploy. Zero prices and locale loops both reach Google and AI crawlers directly.');
++}
+ process.exit(errors ? 1 : 0);
+--- a/_migration/audit-fleet.php
++++ b/_migration/audit-fleet.php
+@@ -0,0 +1,129 @@
++<?php
++/**
++ * Read-only fleet integrity audit.
++ *
++ * Run: docker compose run --rm cli eval-file /migration/audit-fleet.php
++ *
++ * This script CHANGES NOTHING. It exists because three sources disagreed about
++ * how many cars Geolander has — /fleet/ showed 19, /llms.txt said 15 and
++ * /pricing.md listed 8 — and because merging posts is destructive enough that a
++ * human should decide which record survives.
++ *
++ * It reports:
++ *   1. Published cars with no usable rate table  → these were publishing "$0/day"
++ *   2. Likely duplicate records                  → same make/model/year, or the
++ *                                                  same registration plate
++ *   3. Cars with no registration plate           → cannot be matched to a
++ *                                                  physical vehicle at all
++ *   4. Cars with no photographs                  → the "real cars, real photos"
++ *                                                  promise fails on these
++ *   5. Cars with no unique description           → the thin-content problem
++ *
++ * Fix duplicates by 301-redirecting the loser to the survivor, never by
++ * deleting: a deleted URL loses whatever equity and external links it had.
++ */
++
++if ( ! defined( 'ABSPATH' ) ) {
++	exit( "Run via wp eval-file\n" );
++}
++
++$cars = get_posts( [
++	'post_type'      => 'car',
++	'posts_per_page' => -1,
++	'post_status'    => 'any',
++	'orderby'        => 'menu_order',
++	'order'          => 'ASC',
++] );
++
++WP_CLI::log( '' );
++WP_CLI::log( '=== Geolander fleet audit (read-only) ===' );
++WP_CLI::log( sprintf( 'Car posts found: %d (published: %d)', count( $cars ), (int) ( wp_count_posts( 'car' )->publish ?? 0 ) ) );
++
++$unpriced   = [];
++$no_plate   = [];
++$no_photo   = [];
++$no_desc    = [];
++$by_plate   = [];
++$by_model   = [];
++
++foreach ( $cars as $car ) {
++	$id    = $car->ID;
++	$plate = strtoupper( preg_replace( '/[^A-Z0-9]/i', '', (string) get_post_meta( $id, 'glc_registration', true ) ) );
++	$year  = (string) get_post_meta( $id, 'glc_year', true );
++	$model = strtolower( trim( preg_replace( '/\s+/', ' ', preg_replace( '/\d{4}|black|white|gray|grey|blue|green|silver|limited|sport/i', '', $car->post_title ) ) ) );
++
++	if ( class_exists( 'GLC_Pricing' ) && ! GLC_Pricing::is_priced( $id ) ) {
++		$unpriced[] = $car;
++	}
++	if ( ! $plate ) {
++		$no_plate[] = $car;
++	} else {
++		$by_plate[ $plate ][] = $car;
++	}
++	if ( ! has_post_thumbnail( $id ) && ! get_post_meta( $id, 'glc_gallery', true ) ) {
++		$no_photo[] = $car;
++	}
++	if ( strlen( wp_strip_all_tags( (string) $car->post_content ) ) < 200 ) {
++		$no_desc[] = $car;
++	}
++	$by_model[ $model . '|' . $year ][] = $car;
++}
++
++$line = static function ( WP_Post $car ): string {
++	return sprintf(
++		'    #%d  %-42s  %-12s  %s',
++		$car->ID,
++		mb_strimwidth( $car->post_title, 0, 42, '…' ),
++		get_post_meta( $car->ID, 'glc_registration', true ) ?: '(no plate)',
++		get_permalink( $car )
++	);
++};
++
++/* 1 — unpriced */
++WP_CLI::log( '' );
++WP_CLI::log( sprintf( '[1] Cars with no usable rate table: %d', count( $unpriced ) ) );
++WP_CLI::log( '    These published "$0/day" before the price guards landed. Either add a' );
++WP_CLI::log( '    rate table or set glc_available = false and unpublish them.' );
++foreach ( $unpriced as $car ) {
++	WP_CLI::log( $line( $car ) );
++}
++
++/* 2 — duplicate plates (definitive) and duplicate model+year (probable) */
++$dupe_plates = array_filter( $by_plate, fn( $g ) => count( $g ) > 1 );
++WP_CLI::log( '' );
++WP_CLI::log( sprintf( '[2a] DUPLICATE registration plates: %d group(s) — these are certainly the same car', count( $dupe_plates ) ) );
++foreach ( $dupe_plates as $plate => $group ) {
++	WP_CLI::log( "    plate {$plate}:" );
++	foreach ( $group as $car ) {
++		WP_CLI::log( $line( $car ) );
++	}
++}
++
++$dupe_models = array_filter( $by_model, fn( $g ) => count( $g ) > 1 );
++WP_CLI::log( '' );
++WP_CLI::log( sprintf( '[2b] Same make/model/year: %d group(s) — check plates before assuming duplication', count( $dupe_models ) ) );
++WP_CLI::log( '     (Geolander genuinely owns several Foresters, so this list is a prompt, not a verdict.)' );
++foreach ( $dupe_models as $key => $group ) {
++	WP_CLI::log( '    ' . $key . ':' );
++	foreach ( $group as $car ) {
++		WP_CLI::log( $line( $car ) );
++	}
++}
++
++/* 3–5 — completeness */
++foreach ( [
++	[ '[3] No registration plate', $no_plate, 'Cannot be matched to a physical car. The plate is the dedupe key.' ],
++	[ '[4] No photographs', $no_photo, 'The homepage promises "real cars, real photos". These break that promise.' ],
++	[ '[5] Under 200 characters of body content', $no_desc, 'Thin, near-duplicate pages. Publish ground clearance, odometer, service date, tyre age.' ],
++] as [ $label, $group, $note ] ) {
++	WP_CLI::log( '' );
++	WP_CLI::log( sprintf( '%s: %d', $label, count( $group ) ) );
++	WP_CLI::log( '    ' . $note );
++	foreach ( $group as $car ) {
++		WP_CLI::log( $line( $car ) );
++	}
++}
++
++WP_CLI::log( '' );
++WP_CLI::log( '=== Nothing was changed. Decide the survivors, then 301 the losers. ===' );
++WP_CLI::log( '' );
+--- a/_migration/setup-seo-pages.php
++++ b/_migration/setup-seo-pages.php
+@@ -0,0 +1,218 @@
++<?php
++/**
++ * Create the SEO architecture pages.
++ *
++ * Run: docker compose run --rm cli eval-file /migration/setup-seo-pages.php
++ * Idempotent by slug — safe to re-run.
++ *
++ * TWO CLASSES OF PAGE, AND THE DISTINCTION IS THE POINT
++ * -----------------------------------------------------
++ * PUBLISHED — pages built only from facts already on the site. The coverage hub
++ * and the guides index are indexes of existing content; nothing on them is
++ * invented.
++ *
++ * DRAFT — the three highest-value pages in the entire SEO strategy:
++ *   /where-you-can-drive/            route permissions
++ *   /trust/deposit-policy/           deposit amount and mechanism
++ *   /trust/what-our-insurance-covers/ excess, liability limit, exclusions
++ *
++ * Each is created as a DRAFT with the full structure, the research rationale,
++ * and explicit NEEDS: markers where a fact is required. They are NOT published,
++ * because every one of them turns on a fact only the business owner and its
++ * insurer know, and publishing a permission or a deposit figure that cannot be
++ * honoured produces a seized deposit and a one-star review — destroying exactly
++ * the trust these pages exist to build.
++ *
++ * Fill in the markers, delete the editorial notes, publish. The navigation picks
++ * each page up automatically once it exists.
++ */
++
++if ( ! defined( 'ABSPATH' ) ) {
++	exit( "Run via wp eval-file\n" );
++}
++
++function glc_seo_upsert( string $slug, string $title, string $content, string $status = 'publish', array $meta = [] ): int {
++	$existing = get_page_by_path( $slug );
++	if ( $existing instanceof WP_Post && 'publish' === $existing->post_status && 'draft' === $status ) {
++		WP_CLI::log( "  · /{$slug}/ already published — left alone" );
++		return (int) $existing->ID;
++	}
++	$id = wp_insert_post( [
++		'ID'           => $existing->ID ?? 0,
++		'post_type'    => 'page',
++		'post_status'  => $status,
++		'post_name'    => $slug,
++		'post_title'   => $title,
++		'post_content' => $content,
++	] );
++	if ( is_wp_error( $id ) ) {
++		WP_CLI::warning( "  ✗ /{$slug}/ — " . $id->get_error_message() );
++		return 0;
++	}
++	foreach ( $meta as $key => $value ) {
++		update_post_meta( $id, $key, $value );
++	}
++	WP_CLI::log( sprintf( '  ✓ /%s/ (%s)', $slug, $status ) );
++	return (int) $id;
++}
++
++function glc_p( string $t ): string { return "<!-- wp:paragraph --><p>{$t}</p><!-- /wp:paragraph -->"; }
++function glc_h( string $t, int $l = 2 ): string { return "<!-- wp:heading {\"level\":{$l}} --><h{$l} class=\"wp-block-heading\">{$t}</h{$l}><!-- /wp:heading -->"; }
++function glc_note( string $t ): string {
++	// Editor-only note. Delete before publishing.
++	return "<!-- wp:paragraph {\"className\":\"glc-editor-note\"} --><p class=\"glc-editor-note\"><strong>EDITOR NOTE — delete before publishing.</strong> {$t}</p><!-- /wp:paragraph -->";
++}
++function glc_needs( string $t ): string {
++	return "<!-- wp:paragraph --><p><mark>NEEDS: {$t}</mark></p><!-- /wp:paragraph -->";
++}
++function glc_ul( array $items ): string {
++	$li = implode( '', array_map( fn( $i ) => "<!-- wp:list-item --><li>{$i}</li><!-- /wp:list-item -->", $items ) );
++	return "<!-- wp:list --><ul class=\"wp-block-list\">{$li}</ul><!-- /wp:list -->";
++}
++
++WP_CLI::log( '' );
++WP_CLI::log( '=== Geolander SEO pages ===' );
++
++/* ------------------------------------------------- PUBLISHED: hub pages */
++
++WP_CLI::log( '' );
++WP_CLI::log( 'Published (built only from existing facts):' );
++
++$cities      = get_posts( [ 'post_type' => 'city', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
++$city_items  = [];
++foreach ( $cities as $city ) {
++	$air  = class_exists( 'GLC_City' ) ? GLC_City::airport( $city->ID ) : [ 'name' => '', 'code' => '' ];
++	$code = $air['code'] ? ' — ' . trim( $air['name'] . ' (' . $air['code'] . ')' ) : '';
++	$city_items[] = sprintf(
++		'<a href="%s">%s</a>%s',
++		esc_url( get_permalink( $city ) ),
++		esc_html( get_the_title( $city ) ),
++		esc_html( $code )
++	);
++}
++
++glc_seo_upsert(
++	'car-rental',
++	'Car Rental Locations in Georgia',
++	glc_p( 'We deliver free to every city below, and to the airport serving it. Pick the city you are arriving in — each page covers the local roads, the airport handover and the vehicles that suit the region.' )
++	. ( $city_items ? glc_ul( $city_items ) : '' )
++	. glc_p( 'Not on the list? Ask on WhatsApp — delivery outside these cities is often possible and we will tell you honestly if it is not.' ),
++	'publish'
++);
++
++$guides = get_posts( [
++	'post_type'      => 'page',
++	'posts_per_page' => -1,
++	'meta_key'       => 'glc_guide_route',
++	'meta_compare'   => 'EXISTS',
++] );
++$guide_items = array_map(
++	fn( $g ) => sprintf( '<a href="%s">%s</a>', esc_url( get_permalink( $g ) ), esc_html( get_the_title( $g ) ) ),
++	$guides
++);
++
++glc_seo_upsert(
++	'guides',
++	'Driving Guides for Georgia',
++	glc_p( 'Route notes written by the people who maintain the cars that drive them — road surface, seasonal access, what your vehicle actually needs.' )
++	. ( $guide_items ? glc_ul( $guide_items ) : glc_p( 'Guides are being published — check back shortly.' ) ),
++	'publish'
++);
++
++/* ------------------------------------------- DRAFTS: fact-blocked pages */
++
++WP_CLI::log( '' );
++WP_CLI::log( 'Drafts (blocked on facts only the business can supply):' );
++
++/* 1 — the flagship */
++$roads = [
++	'Tusheti / Abano Pass', 'Omalo', 'Shatili &amp; Upper Khevsureti', 'Truso Valley',
++	'Juta', 'Vashlovani Protected Areas', 'Mestia–Ushguli–Lentekhi', 'Goderdzi Pass',
++	'Zekari Pass', 'Sairme–Abastumani', 'Gergeti Trinity access track',
++];
++
++glc_seo_upsert(
++	'where-you-can-drive',
++	'Where You Can Drive a Geolander Car',
++	glc_note(
++		'This is the highest-value page identified in the SEO research and it is deliberately unpublished. '
++		. 'Every competitor either forbids these roads, lists the prohibitions without resolving them, or stays silent. '
++		. 'Localrent restricts renters to paved roads and names seven forbidden regions; the leading travel blog publishes '
++		. 'the restricted list and its own readers ask in the comments who will actually let them drive it. '
++		. 'One traveller wrote: "The owner refused to let us drive that route, so we canceled and booked a Mitsubishi '
++		. 'Outlander from Martyna z Gruzji instead." That is a booking lost to a policy question. '
++		. '<br><br><strong>Do not publish a permission you cannot honour.</strong> The failure mode is a seized deposit '
++		. 'and a one-star review, which destroys the trust asset the whole strategy is built on. Confirm each road with '
++		. 'your insurer first.'
++	)
++	. glc_p( 'Most rental companies in Georgia quietly forbid the roads people actually come here to drive. We would rather tell you exactly where our cars may go, in writing, before you book.' )
++	. glc_h( 'Road by road' )
++	. glc_needs( 'For each road below: permitted yes / no / conditional · which of our vehicles · whether insurance applies · the months it is open. Replace this list with a table carrying those four columns.' )
++	. glc_ul( $roads )
++	. glc_h( 'What "permitted" means for your insurance' )
++	. glc_needs( 'State plainly whether cover continues on a permitted unpaved road, and what changes if it does not.' )
++	. glc_h( 'Do we use GPS trackers?' )
++	. glc_needs( 'Answer yes or no. Travellers already assume every Georgian rental car is tracked, so silence reads as a yes.' )
++	. glc_h( 'If you are not sure, ask us before you book' )
++	. glc_p( 'Message us on WhatsApp with your route and dates. We will tell you which car is right for it, and we will tell you if the answer is that you should hire a driver instead.' ),
++	'draft',
++	[ 'glc_seo_title_en' => 'Where You Can Drive a Geolander Car — Georgia Road Permissions &amp; Insurance' ]
++);
++
++/* 2 — deposit */
++glc_seo_upsert(
++	'trust/deposit-policy',
++	'Our Deposit Policy, in Writing',
++	glc_note(
++		'Every negative review found in the customer research was a deposit story, not an accident story. '
++		. 'Eleven Tbilisi competitors put "No Deposit, No Credit Card" in their title tags and none of the ones '
++		. 'inspected backs the claim with a process — and Localrent has robots-blocked its own terms page, so the '
++		. 'market leader has disqualified itself from this entire query set. '
++		. '<br><br>The differentiator here is not the amount. It is the enumerated list of the only reasons money is '
++		. 'ever kept, plus the handover protocol.'
++	)
++	. glc_needs( 'The deposit amount, or a plain statement that there is none.' )
++	. glc_needs( 'Cash or card · held or charged · the exact release timeline.' )
++	. glc_h( 'The only reasons we would keep any of it' )
++	. glc_needs( 'An enumerated, exhaustive list. A vague "approved roads" clause is precisely how travellers report being caught out.' )
++	. glc_h( 'How we hand the car over' )
++	. glc_p( 'We photograph and video the car with you at pickup and again at return, and send you the file on WhatsApp. Travellers already advise each other to record a video at pickup — we would rather do it for you, so the evidence is in your phone, not only ours.' )
++	. glc_h( 'Traffic fines' )
++	. glc_needs( 'Do you hold the deposit until fines clear? Is there an admin fee? How and when are customers notified, and what evidence do you send?' )
++	. glc_h( 'If you disagree with a charge' )
++	. glc_needs( 'A named person and a response time.' ),
++	'draft',
++	[ 'glc_seo_title_en' => 'Our Deposit Policy, in Writing — Geolander Car Rental Tbilisi' ]
++);
++
++/* 3 — insurance */
++glc_seo_upsert(
++	'trust/what-our-insurance-covers',
++	'What Our Insurance Actually Covers',
++	glc_note(
++		'"Full insurance" is the exact phrase travellers say betrayed them — and it is currently the phrase on the '
++		. 'homepage, while /terms/ section 2 says CDW <em>with a deductible</em> and full cover for an extra fee. '
++		. 'This page has to resolve that contradiction, and /terms/ must be rewritten to match it. '
++		. 'Competitors publish concrete figures ("$100 deductible… civil liability $30,000"); we publish an adjective.'
++	)
++	. glc_h( 'What is included as standard' )
++	. glc_needs( 'The exact cover included in the headline price.' )
++	. glc_h( 'The excess, as a number' )
++	. glc_needs( 'The deductible in USD or GEL.' )
++	. glc_h( 'Third-party liability limit, as a number' )
++	. glc_needs( 'The cap. One traveller compared Georgia\'s limit against EU norms and could not get a straight answer from anyone in the market.' )
++	. glc_h( 'What is not covered' )
++	. glc_needs( 'Name the exclusions travellers actually get caught by: tyres, alloys, windscreen and glass, underbody, roof, interior, single-vehicle accidents, off-contract roads.' )
++	. glc_h( 'What voids cover entirely' )
++	. glc_needs( 'Be specific, and cross-link the road permissions page.' )
++	. glc_h( 'If you have an accident' )
++	. glc_needs( 'Step by step, including whether police attendance is mandatory and who to call first.' ),
++	'draft',
++	[ 'glc_seo_title_en' => 'What Our Insurance Actually Covers — Excess, Limits &amp; Exclusions | Geolander' ]
++);
++
++WP_CLI::log( '' );
++WP_CLI::log( 'Done. The three drafts are the highest-value pages in the strategy —' );
++WP_CLI::log( 'they need facts, not copywriting. Fill the NEEDS: markers, delete the' );
++WP_CLI::log( 'editor notes, publish. Navigation picks them up automatically.' );
++WP_CLI::log( '' );
