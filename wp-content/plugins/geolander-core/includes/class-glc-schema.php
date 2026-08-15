@@ -129,7 +129,11 @@ class GLC_Schema {
 			// engines reconcile the site and the Maps listing as one entity.
 			'name'       => GLC_Settings::get( 'business_name', get_bloginfo( 'name' ) ),
 			'alternateName' => 'Geolander',
-			'description'=> get_bloginfo( 'description' ),
+			'description'=> sprintf(
+				'Geolander car rental is based in the heart of Tbilisi, in %s at %s.',
+				GLC_Settings::get( 'office_district' ),
+				GLC_Settings::get( 'address' )
+			),
 			'url'        => home_url( '/' ),
 			'logo'       => $logo,
 			'image'      => $image,
@@ -143,6 +147,7 @@ class GLC_Schema {
 				'@type'           => 'PostalAddress',
 				'streetAddress'   => GLC_Settings::get( 'address' ),
 				'addressLocality' => GLC_Settings::get( 'address_locality', 'Tbilisi' ),
+				'addressRegion'   => GLC_Settings::get( 'office_district' ),
 				'postalCode'      => GLC_Settings::get( 'postal_code' ),
 				'addressCountry'  => 'GE',
 			],
@@ -221,8 +226,12 @@ class GLC_Schema {
 			],
 		] : null;
 
+		/* Product rich-result markup requires a real product image. Two imported
+		 * vehicle rows currently have none, and a generic placeholder would claim
+		 * evidence the business does not have. Keep honest Car entity markup for
+		 * those rows; Product is restored automatically when a photo is attached. */
 		return [
-			'@type'               => [ 'Product', 'Car' ],
+			'@type'               => $images ? [ 'Product', 'Car' ] : 'Car',
 			'@id'                 => get_permalink( $post_id ) . '#car',
 			'name'                => get_the_title( $post_id ),
 			// Localized description: schema declares inLanguage per locale, so the

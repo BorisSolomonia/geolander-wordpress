@@ -36,6 +36,11 @@ const PAGES = [
 	['place', `${BASE}/places/gergeti-trinity-church/`],
 	['city-tbilisi', `${BASE}/car-rental-tbilisi/`],
 	['contact', `${BASE}/contact/`],
+	['kazbegi-rental', `${BASE}/car-rental-kazbegi/`],
+	['4x4-category', `${BASE}/fleet/4x4-suv/`],
+	['guide-driver', `${BASE}/rent-a-car-or-hire-a-driver/`],
+	['guide-driving', `${BASE}/driving-in-georgia/`],
+	['guide-winter', `${BASE}/driving-in-georgia-in-winter/`],
 ];
 
 let errors = 0, warnings = 0, checks = 0;
@@ -95,9 +100,18 @@ function checkBusiness(page, node) {
 		if (!node[field]) err(page, `AutoRental missing ${field}`); else ok();
 	}
 	if (!node.address?.addressCountry) err(page, 'AutoRental address missing addressCountry'); else ok();
+	if (node.address?.addressRegion !== 'Mtatsminda') err(page, 'AutoRental address must identify the Mtatsminda office district'); else ok();
+	if (!node.hasMap) err(page, 'AutoRental missing verified Google Maps listing'); else ok();
+	if (!String(node.description || '').includes('Mtatsminda')) err(page, 'AutoRental description missing Mtatsminda office context'); else ok();
 	if (!node.geo?.latitude || !node.geo?.longitude) warn(page, 'AutoRental missing geo coordinates'); else ok();
 	if (!node.openingHoursSpecification) warn(page, 'AutoRental missing openingHours'); else ok();
 	if (!node.sameAs?.length) warn(page, 'AutoRental missing sameAs'); else ok();
+}
+
+function checkArticle(page, node) {
+	for (const field of ['headline', 'description', 'image', 'url', 'datePublished', 'dateModified', 'author', 'publisher']) {
+		if (!node[field]) err(page, `Article missing ${field}`); else ok();
+	}
 }
 
 function checkBreadcrumbs(page, node) {
@@ -110,6 +124,32 @@ function checkBreadcrumbs(page, node) {
 	});
 }
 
+/* GL-034 applies to every published vehicle, not two hand-picked fixtures.
+ * Discover the current fleet from WordPress REST and normalize its links to the
+ * supplied base URL so this works locally, in CI, and against production. */
+console.log('\npublished fleet discovery');
+try {
+	const res = await fetch(`${BASE}/wp-json/wp/v2/car?status=publish&per_page=100&_fields=link`);
+	if (!res.ok) {
+		err('fleet-discovery', `HTTP ${res.status}`);
+	} else {
+		const cars = await res.json();
+		if (!Array.isArray(cars) || !cars.length) {
+			err('fleet-discovery', 'REST API returned no published cars');
+		} else {
+			const known = new Set(PAGES.map(([, url]) => new URL(url).pathname));
+			for (const [index, car] of cars.entries()) {
+				const path = new URL(car.link).pathname;
+				if (!known.has(path)) PAGES.push([`car-${index + 1}`, `${BASE}${path}`]);
+			}
+			ok();
+			console.log(`  discovered ${cars.length} published cars`);
+		}
+	}
+} catch (e) {
+	err('fleet-discovery', `fetch failed: ${e.message}`);
+}
+
 for (const [page, url] of PAGES) {
 	console.log(`\n${page} — ${url}`);
 	let html;
@@ -120,6 +160,9 @@ for (const [page, url] of PAGES) {
 			continue;
 		}
 		html = await res.text();
+		if ('place' === page && !/\.webp(?:[?"'])/.test(html)) {
+			err(page, 'destination page does not render a WebP image');
+		} else if ('place' === page) ok();
 	} catch (e) {
 		err(page, `fetch failed: ${e.message}`);
 		continue;
@@ -144,6 +187,7 @@ for (const [page, url] of PAGES) {
 			if (t.includes('FAQPage')) checkFAQ(page, node);
 			if (t.includes('AutoRental')) checkBusiness(page, node);
 			if (t.includes('BreadcrumbList')) checkBreadcrumbs(page, node);
+			if (t.includes('Article')) checkArticle(page, node);
 			if (t.includes('Car') && !t.includes('Product')) warn(page, 'Car without Product type (no rich result)');
 		}
 		const typeList = nodes.flatMap(types).join(', ');
