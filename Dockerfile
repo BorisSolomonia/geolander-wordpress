@@ -50,6 +50,10 @@ RUN echo '<?php http_response_code(200); header("Content-Type: text/plain"); ech
 	> /usr/src/wordpress/health.php
 COPY docker/apache-status /usr/src/wordpress/_internal-apache-status
 
+# Static Google Search Console ownership verification. Keep the filename and
+# file contents unchanged so Google can validate the domain over HTTPS.
+COPY googlecaf9dc315ab07aac.html /usr/src/wordpress/googlecaf9dc315ab07aac.html
+
 # WP-CLI for one-time content import and maintenance via `railway ssh`.
 RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
 	&& chmod +x /usr/local/bin/wp
