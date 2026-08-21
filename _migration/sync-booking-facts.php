@@ -63,6 +63,27 @@ update_post_meta(
 wp_set_object_terms( $survivor->ID, 'Toyota', 'car_brand' );
 wp_set_object_terms( $survivor->ID, 'Crossover', 'car_body_type' );
 
+// Production may no longer contain the legacy post. In that case, recover the
+// same observed seasonal rates from the canonical legacy export instead of
+// leaving the photographed survivor unpriced (and never synthesize a rate).
+if ( ! GLC_Pricing::is_priced( $survivor->ID ) ) {
+	$export_path = __DIR__ . '/cars.json';
+	$export      = is_file( $export_path ) ? json_decode( (string) file_get_contents( $export_path ), true ) : [];
+	foreach ( is_array( $export ) ? $export : [] as $car ) {
+		if ( '00000000-0000-0000-0000-000000000008' !== ( $car['id'] ?? '' ) ) {
+			continue;
+		}
+		$pricing = GLC_Pricing::normalize( $car['pricing'] ?? [] );
+		if ( $pricing ) {
+			update_post_meta( $survivor->ID, 'glc_pricing', $pricing );
+		}
+		if ( (float) ( $car['pricePerDay'] ?? 0 ) > 0 ) {
+			update_post_meta( $survivor->ID, 'glc_price_from', (float) $car['pricePerDay'] );
+		}
+		break;
+	}
+}
+
 if ( ! GLC_Pricing::is_priced( $survivor->ID ) ) {
 	WP_CLI::warning( 'RAV4 facts were updated, but no usable seasonal price table exists. The page will not publish a zero.' );
 } elseif ( $legacy && $legacy->ID !== $survivor->ID ) {

@@ -51,6 +51,11 @@ foreach ($expected in @('Hybrid', 'AWD', 'GG581WG', 'toyota-rav4-2016-gg581wg'))
 		throw "RAV4 consolidation is missing: $expected"
 	}
 }
+foreach ($expected in @('cars.json', 'GLC_Pricing::normalize', 'glc_pricing')) {
+	if ($facts -notmatch [regex]::Escape($expected)) {
+		throw "RAV4 production price recovery is missing: $expected"
+	}
+}
 if ($facts -notmatch '25.*30%') {
 	throw 'RAV4 consolidation is missing the owner-confirmed fuel-economy claim.'
 }
