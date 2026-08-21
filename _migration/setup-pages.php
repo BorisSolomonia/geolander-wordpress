@@ -55,10 +55,10 @@ $terms = implode( '', [
 	glc_h( '4. Mileage' ),
 	glc_p( 'All rentals include unlimited mileage within Georgia.' ),
 	glc_h( '5. Cancellation Policy' ),
+	glc_p( 'A prepayment equal to 10% of the total rental price is required to confirm a booking. This booking prepayment is separate from a security deposit; Geolander does not take a security deposit.' ),
 	glc_ul( [
-		'Free cancellation up to 24 hours before pickup time',
-		'Cancellations within 24 hours: one day rental charge applies',
-		'No-show: full rental period charge applies',
+		'Cancellation at least 30 days before the rental starts: 50% of the booking prepayment is refunded',
+		'Cancellation with fewer than 30 days remaining before the rental starts: the booking prepayment is non-refundable',
 	] ),
 	glc_h( '6. Cross-Border Travel' ),
 	glc_p( 'Travel to Armenia is allowed. Contact Geolander before departure to confirm the documents and cross-border insurance required for your dates. No permission for any other country is stated on this page.' ),

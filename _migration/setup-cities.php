@@ -51,11 +51,11 @@ $cities = [
 	[
 		'slug' => 'tbilisi', 'order' => 1,
 		'title' => 'Car Rental in Tbilisi',
-		'excerpt' => 'Rent a 4x4 in Tbilisi with free delivery to Tbilisi International Airport (TBS). Full insurance, no deposit, pay at pickup.',
+		'excerpt' => 'Rent a 4x4 in Tbilisi with free delivery to Tbilisi International Airport (TBS). Full insurance, no security deposit, 10% booking prepayment.',
 		'airport_name' => 'Tbilisi International', 'airport_code' => 'TBS',
 		'delivery' => 'Free delivery to Tbilisi Airport & city hotels',
 		'body' =>
-			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. Our rental office is in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. We deliver your car free of charge to Tbilisi International Airport (TBS) or to hotels and addresses in the city once your dates are confirmed on WhatsApp. Full insurance and free winter tyres are included, there is no security deposit, and you pay at pickup rather than online.' ) .
+			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. Our rental office is in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. We deliver your car free of charge to Tbilisi International Airport (TBS) or to hotels and addresses in the city once your dates are confirmed on WhatsApp. Full insurance and free winter tyres are included, there is no security deposit, and a 10% prepayment confirms the booking. The remaining balance is paid at pickup.' ) .
 			glc_city_h( 'Where a Tbilisi rental takes you' ) .
 			glc_city_p( 'Tbilisi is a practical starting point for routes across Georgia. The right vehicle depends on the road surface and current conditions:' ) .
 			glc_city_ul( [
@@ -93,7 +93,7 @@ $cities = [
 		'airport_name' => 'Kutaisi International', 'airport_code' => 'KUT',
 		'delivery' => 'Free pickup at Kutaisi Airport arrivals',
 		'body' =>
-			glc_city_p( 'Kutaisi International Airport (KUT) is a major arrival point for budget travellers reaching Georgia. The airport sits outside the city, so collecting a car at arrivals is a practical way to begin a western Georgia itinerary. We meet you at the terminal with the keys; full insurance, no deposit, pay on arrival.' ) .
+			glc_city_p( 'Kutaisi International Airport (KUT) is a major arrival point for budget travellers reaching Georgia. The airport sits outside the city, so collecting a car at arrivals is a practical way to begin a western Georgia itinerary. We meet you at the terminal with the keys; full insurance and no security deposit are included. A 10% prepayment confirms the booking, and the remaining balance is paid at pickup.' ) .
 			glc_city_h( 'Kutaisi is the gateway to western Georgia' ) .
 			glc_city_p( 'Skip the taxi queues and drive straight into the west, which is greener, wilder and less visited than the east:' ) .
 			glc_city_ul( [

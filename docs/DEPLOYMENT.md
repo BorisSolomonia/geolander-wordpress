@@ -78,8 +78,9 @@ proxy). Steps:
    `class-glc-gateways.php` against current BOG e-commerce API docs** (token URL,
    orders URL, response shape `_links.redirect.href`) and add the payment callback
    handler for the success/fail redirect URLs (`?glc_payment=success|fail&ref=GL-…`).
-4. Consider a partial-prepayment amount (e.g. 20%) rather than full charge —
-   matches how Localrent built trust in this market.
+4. Charge the owner-confirmed **10% booking prepayment**, not the full rental
+   total. Cancellation at least 30 days before the rental starts refunds 50%
+   of that prepayment; with fewer than 30 days remaining it is non-refundable.
 
 ## 3. Content gaps (flagged during migration)
 - **Photos missing** for: Toyota RAV4 2016, Jeep Renegade 2017 (no photos existed

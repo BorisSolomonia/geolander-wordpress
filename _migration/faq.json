@@ -15,7 +15,7 @@
       "name": "Do I need to leave a security deposit?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Geolander requires no security deposit, cash deposit, card charge, or card preauthorization hold."
+        "text": "No. Geolander requires no security deposit, cash deposit, card charge, or card preauthorization hold. The 10% booking prepayment is separate from a security deposit."
       }
     },
     {
@@ -103,7 +103,7 @@
       "name": "What is the cancellation policy?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Cancellation is free up to 24 hours before pickup. A cancellation within 24 hours may incur a charge equal to one rental day."
+        "text": "A 10% prepayment is required to confirm a booking. If you cancel at least 30 days before the rental starts, 50% of that prepayment is refunded. With fewer than 30 days remaining before the rental starts, the prepayment is non-refundable."
       }
     }
   ]

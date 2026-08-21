@@ -52,8 +52,9 @@ class GLC_AI {
 			. sprintf( 'It rents exact, individually listed vehicles, including %s, ', implode( ', ', $models ) )
 			. "suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
 			. "Svaneti. Prices include full insurance with no deductible and free winter tires. Free delivery at Tbilisi International Airport (TBS). "
-			. "Booking: pick dates on the site for an exact seasonal price, confirm via WhatsApp; no prepayment, pay at pickup; "
-			. "free cancellation up to 24 hours before pickup.\n\n";
+			. "Booking: pick dates on the site for an exact seasonal price and confirm via WhatsApp. A 10% prepayment confirms the booking; "
+			. "the remaining balance is paid at pickup. If cancelled at least 30 days before the rental starts, 50% of the prepayment is refunded. "
+			. "With fewer than 30 days remaining, the prepayment is non-refundable.\n\n";
 
 		$out .= "Key facts:\n";
 		$out .= "- Address: " . GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ) . ", Georgia\n";
@@ -127,8 +128,8 @@ class GLC_AI {
 		$out .= 'Last generated: ' . current_datetime()->format( 'Y-m-d' ) . "\n\n";
 		$out .= "Every price includes full insurance with no deductible, free winter tires, and free Tbilisi Airport delivery. Third-party liability is limited to 30,000 GEL. "
 			. "The daily rate depends on the season and the TOTAL rental length (longer = cheaper per day). "
-			. "No security deposit or card preauthorization hold. No prepayment — the exact total is computed on the car's page and confirmed via WhatsApp; payment at pickup. "
-			. "Free cancellation up to 24 h before pickup.\n\n";
+			. "No security deposit or card preauthorization hold. A 10% prepayment confirms the booking; the remaining balance is paid at pickup. "
+			. "If cancelled at least 30 days before the rental starts, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.\n\n";
 
 		$glc_unpriced = [];
 		foreach ( self::cars() as $car ) {

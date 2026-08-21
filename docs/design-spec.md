@@ -50,13 +50,13 @@ Deep Caucasus fir + expedition/racing-green automotive heritage.
 5. Never animate LCP element from opacity 0. No preloaders, no scroll-jacking, no WebGL, no custom cursors.
 
 ## Golden path
-LAND (hero + dates) → DATES (all prices recompute; persist in URL/localStorage) → BROWSE (fleet w/ totals for dates) → INSPECT (detail) → SUMMARIZE (in-page booking summary + name + booking reference GL-XXXX) → HANDOFF (server-side log, then wa.me prefilled structured message) → REASSURE ("confirmed within 30 min, nothing to pay now").
+LAND (hero + dates) → DATES (all prices recompute; persist in URL/localStorage) → BROWSE (fleet w/ totals for dates) → INSPECT (detail) → SUMMARIZE (in-page booking summary + name + booking reference GL-XXXX) → HANDOFF (server-side log, then wa.me prefilled structured message) → REASSURE ("confirmed within 30 min; 10% prepayment confirms the booking").
 
 Price shown on site is LOCKED — WhatsApp reply confirms, never renegotiates.
 
 ## Homepage section order
 1. Hero + date widget (pickup point select: Tbilisi office / TBS airport / hotel; dates+times; CTA)
-2. Trust strip fused under widget: rating, free cancellation, no hidden fees, airport delivery, 24/7 WhatsApp
+2. Trust strip fused under widget: rating, clear cancellation terms, no hidden fees, airport delivery, 24/7 WhatsApp
 3. Fleet teaser (6 cars) → "all 15"
 4. How it works, 3 steps (explain WhatsApp step BEFORE user hits it)
 5. "Where our cars take you": Kazbegi/Kakheti/Svaneti route cards — "all our cars permitted on these roads"
@@ -66,7 +66,7 @@ Price shown on site is LOCKED — WhatsApp reply confirms, never renegotiates.
 9. Footer CTA; floating WhatsApp bubble on non-detail pages
 
 ## Fleet card anatomy (in order)
-Exact-car photo carousel → "Brand Model YYYY" (never "or similar") → badge row (4x4/Automatic) → spec icons (seats/fuel) → price block (dates set: "TOTAL first · $X/day · N days"; else "from $X/day") → deposit line → green microline "✓ Free cancellation ✓ Insurance included" → availability state (honest "Booked for these dates").
+Exact-car photo carousel → "Brand Model YYYY" (never "or similar") → badge row (4x4/Automatic) → spec icons (seats/fuel) → price block (dates set: "TOTAL first · $X/day · N days"; else "from $X/day") → security-deposit line → green microline "✓ 10% booking prepayment ✓ Insurance included" → availability state (honest "Booked for these dates").
 Filter chips (no sidebar): Transmission · Seats · 4x4 · Price. Sort: price asc.
 
 ## Car detail page
@@ -74,7 +74,7 @@ Filter chips (no sidebar): Transmission · Seats · 4x4 · Price. Sort: price as
 2. Title + badges; 3. Spec grid 6-8 icon tiles; 4. Seasonal price table with user's cell HIGHLIGHTED
 5. Availability calendar (seasons tinted); 6. Everything-included checklist; 7. Terrain permissions block ("Yes, Kazbegi allowed")
 8. Reviews; 9. Policies (deposit/insurance/fuel/cancellation timeline)
-10. Booking widget: desktop sticky right rail (dates editable, live line-item breakdown, total, CTA "Book via WhatsApp" + microcopy "No prepayment — free cancellation until 48h before pickup"); mobile sticky bottom bar 64px (total left tap→sheet, green CTA right)
+10. Booking widget: desktop sticky right rail (dates editable, live line-item breakdown, total, CTA "Book via WhatsApp" + microcopy "10% prepayment confirms the booking — 50% refundable at least 30 days before pickup"); mobile sticky bottom bar 64px (total left tap→sheet, green CTA right)
 
 ## WhatsApp handoff (the trust package)
 Summary sheet: car thumb, dates/times, pickup point, line-item price, total USD, deposit, cancellation restated. Fields: Name + flight number (optional) ONLY. Booking reference GL-XXXX prominent. POST to server first (logged as booking_request), then wa.me deep link:
@@ -86,7 +86,7 @@ Booking request GL-2417
 💰 Total: $290 ($48/day) · Deposit $200
 👤 Name: Anna K. · Flight: TK 382
 ```
-Post-handoff: "✓ Request GL-2417 sent. We confirm within 30 minutes (09:00–22:00). Nothing to pay now."
+Post-handoff: "✓ Request GL-2417 sent. We confirm within 30 minutes (09:00–22:00). A 10% prepayment confirms the booking."
 
 ## Anti-patterns (banned)
 Fake urgency; late-revealed costs; "or similar"; stock photos; login/email walls; bare WhatsApp button without summary+reference; multi-step upsell funnel.

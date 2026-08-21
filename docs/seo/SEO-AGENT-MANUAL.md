@@ -83,7 +83,8 @@ Lint it, run the validator, test the logic against real data. This project has a
 | Hours | 24/7 | `[OBSERVED]` |
 | Country served | Georgia (**the country**, not the US state) | `[OBSERVED]` |
 | Delivery cities | Tbilisi, Batumi, Kutaisi (airport), Kobuleti | `[OBSERVED]` `setup-cities.php` |
-| Booking model | Dates → live seasonal quote → WhatsApp deep link. **No online prepayment.** BOG iPay coded but dormant | `[OBSERVED]` |
+| Booking model | Dates → live seasonal quote → WhatsApp confirmation. **A 10% prepayment confirms the booking; the remaining balance is paid at pickup.** BOG iPay is coded but dormant | `[OBSERVED]` owner confirmation, 2026-08-21 |
+| Cancellation | Cancel at least 30 days before the rental starts: **50% of the booking prepayment is refunded.** Fewer than 30 days before the rental starts: **the prepayment is non-refundable** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Languages | 7 — `en` (default/x-default), `ka`, `ru`, `uk`, `ar`, `zh`, `fr` | `[OBSERVED]` |
 | Pricing | Seasonal × duration-tiered: 1–2 / 3–4 / 5–7 / 8–12 / 13–18 / 19–30 / 31+ days | `[OBSERVED]` |
 | **Fleet floor** | **$26/day** — measured from the cheapest bookable car | `[OBSERVED]` computed from `cars.json` |
@@ -113,7 +114,7 @@ a count from memory or from this file — that error has already been made once.
 | # | Unknown | Blocks |
 |---|---|---|
 | B-1 | **Route permissions** per road, and whether insurance follows | `/where-you-can-drive/` — the flagship |
-| B-2 | Deposit amount, mechanism, release timeline, deduction list | `/trust/deposit-policy/` |
+| B-2 | Handover photo/video process, traffic-fine notification/admin process, and dispute contact/response time. **Known:** no security deposit; 10% booking prepayment; cancellation refund timetable | `/trust/deposit-policy/` completion |
 | B-3 | Insurance excess, third-party liability limit, exclusion list | `/trust/what-our-insurance-covers/` |
 | B-4 | Winter-tyre policy (standard? free?) | winter guide, differentiation claim |
 | B-5 | GPS trackers — fitted or not | permission page (silence reads as yes) |

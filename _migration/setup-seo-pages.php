@@ -179,6 +179,8 @@ glc_seo_upsert(
 		. 'ever kept, plus the handover protocol.'
 	)
 	. glc_p( '<strong>There is no security deposit.</strong> Geolander does not take a cash deposit, charge a card deposit, or place a preauthorization hold.' )
+	. glc_h( 'The booking prepayment is separate' )
+	. glc_p( 'A prepayment equal to <strong>10% of the total rental price</strong> confirms the booking. If the booking is cancelled at least 30 days before the rental starts, 50% of that prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.' )
 	. glc_h( 'The only reasons we would keep any of it' )
 	. glc_p( 'There is no deposit to retain. Traffic fines or losses caused by an excluded use are separate obligations under the rental terms; they are not deductions from a held deposit.' )
 	. glc_h( 'How we hand the car over' )

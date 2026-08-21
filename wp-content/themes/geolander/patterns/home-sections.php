@@ -24,7 +24,7 @@
 
 	<section class="glc-reveal">
 		<div class="glc-section-head">
-			<div class="glc-kicker"><?php echo glc_sign( 'process_title', '3 STEPS · NO PREPAYMENT' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<div class="glc-kicker"><?php echo glc_sign( 'process_title', '3 STEPS · 10% PREPAYMENT' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'process_title' ) ); ?></h2>
 		</div>
 		<div class="glc-steps glc-stagger">

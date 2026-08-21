@@ -265,7 +265,7 @@ class GLC_Blocks {
 			</div>
 			<p class="glc-micro" id="glc-b-error" hidden></p>
 			<button type="button" id="glc-b-submit"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></button>
-			<p class="glc-micro"><strong>✓</strong> <?php echo esc_html( glc_ui( 'no_prepayment' ) ); ?><br /><strong>✓</strong> <?php echo esc_html( glc_ui( 'free_cancellation' ) ); ?><br /><?php echo esc_html( glc_ui( 'price_locked' ) ); ?></p>
+			<p class="glc-micro"><strong>✓</strong> <?php echo esc_html( glc_ui( 'booking_prepayment' ) ); ?><br /><strong>✓</strong> <?php echo esc_html( glc_ui( 'cancellation_refund' ) ); ?><br /><?php echo esc_html( glc_ui( 'price_locked' ) ); ?></p>
 			<div id="glc-b-next" hidden style="background:#eef5ea;border-radius:10px;padding:0.9rem;font-size:0.85rem;">
 				<strong id="glc-b-next-title"></strong>
 				<p style="margin:0.3rem 0 0;" id="glc-b-next-text"></p>
