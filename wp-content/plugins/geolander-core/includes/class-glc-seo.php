@@ -173,7 +173,7 @@ class GLC_SEO {
 				if ( $price <= 0 ) {
 					$text = $en
 						? sprintf(
-							'Rent a %s in Tbilisi. 4x4, full insurance, free airport delivery. Ask on WhatsApp for an exact seasonal quote. %s',
+							'Rent a %s in Tbilisi. Full insurance and free Tbilisi Airport delivery. Get an exact seasonal quote with location fees. %s',
 							get_the_title( $post ),
 							$text
 						)
@@ -192,7 +192,7 @@ class GLC_SEO {
 				// the page and reads badly in localized search results.
 				$text  = $en
 					? sprintf(
-						'Rent a %s in Tbilisi from %s/day. 4x4, full insurance, free airport delivery. %s',
+						'Rent a %s in Tbilisi from %s/day. Full insurance and free Tbilisi Airport delivery. Location fees are shown in the quote. %s',
 						get_the_title( $post ),
 						GLC_Format::money( $price ),
 						$text

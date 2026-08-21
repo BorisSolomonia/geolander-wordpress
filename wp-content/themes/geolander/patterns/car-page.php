@@ -7,6 +7,7 @@
 $glc_id    = get_the_ID();
 $glc_year  = get_post_meta( $glc_id, 'glc_year', true );
 $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
+$glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 ?>
 <main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--40) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
 
@@ -31,7 +32,7 @@ $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
 					<?php endif; ?>
 				</div>
 				<div class="glc-chips">
-					<span class="glc-chip glc-chip--4x4">4x4</span>
+					<?php if ( $glc_drive ) : ?><span class="glc-chip glc-chip--4x4"><?php echo esc_html( $glc_drive ); ?></span><?php endif; ?>
 					<span class="glc-chip"><?php echo esc_html( glc_t( get_post_meta( $glc_id, 'glc_transmission', true ) ?: 'automatic' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( get_post_meta( $glc_id, 'glc_seats', true ) . ' ' . glc_t( 'seats' ) ); ?></span>
 				</div>
@@ -43,21 +44,8 @@ $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
 			</section>
 
 			<section>
-				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'pricing_title' ) ); ?></h2>
-				<?php
-				// Seasonal price table removed from the car page (no prices here by
-				// decision). The block itself still exists and renders wherever it is
-				// inserted — /pricing.md keeps serving the full tables to AI crawlers.
-				?>
-			</section>
-
-			<section>
-				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'included_title' ) ); ?></h2>
-				<ul class="glc-included" style="padding:0;margin:0;">
-					<?php for ( $glc_i = 1; $glc_i <= 6; $glc_i++ ) : ?>
-						<li><?php echo esc_html( glc_t( "included_{$glc_i}" ) ); ?></li>
-					<?php endfor; ?>
-				</ul>
+				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'rental_facts_title' ) ); ?></h2>
+				<?php echo do_blocks( '<!-- wp:geolander/rental-facts /-->' ); ?>
 			</section>
 
 			<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.4rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">

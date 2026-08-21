@@ -120,12 +120,21 @@ foreach ( $cars as $car ) {
 	}
 
 	$post_id = glc_find_by_legacy_id( 'car', $car['id'] );
+	$post_slug = sanitize_title( $title . '-' . $year . '-' . $car['registrationNumber'] );
+	if ( '00000000-0000-0000-0000-000000000008' === $car['id'] ) {
+		$r4 = get_posts( [ 'post_type' => 'car', 'name' => 'toyota-rav4-2016-limited', 'post_status' => 'any', 'posts_per_page' => 1 ] );
+		if ( $r4 ) {
+			$post_id = $r4[0]->ID;
+		}
+		$title     = 'Toyota RAV4 Hybrid AWD';
+		$post_slug = 'toyota-rav4-2016-limited';
+	}
 	$post_id = wp_insert_post( [
 		'ID'           => $post_id,
 		'post_type'    => 'car',
 		'post_status'  => 'publish',
 		'post_title'   => $title . ' ' . $year,
-		'post_name'    => sanitize_title( $title . '-' . $year . '-' . $car['registrationNumber'] ),
+		'post_name'    => $post_slug,
 		'post_content' => $description,
 		'post_excerpt' => $description,
 		'menu_order'   => (int) $car['sortOrder'],
@@ -146,6 +155,10 @@ foreach ( $cars as $car ) {
 	if ( is_wp_error( $post_id ) ) {
 		WP_CLI::warning( "Car failed: {$title}" );
 		continue;
+	}
+	if ( '00000000-0000-0000-0000-000000000008' === $car['id'] ) {
+		update_post_meta( $post_id, 'glc_drivetrain', 'AWD' );
+		update_post_meta( $post_id, 'glc_fuel_economy_note', 'About 25–30% better fuel economy' );
 	}
 
 	wp_set_object_terms( $post_id, $car['brand'], 'car_brand' );

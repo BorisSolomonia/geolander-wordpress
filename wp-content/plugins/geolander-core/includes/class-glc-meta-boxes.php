@@ -40,6 +40,8 @@ class GLC_Meta_Boxes {
 			'glc_color'            => [ __( 'Color', 'geolander' ), 'text' ],
 			'glc_seats'            => [ __( 'Seats', 'geolander' ), 'number' ],
 			'glc_license_category' => [ __( 'License category', 'geolander' ), 'text' ],
+			'glc_drivetrain'       => [ __( 'Drivetrain (for example AWD or 4WD)', 'geolander' ), 'text' ],
+			'glc_fuel_economy_note'=> [ __( 'Fuel-economy note (only when owner verified)', 'geolander' ), 'text' ],
 			'glc_price_from'       => [ __( 'Headline "from" price ($/day)', 'geolander' ), 'number' ],
 		];
 		echo '<div class="glc-grid">';
@@ -128,7 +130,7 @@ class GLC_Meta_Boxes {
 			return;
 		}
 
-		foreach ( [ 'glc_registration', 'glc_color', 'glc_license_category', 'glc_transmission', 'glc_fuel_type' ] as $key ) {
+		foreach ( [ 'glc_registration', 'glc_color', 'glc_license_category', 'glc_transmission', 'glc_drivetrain', 'glc_fuel_type', 'glc_fuel_economy_note' ] as $key ) {
 			update_post_meta( $post_id, $key, sanitize_text_field( wp_unslash( $_POST[ $key ] ?? '' ) ) );
 		}
 		foreach ( [ 'glc_year', 'glc_seats' ] as $key ) {

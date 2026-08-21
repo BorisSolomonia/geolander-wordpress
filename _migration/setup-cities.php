@@ -70,11 +70,11 @@ $cities = [
 	[
 		'slug' => 'batumi', 'order' => 2,
 		'title' => 'Car Rental in Batumi',
-		'excerpt' => 'Rent a 4x4 in Batumi with free delivery to Batumi Airport (BUS) and seafront hotels. Full insurance, no deposit.',
+		'excerpt' => 'Rent a 4x4 in Batumi with clear $98 pickup and $98 return charges. Full insurance, no deposit, and no hidden delivery fee.',
 		'airport_name' => 'Batumi International', 'airport_code' => 'BUS',
-		'delivery' => 'Free delivery to Batumi Airport & seafront hotels',
+		'delivery' => '$98 pickup and $98 return in Batumi',
 		'body' =>
-			glc_city_p( 'Batumi is Georgia\'s Black Sea capital — palm-lined boulevards, summer nightlife, and mountains that rise straight off the coast. We deliver your car free to Batumi International Airport (BUS) or to your seafront hotel, so you can land, settle in, and pick the car up only when you actually want to drive.' ) .
+			glc_city_p( 'Batumi is Georgia\'s Black Sea capital — palm-lined boulevards, summer nightlife, and mountains that rise straight off the coast. Batumi pickup costs $98 and return costs $98; both charges are shown separately in the quote before you send a booking request.' ) .
 			glc_city_h( 'Why you want 4x4 in Adjara' ) .
 			glc_city_p( 'The coast is flat and easy, but the reason to rent in Batumi is what sits just behind it — the green, rainy mountains of Adjara, where the interesting roads turn to gravel fast:' ) .
 			glc_city_ul( [
@@ -89,9 +89,9 @@ $cities = [
 	[
 		'slug' => 'kutaisi', 'order' => 3,
 		'title' => 'Car Rental at Kutaisi Airport',
-		'excerpt' => 'Pick up a 4x4 at Kutaisi Airport (KUT) — the budget-flight gateway. Free airport delivery, full insurance, no deposit.',
+		'excerpt' => 'Pick up a 4x4 at Kutaisi Airport (KUT) with a clear $68 pickup and $68 return charge. Full insurance and no deposit.',
 		'airport_name' => 'Kutaisi International', 'airport_code' => 'KUT',
-		'delivery' => 'Free pickup at Kutaisi Airport arrivals',
+		'delivery' => '$68 pickup and $68 return at Kutaisi Airport',
 		'body' =>
 			glc_city_p( 'Kutaisi International Airport (KUT) is a major arrival point for budget travellers reaching Georgia. The airport sits outside the city, so collecting a car at arrivals is a practical way to begin a western Georgia itinerary. We meet you at the terminal with the keys; full insurance and no security deposit are included. A 10% prepayment confirms the booking, and the remaining balance is paid at pickup.' ) .
 			glc_city_h( 'Kutaisi is the gateway to western Georgia' ) .

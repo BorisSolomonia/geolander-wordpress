@@ -47,8 +47,13 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    recommended fix (a small product decision) is to **scope the Accept-Language auto-redirect to the
    homepage only** and let deep links stay language-stable — standard i18n practice, and it removes the
    caveat entirely while keeping the cache win. Tracked in `docs/PERFORMANCE_AUDIT.md` (finding S1).
-7. Email: containers can't send mail reliably — install an SMTP plugin (add to repo) wired to a
-   free tier (e.g. Brevo) so booking notifications/password resets work.
+7. Email: Cloudflare DNS alone cannot send customer mail. Booking confirmations are generated in
+   **Booking Requests → Customer confirmation** and can always be opened as a prefilled email draft.
+   For automatic request receipts and confirmation delivery, add these Railway variables from an
+   SMTP/transactional-email provider: `GLC_SMTP_HOST`, `GLC_SMTP_PORT` (normally `587`),
+   `GLC_SMTP_USERNAME`, `GLC_SMTP_PASSWORD`, `GLC_SMTP_ENCRYPTION` (normally `tls`), and
+   `GLC_SMTP_FROM` (normally `info@geo-lander.com`). Authenticate the domain with the provider's
+   SPF/DKIM records in Cloudflare before enabling customer delivery.
 8. Backups: enable Railway MySQL backups; the uploads volume + repo are the rest of the state.
 
 ## 1. Production hosting (alternative: managed WP host)

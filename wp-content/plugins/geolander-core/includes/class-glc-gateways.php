@@ -20,10 +20,10 @@ abstract class GLC_Gateway {
 	/**
 	 * @return array{redirect:string, reference:string, message?:string}|WP_Error
 	 */
-	abstract public function checkout( int $car_id, string $from, string $to, array $quote, string $name = '' ): array|WP_Error;
+	abstract public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error;
 
 	/** Log the request server-side and mint a human reference like GL-2417. */
-	protected function log_request( int $car_id, string $from, string $to, array $quote, string $name ): string {
+	protected function log_request( int $car_id, string $from, string $to, array $quote, array $customer ): array|WP_Error {
 		$post_id = wp_insert_post( [
 			'post_type'   => 'booking_request',
 			'post_status' => 'publish',
@@ -33,15 +33,29 @@ abstract class GLC_Gateway {
 				'glc_from'    => $from,
 				'glc_to'      => $to,
 				'glc_days'    => $quote['days'],
-				'glc_total'   => $quote['total'],
-				'glc_name'    => $name,
+				'glc_rental_total' => $quote['rental_total'],
+				'glc_pickup'       => $quote['pickup'],
+				'glc_pickup_label' => $quote['pickup_label'],
+				'glc_pickup_fee'   => $quote['pickup_fee'],
+				'glc_return'       => $quote['return'],
+				'glc_return_label' => $quote['return_label'],
+				'glc_return_fee'   => $quote['return_fee'],
+				'glc_total'        => $quote['total'],
+				'glc_prepayment'   => $quote['prepayment'],
+				'glc_balance'      => $quote['balance'],
+				'glc_name'         => $customer['name'] ?? '',
+				'glc_email'        => $customer['email'] ?? '',
+				'glc_booking_status' => 'requested',
 				'glc_gateway' => $this->id(),
 			],
 		] );
+		if ( is_wp_error( $post_id ) || ! $post_id ) {
+			return is_wp_error( $post_id ) ? $post_id : new WP_Error( 'glc_booking_log', __( 'Could not save the booking request.', 'geolander' ) );
+		}
 		$reference = 'GL-' . ( 1000 + (int) $post_id );
 		wp_update_post( [ 'ID' => $post_id, 'post_title' => sprintf( '%s — %s (%s → %s)', $reference, get_the_title( $car_id ), $from, $to ) ] );
 		update_post_meta( $post_id, 'glc_reference', $reference );
-		return $reference;
+		return [ 'post_id' => (int) $post_id, 'reference' => $reference ];
 	}
 }
 
@@ -81,13 +95,18 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 		return (bool) GLC_Settings::get( 'whatsapp_number' );
 	}
 
-	public function checkout( int $car_id, string $from, string $to, array $quote, string $name = '' ): array|WP_Error {
+	public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error {
 		$number = preg_replace( '/[^0-9]/', '', (string) GLC_Settings::get( 'whatsapp_number' ) );
 		if ( ! $number ) {
 			return new WP_Error( 'glc_no_whatsapp', __( 'Booking channel is not configured.', 'geolander' ), [ 'status' => 500 ] );
 		}
 
-		$reference = $this->log_request( $car_id, $from, $to, $quote, $name );
+		$logged = $this->log_request( $car_id, $from, $to, $quote, $customer );
+		if ( is_wp_error( $logged ) ) {
+			return $logged;
+		}
+		$reference = $logged['reference'];
+		$email_sent = GLC_Booking_Email::send_request_received( $logged['post_id'] );
 
 		// DELIBERATELY ENGLISH — do not "localize" this (decision: 2026-07-16).
 		// This message is composed in the customer's WhatsApp but READ BY GEOLANDER
@@ -100,10 +119,23 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 			'Booking request ' . $reference,
 			'Car: ' . get_the_title( $car_id ),
 			sprintf( 'Dates: %s -> %s (%d %s)', $from, $to, $quote['days'], 1 === $quote['days'] ? 'day' : 'days' ),
-			sprintf( 'Total: $%s ($%s/day)', number_format( $quote['total'], 0 ), number_format( $quote['per_day_avg'], 0 ) ),
+			'Pickup: ' . $quote['pickup_label'],
+			'Return: ' . $quote['return_label'],
+			'Rental: ' . GLC_Format::money_exact( $quote['rental_total'], 'en' ),
 		];
-		if ( $name ) {
-			$lines[] = 'Name: ' . $name;
+		if ( $quote['pickup_fee'] > 0 ) {
+			$lines[] = 'Pickup charge: ' . GLC_Format::money_exact( $quote['pickup_fee'], 'en' );
+		}
+		if ( $quote['return_fee'] > 0 ) {
+			$lines[] = 'Return charge: ' . GLC_Format::money_exact( $quote['return_fee'], 'en' );
+		}
+		$lines[] = 'Final total shown: ' . GLC_Format::money_exact( $quote['total'], 'en' );
+		$lines[] = sprintf( '10%% prepayment: %s; balance at pickup: %s', GLC_Format::money_exact( $quote['prepayment'], 'en' ), GLC_Format::money_exact( $quote['balance'], 'en' ) );
+		if ( ! empty( $customer['name'] ) ) {
+			$lines[] = 'Name: ' . $customer['name'];
+		}
+		if ( ! empty( $customer['email'] ) ) {
+			$lines[] = 'Email: ' . $customer['email'];
 		}
 		$message = implode( "\n", $lines );
 
@@ -111,6 +143,7 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 			'redirect'  => self::url( $message ),
 			'reference' => $reference,
 			'message'   => $message,
+			'emailSent' => $email_sent,
 		];
 	}
 }
@@ -138,13 +171,17 @@ class GLC_Gateway_BOG_iPay extends GLC_Gateway {
 			&& GLC_Settings::get( 'bog_client_secret' );
 	}
 
-	public function checkout( int $car_id, string $from, string $to, array $quote, string $name = '' ): array|WP_Error {
+	public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error {
 		$token = $this->token();
 		if ( is_wp_error( $token ) ) {
 			return $token;
 		}
 
-		$reference = $this->log_request( $car_id, $from, $to, $quote, $name );
+		$logged = $this->log_request( $car_id, $from, $to, $quote, $customer );
+		if ( is_wp_error( $logged ) ) {
+			return $logged;
+		}
+		$reference = $logged['reference'];
 
 		// BOG requires the Idempotency-Key to be a UUID (a "create:<id>"-style
 		// string is rejected). No retry loop here, so a fresh v4 per attempt is
@@ -184,7 +221,11 @@ class GLC_Gateway_BOG_iPay extends GLC_Gateway {
 			return new WP_Error( 'glc_bog_order', __( 'Payment provider did not return a redirect.', 'geolander' ), [ 'status' => 502 ] );
 		}
 
-		return [ 'redirect' => $redirect, 'reference' => $reference ];
+		return [
+			'redirect'  => $redirect,
+			'reference' => $reference,
+			'emailSent' => GLC_Booking_Email::send_request_received( $logged['post_id'] ),
+		];
 	}
 
 	private function token(): string|WP_Error {

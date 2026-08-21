@@ -83,10 +83,14 @@ Lint it, run the validator, test the logic against real data. This project has a
 | Hours | 24/7 | `[OBSERVED]` |
 | Country served | Georgia (**the country**, not the US state) | `[OBSERVED]` |
 | Delivery cities | Tbilisi, Batumi, Kutaisi (airport), Kobuleti | `[OBSERVED]` `setup-cities.php` |
+| Delivery charges | Tbilisi office and TBS: free. Kutaisi: **$68 pickup and $68 return**. Batumi: **$98 pickup and $98 return** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Booking model | Dates → live seasonal quote → WhatsApp confirmation. **A 10% prepayment confirms the booking; the remaining balance is paid at pickup.** BOG iPay is coded but dormant | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Cancellation | Cancel at least 30 days before the rental starts: **50% of the booking prepayment is refunded.** Fewer than 30 days before the rental starts: **the prepayment is non-refundable** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Languages | 7 — `en` (default/x-default), `ka`, `ru`, `uk`, `ar`, `zh`, `fr` | `[OBSERVED]` |
 | Pricing | Seasonal × duration-tiered: 1–2 / 3–4 / 5–7 / 8–12 / 13–18 / 19–30 / 31+ days | `[OBSERVED]` |
+| RAV4 | The RAV4 records are the same physical car. Survivor: Toyota RAV4 **Hybrid AWD**, plate GG581WG. Owner describes fuel economy as **about 25–30% better** | `[OBSERVED]` owner confirmation, 2026-08-21 |
+| Damage cover | Full insurance covers everything except **tyres**; wheels and windshield are covered. Existing driving-behaviour exclusions still apply | `[OBSERVED]` owner confirmation, 2026-08-21 |
+| Booking email | No outbound email service is configured; Cloudflare currently provides DNS only. The app generates confirmations and activates automatic delivery through `GLC_SMTP_*` Railway variables | `[OBSERVED]` owner confirmation + implementation, 2026-08-21 |
 | **Fleet floor** | **$26/day** — measured from the cheapest bookable car | `[OBSERVED]` computed from `cars.json` |
 | Advertised ceiling | $120/day — **a settings value, not a real car.** Highest actual seasonal rate is **$90** | `[OBSERVED]` |
 
@@ -115,7 +119,7 @@ a count from memory or from this file — that error has already been made once.
 |---|---|---|
 | B-1 | **Route permissions** per road, and whether insurance follows | `/where-you-can-drive/` — the flagship |
 | B-2 | Handover photo/video process, traffic-fine notification/admin process, and dispute contact/response time. **Known:** no security deposit; 10% booking prepayment; cancellation refund timetable | `/trust/deposit-policy/` completion |
-| B-3 | Insurance excess, third-party liability limit, exclusion list | `/trust/what-our-insurance-covers/` |
+| B-3 | **Resolved:** no excess; 30,000 GEL third-party limit; everything except tyres covered; wrong-lane/red-light/speeding/failure-to-report-location exclusions | `/trust/what-our-insurance-covers/` can be completed |
 | B-4 | Winter-tyre policy (standard? free?) | winter guide, differentiation claim |
 | B-5 | GPS trackers — fitted or not | permission page (silence reads as yes) |
 | B-6 | Per-vehicle odometer, service date, tyre age | vehicle pages |
@@ -124,6 +128,7 @@ a count from memory or from this file — that error has already been made once.
 | B-9 | Google Business Profile state (category, reviews, photos, website link) | the entire local strategy |
 | B-10 | Google Search Console + GA4 data | any real baseline |
 | B-11 | A locale-correct SERP (`gl=ge`, Tbilisi) | validation of nearly every market claim |
+| B-12 | Whether rental prices include every applicable tax or any other mandatory charge | Do not call a calculated quote “all-inclusive including taxes” until confirmed |
 
 `[INFERENCE]` **B-8 is the single most valuable unknown.** If long rentals (19–30 / 31+ tiers, priced
 30–40% below the daily rate) are the profit engine, an entire cluster — monthly rental, relocation,

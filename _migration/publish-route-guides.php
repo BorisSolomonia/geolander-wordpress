@@ -26,7 +26,7 @@ $vehicle_titles = [
 	'subaru-forester-2023-black'              => '2023 Subaru Forester Rental in Tbilisi, Georgia',
 	'toyota-4runner-2021-white'               => 'Toyota 4Runner 4x4 Rental in Tbilisi, Georgia',
 	'toyota-highlander-2017-lc-785-ll'        => '7-Seat Toyota Highlander Rental in Tbilisi',
-	'toyota-rav4-2016-limited'                => 'Toyota RAV4 AWD Rental in Tbilisi, Georgia',
+	'toyota-rav4-2016-limited'                => 'Toyota RAV4 Hybrid AWD Rental in Tbilisi',
 ];
 
 if ( 19 !== count( $vehicle_titles ) ) {

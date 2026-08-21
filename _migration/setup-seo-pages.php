@@ -101,7 +101,7 @@ foreach ( $cities as $city ) {
 glc_seo_upsert(
 	'car-rental',
 	'Car Rental Locations in Georgia',
-	glc_p( 'We deliver free to every city below, and to the airport serving it. Pick the city you are arriving in — each page covers the local roads, the airport handover and the vehicles that suit the region.' )
+	glc_p( 'Choose your arrival point below. Tbilisi office and Tbilisi Airport handovers are free. Kutaisi Airport costs $68 each way and Batumi costs $98 each way; the booking quote shows pickup and return separately.' )
 	. ( $city_items ? glc_ul( $city_items ) : '' )
 	. glc_p( 'Not on the list? Ask on WhatsApp — delivery outside these cities is often possible and we will tell you honestly if it is not.' ),
 	'publish'

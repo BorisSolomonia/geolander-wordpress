@@ -22,13 +22,13 @@ return [
 	'book_now'        => '立即预订',
 
 	'hero_title'      => '以你的方式探索格鲁吉亚',
-	'hero_subtitle'   => '高端四驱车队，专为高加索山路而备 — 含全险，机场免费送车',
+	'hero_subtitle'   => '高端四驱车队，专为高加索山路而备 — 含全险，第比利斯机场免费送车',
 	'hero_cta'        => '浏览车队',
 	'hero_cta2'       => '查看目的地',
 
 	'trust_cancel'    => '明确的取消条款',
 	'trust_fees'      => '无隐藏费用',
-	'trust_delivery'  => '机场免费送车',
+	'trust_delivery'  => '第比利斯机场免费送车',
 	'trust_support'   => 'WhatsApp 全天候客服',
 	'trust_insurance' => '含保险',
 
@@ -60,7 +60,7 @@ return [
 	'book_whatsapp'      => '通过 WhatsApp 预订',
 	'booking_prepayment'  => '支付10%预付款即可确认预订',
 	'cancellation_refund' => '如在取车前30天或更早取消，可退还预付款的50%',
-	'price_locked'       => '此价格为最终价格 — WhatsApp 仅作确认',
+	'price_locked'       => '总价包含租金及所选取还车费用；车辆可用性通过 WhatsApp 确认',
 	'select_dates'       => '选择日期',
 	'quote_error'        => '无法计算价格 — 请尝试其他日期',
 	'booking_summary'    => '预订摘要',
@@ -87,7 +87,7 @@ return [
 	'included_2'      => '不限里程',
 	'included_3'      => '冬季轮胎（应季）',
 	'included_4'      => '免费第二驾驶员',
-	'included_5'      => '机场免费送车',
+	'included_5'      => '第比利斯机场免费送车',
 	'included_6'      => '24/7 道路救援',
 
 	'process_title'   => '预订流程',

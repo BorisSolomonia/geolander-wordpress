@@ -30,6 +30,9 @@ class GLC_Settings {
 		'longitude'           => '44.7934697',
 		'payment_provider'    => '',      // '' = WhatsApp only | 'bog_ipay'
 		'payment_currency'    => 'USD',
+		'prepayment_percent'  => '10',
+		'kutaisi_each_way'    => '68',
+		'batumi_each_way'     => '98',
 		// Headline price range. Single source of truth: the hero, SEO titles,
 		// llms.txt and the AutoRental schema all read these, so the advertised
 		// range can never drift between them again.
@@ -107,6 +110,9 @@ class GLC_Settings {
 			__( 'Pricing', 'geolander' ) => [
 				'price_min' => __( 'Headline price range — from (per day)', 'geolander' ),
 				'price_max' => __( 'Headline price range — to (per day)', 'geolander' ),
+				'prepayment_percent' => __( 'Booking prepayment (%)', 'geolander' ),
+				'kutaisi_each_way'   => __( 'Kutaisi Airport pickup or return (USD each way)', 'geolander' ),
+				'batumi_each_way'    => __( 'Batumi Airport pickup or return (USD each way)', 'geolander' ),
 			],
 			__( 'Payments', 'geolander' ) => [
 				'payment_provider'  => __( 'Payment provider (empty = WhatsApp requests, "bog_ipay" = BOG iPay)', 'geolander' ),

@@ -244,6 +244,7 @@ class GLC_Schema {
 			'vehicleModelDate'    => $year ? (string) $year : null,
 			'color'               => get_post_meta( $post_id, 'glc_color', true ) ?: null,
 			'vehicleTransmission' => get_post_meta( $post_id, 'glc_transmission', true ) ?: null,
+			'driveWheelConfiguration' => get_post_meta( $post_id, 'glc_drivetrain', true ) ?: null,
 			'fuelType'            => get_post_meta( $post_id, 'glc_fuel_type', true ) ?: null,
 			'seatingCapacity'     => (int) get_post_meta( $post_id, 'glc_seats', true ) ?: null,
 			'offers'              => $offers,

@@ -109,7 +109,9 @@ function glc_fleet_apply_json( int $post_id, array $data ): void {
 		'glc_seats'        => 'seats',
 		'glc_color'        => 'color',
 		'glc_transmission' => 'transmission',
+		'glc_drivetrain'   => 'drivetrain',
 		'glc_fuel_type'    => 'fuel',
+		'glc_fuel_economy_note' => 'fuel_economy_note',
 		'glc_registration' => 'registration',
 		'glc_price_from'   => 'price_from',
 	];

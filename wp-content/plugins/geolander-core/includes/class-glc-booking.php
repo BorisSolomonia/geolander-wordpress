@@ -25,6 +25,8 @@ class GLC_Booking {
 				'car'  => [ 'required' => true, 'type' => 'integer' ],
 				'from' => [ 'required' => true, 'type' => 'string' ],
 				'to'   => [ 'required' => true, 'type' => 'string' ],
+				'pickup' => [ 'required' => false, 'type' => 'string', 'default' => GLC_Rental::DEFAULT_PICKUP ],
+				'return' => [ 'required' => false, 'type' => 'string', 'default' => GLC_Rental::DEFAULT_RETURN ],
 			],
 		] );
 
@@ -36,7 +38,10 @@ class GLC_Booking {
 				'car'  => [ 'required' => true, 'type' => 'integer' ],
 				'from' => [ 'required' => true, 'type' => 'string' ],
 				'to'   => [ 'required' => true, 'type' => 'string' ],
-				'name' => [ 'required' => false, 'type' => 'string' ],
+				'name'   => [ 'required' => true, 'type' => 'string' ],
+				'email'  => [ 'required' => true, 'type' => 'string', 'format' => 'email' ],
+				'pickup' => [ 'required' => true, 'type' => 'string' ],
+				'return' => [ 'required' => true, 'type' => 'string' ],
 			],
 		] );
 	}
@@ -52,11 +57,16 @@ class GLC_Booking {
 		if ( ! $from || ! $to ) {
 			return new WP_Error( 'glc_bad_dates', __( 'Invalid dates.', 'geolander' ), [ 'status' => 400 ] );
 		}
-		$quote = GLC_Pricing::quote( $car_id, $from, $to );
+		$pickup = sanitize_key( (string) ( $req['pickup'] ?: GLC_Rental::DEFAULT_PICKUP ) );
+		$return = sanitize_key( (string) ( $req['return'] ?: GLC_Rental::DEFAULT_RETURN ) );
+		if ( ! GLC_Rental::valid_location( $pickup ) || ! GLC_Rental::valid_location( $return ) ) {
+			return new WP_Error( 'glc_bad_location', __( 'Invalid pickup or return location.', 'geolander' ), [ 'status' => 400 ] );
+		}
+		$quote = GLC_Rental::quote( $car_id, $from, $to, $pickup, $return );
 		if ( ! $quote ) {
 			return new WP_Error( 'glc_no_quote', __( 'Could not price these dates.', 'geolander' ), [ 'status' => 400 ] );
 		}
-		return [ 'car_id' => $car_id, 'post' => $post, 'from' => $from, 'to' => $to, 'quote' => $quote ];
+		return [ 'car_id' => $car_id, 'post' => $post, 'from' => $from, 'to' => $to, 'pickup' => $pickup, 'return' => $return, 'quote' => $quote ];
 	}
 
 	public static function quote( WP_REST_Request $req ) {
@@ -123,8 +133,16 @@ class GLC_Booking {
 		if ( is_wp_error( $ctx ) ) {
 			return $ctx;
 		}
+		$name  = sanitize_text_field( (string) $req['name'] );
+		$email = sanitize_email( (string) $req['email'] );
+		if ( '' === $name || ! is_email( $email ) ) {
+			return new WP_Error( 'glc_customer_details', __( 'Enter your name and a valid email address.', 'geolander' ), [ 'status' => 400 ] );
+		}
 		$gateway = GLC_Gateways::active();
-		$result  = $gateway->checkout( $ctx['car_id'], $ctx['from'], $ctx['to'], $ctx['quote'], sanitize_text_field( (string) $req['name'] ) );
+		$result  = $gateway->checkout( $ctx['car_id'], $ctx['from'], $ctx['to'], $ctx['quote'], [
+			'name'  => $name,
+			'email' => $email,
+		] );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}

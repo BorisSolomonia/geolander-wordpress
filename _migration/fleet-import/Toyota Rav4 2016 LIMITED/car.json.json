@@ -1,4 +1,15 @@
 {
+  "year": 2016,
+  "brand": "Toyota",
+  "model": "RAV4 Hybrid",
+  "seats": 5,
+  "transmission": "automatic",
+  "drivetrain": "AWD",
+  "fuel": "hybrid",
+  "fuel_economy_note": "About 25–30% better fuel economy",
+  "registration": "GG581WG",
+  "body_type": "Crossover",
+  "available": true,
   "vehicle_asset": {
     "id": "RAV4-2016-LTD-GRY",
     "make": "Toyota",

@@ -46,6 +46,7 @@ class GLC_Blocks {
 			'booking-widget' => [ 'render_callback' => [ __CLASS__, 'booking_widget' ] ],
 			'car-gallery'    => [ 'render_callback' => [ __CLASS__, 'car_gallery' ] ],
 			'car-specs'      => [ 'render_callback' => [ __CLASS__, 'car_specs' ] ],
+			'rental-facts'   => [ 'render_callback' => [ __CLASS__, 'rental_facts' ] ],
 			'price-table'    => [ 'render_callback' => [ __CLASS__, 'price_table' ] ],
 			'faq-list'       => [ 'render_callback' => [ __CLASS__, 'faq_list' ] ],
 			'testimonials'   => [ 'render_callback' => [ __CLASS__, 'testimonials' ] ],
@@ -66,6 +67,7 @@ class GLC_Blocks {
 				'restCheckout' => rest_url( 'geolander/v1/checkout' ),
 				'adsSendTo'    => $ads_id && $ads_label ? "{$ads_id}/{$ads_label}" : '',
 				'carId'        => get_the_ID(),
+				'locations'    => GLC_Rental::locations(),
 				// Locale formatting rules, so live client-side quote updates match
 				// the server-rendered prices instead of reverting to US format.
 				'fmt'          => GLC_Format::js_config(),
@@ -75,6 +77,9 @@ class GLC_Blocks {
 					'quoteError' => glc_ui( 'quote_error' ),
 					'nextTitle'  => glc_ui( 'whats_next_title' ),
 					'nextText'   => glc_ui( 'whats_next_text' ),
+					'customerError' => glc_ui( 'customer_details_error' ),
+					'receiptSent'    => glc_ui( 'receipt_sent' ),
+					'receiptNotSent' => glc_ui( 'receipt_not_sent' ),
 				],
 			] );
 		}
@@ -140,6 +145,7 @@ class GLC_Blocks {
 		$seats        = get_post_meta( $id, 'glc_seats', true );
 		$transmission = get_post_meta( $id, 'glc_transmission', true );
 		$fuel         = get_post_meta( $id, 'glc_fuel_type', true );
+		$drivetrain    = get_post_meta( $id, 'glc_drivetrain', true );
 		$available    = (bool) get_post_meta( $id, 'glc_available', true );
 		$price_from   = (float) get_post_meta( $id, 'glc_price_from', true );
 		$brand_title  = preg_replace( '/\s\d{4}$/', '', $car->post_title );
@@ -171,7 +177,7 @@ class GLC_Blocks {
 			<div class="glc-card-body">
 				<h3 class="glc-card-title"><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $brand_title ); ?> <span class="glc-year"><?php echo esc_html( $year ); ?></span></a></h3>
 				<div class="glc-chips">
-					<span class="glc-chip glc-chip--4x4">4x4</span>
+					<?php if ( $drivetrain ) : ?><span class="glc-chip glc-chip--4x4"><?php echo esc_html( $drivetrain ); ?></span><?php endif; ?>
 					<span class="glc-chip"><?php echo esc_html( glc_ui( $transmission ?: 'automatic' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( $seats . ' ' . glc_ui( 'seats' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( glc_ui( $fuel ?: 'gasoline' ) ); ?></span>
@@ -232,8 +238,9 @@ class GLC_Blocks {
 			$from = current_datetime()->modify( '+3 days' )->format( 'Y-m-d' );
 			$to   = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
 		}
-		$quote = GLC_Pricing::quote( $id, $from, $to );
+		$quote = GLC_Rental::quote( $id, $from, $to, GLC_Rental::DEFAULT_PICKUP, GLC_Rental::DEFAULT_RETURN );
 		$today = current_datetime()->format( 'Y-m-d' );
+		$locations = GLC_Rental::locations();
 
 		ob_start();
 		?>
@@ -248,20 +255,37 @@ class GLC_Blocks {
 				<input type="date" id="glc-b-to" min="<?php echo esc_attr( $today ); ?>" value="<?php echo esc_attr( $to ); ?>" />
 			</div>
 			<div class="glc-field">
-				<label for="glc-b-name"><?php echo esc_html( glc_ui( 'your_name' ) ); ?></label>
-				<input type="text" id="glc-b-name" autocomplete="name" />
+				<label for="glc-b-pickup"><?php echo esc_html( glc_ui( 'pickup_location' ) ); ?></label>
+				<select id="glc-b-pickup">
+					<?php foreach ( $locations as $glc_key => $glc_location ) : ?>
+						<option value="<?php echo esc_attr( $glc_key ); ?>"><?php echo esc_html( $glc_location['label'] . ( $glc_location['fee'] > 0 ? ' · +' . GLC_Format::money( $glc_location['fee'] ) : ' · ' . glc_ui( 'free' ) ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
 			</div>
-			<?php
-			/*
-			 * No prices on the car page (decision: 2026-07-16). The rental length
-			 * stays — it's a fact about the trip the visitor just described, not a
-			 * price — but per-day and total are gone. The server still prices the
-			 * booking; the figure simply travels to staff in the WhatsApp message
-			 * instead of being shown here.
-			 */
-			?>
+			<div class="glc-field">
+				<label for="glc-b-return"><?php echo esc_html( glc_ui( 'return_location' ) ); ?></label>
+				<select id="glc-b-return">
+					<?php foreach ( $locations as $glc_key => $glc_location ) : ?>
+						<option value="<?php echo esc_attr( $glc_key ); ?>"><?php echo esc_html( $glc_location['label'] . ( $glc_location['fee'] > 0 ? ' · +' . GLC_Format::money( $glc_location['fee'] ) : ' · ' . glc_ui( 'free' ) ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<div class="glc-field">
+				<label for="glc-b-name"><?php echo esc_html( glc_ui( 'your_name' ) ); ?></label>
+				<input type="text" id="glc-b-name" autocomplete="name" required />
+			</div>
+			<div class="glc-field">
+				<label for="glc-b-email"><?php echo esc_html( glc_ui( 'your_email' ) ); ?></label>
+				<input type="email" id="glc-b-email" autocomplete="email" required />
+			</div>
 			<div class="glc-booking-lines" id="glc-b-lines" <?php echo $quote ? '' : 'hidden'; ?>>
 				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'total_days' ) ); ?></span><span id="glc-b-days"><?php echo esc_html( $quote['days'] ?? '' ); ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'rental_price' ) ); ?></span><span id="glc-b-rental"><?php echo $quote ? esc_html( GLC_Format::money( $quote['rental_total'] ) ) : ''; ?></span></div>
+				<div class="glc-line" id="glc-b-pickup-row" hidden><span><?php echo esc_html( glc_ui( 'pickup_charge' ) ); ?></span><span id="glc-b-pickup-fee"></span></div>
+				<div class="glc-line" id="glc-b-return-row" hidden><span><?php echo esc_html( glc_ui( 'return_charge' ) ); ?></span><span id="glc-b-return-fee"></span></div>
+				<div class="glc-line glc-line--total"><span><?php echo esc_html( glc_ui( 'final_total' ) ); ?></span><span class="glc-amount" id="glc-b-total"><?php echo $quote ? esc_html( GLC_Format::money( $quote['total'] ) ) : ''; ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'prepayment_amount' ) ); ?></span><span id="glc-b-prepayment"><?php echo $quote ? esc_html( GLC_Format::money_exact( $quote['prepayment'] ) ) : ''; ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'balance_at_pickup' ) ); ?></span><span id="glc-b-balance"><?php echo $quote ? esc_html( GLC_Format::money_exact( $quote['balance'] ) ) : ''; ?></span></div>
 			</div>
 			<p class="glc-micro" id="glc-b-error" hidden></p>
 			<button type="button" id="glc-b-submit"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></button>
@@ -274,8 +298,7 @@ class GLC_Blocks {
 
 		<div class="glc-bar" id="glc-bar">
 			<span class="glc-bar-price">
-				<?php // Sticky bar carries the car and dates, not a price. ?>
-				<strong id="glc-bar-total"><?php echo esc_html( get_the_title( $id ) ); ?></strong>
+				<strong id="glc-bar-total"><?php echo $quote ? esc_html( GLC_Format::money( $quote['total'] ) ) : esc_html( get_the_title( $id ) ); ?></strong>
 				<span id="glc-bar-dates"><?php echo $quote
 					? esc_html( GLC_Format::date( $from ) . ' → ' . GLC_Format::date( $to ) )
 					: esc_html( glc_ui( 'select_dates' ) ); ?></span>
@@ -315,7 +338,9 @@ class GLC_Blocks {
 			'spec_year'         => get_post_meta( $id, 'glc_year', true ),
 			'spec_seats'        => get_post_meta( $id, 'glc_seats', true ),
 			'spec_transmission' => glc_ui( get_post_meta( $id, 'glc_transmission', true ) ?: 'automatic' ),
+			'spec_drivetrain'   => get_post_meta( $id, 'glc_drivetrain', true ),
 			'spec_fuel'         => glc_ui( get_post_meta( $id, 'glc_fuel_type', true ) ?: 'gasoline' ),
+			'spec_fuel_economy' => get_post_meta( $id, 'glc_fuel_economy_note', true ),
 			'spec_color'        => get_post_meta( $id, 'glc_color', true ),
 			'spec_body'         => implode( ', ', wp_get_post_terms( $id, 'car_body_type', [ 'fields' => 'names' ] ) ),
 		];
@@ -327,6 +352,38 @@ class GLC_Blocks {
 			$out .= '<div class="glc-spec"><dt>' . esc_html( glc_ui( $label ) ) . '</dt><dd>' . esc_html( $value ) . '</dd></div>';
 		}
 		return $out . '</dl>';
+	}
+
+	/* -------------------------------------------------------- Rental facts */
+
+	/** Visible answers to the questions customers ask before booking. */
+	public static function rental_facts(): string {
+		$kutaisi = GLC_Rental::location_fee( 'kutaisi_airport' );
+		$batumi  = GLC_Rental::location_fee( 'batumi_airport' );
+		$facts   = [
+			'rental_exact_car'   => glc_ui( 'rental_exact_car_value' ),
+			'rental_winter'      => glc_ui( 'rental_winter_value' ),
+			'rental_insurance'   => glc_ui( 'rental_insurance_value' ),
+			'rental_excess'      => glc_ui( 'rental_excess_value' ),
+			'rental_coverage'    => glc_ui( 'rental_coverage_value' ),
+			'rental_not_covered' => glc_ui( 'rental_not_covered_value' ),
+			'rental_liability'   => glc_ui( 'rental_liability_value' ),
+			'rental_deposit'     => glc_ui( 'rental_deposit_value' ),
+			'rental_mileage'     => glc_ui( 'rental_mileage_value' ),
+			'rental_delivery'    => sprintf(
+				glc_ui( 'rental_delivery_value' ),
+				GLC_Format::money( $kutaisi ),
+				GLC_Format::money( $batumi )
+			),
+		];
+
+		$out = '<dl class="glc-rental-facts">';
+		foreach ( $facts as $label => $value ) {
+			$out .= '<div><dt>' . esc_html( glc_ui( $label ) ) . '</dt><dd>' . esc_html( $value ) . '</dd></div>';
+		}
+		$out .= '</dl>';
+		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'rental_insurance_exclusions' ) ) . '</p>';
+		return $out;
 	}
 
 	/* -------------------------------------------------------- Price table */

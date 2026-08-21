@@ -22,13 +22,13 @@ return [
 	'book_now'        => 'Réserver',
 
 	'hero_title'      => 'Explorez la Géorgie à votre façon',
-	'hero_subtitle'   => 'Une flotte 4x4 premium pour les routes du Caucase — assurance complète incluse et livraison gratuite à l\'aéroport',
+	'hero_subtitle'   => 'Une flotte 4x4 premium pour les routes du Caucase — assurance complète incluse et livraison gratuite à l\'aéroport de Tbilissi',
 	'hero_cta'        => 'Voir notre flotte',
 	'hero_cta2'       => 'Voir les destinations',
 
 	'trust_cancel'    => 'Conditions d’annulation claires',
 	'trust_fees'      => 'Sans frais cachés',
-	'trust_delivery'  => 'Livraison gratuite à l\'aéroport',
+	'trust_delivery'  => 'Livraison gratuite à l\'aéroport de Tbilissi',
 	'trust_support'   => 'Assistance 24h/24 sur WhatsApp',
 	'trust_insurance' => 'Assurance incluse',
 
@@ -60,7 +60,7 @@ return [
 	'book_whatsapp'      => 'Réserver via WhatsApp',
 	'booking_prepayment'  => 'Un prépaiement de 10 % confirme la réservation',
 	'cancellation_refund' => '50 % du prépaiement est remboursable au moins 30 jours avant la prise en charge',
-	'price_locked'       => 'Ce prix est définitif — WhatsApp ne sert qu\'à le confirmer',
+	'price_locked'       => 'Le total comprend la location et les frais de prise en charge/retour choisis ; WhatsApp confirme la disponibilité',
 	'select_dates'       => 'Choisissez vos dates',
 	'quote_error'        => 'Impossible de calculer le prix — essayez d\'autres dates',
 	'booking_summary'    => 'Récapitulatif de réservation',
@@ -87,7 +87,7 @@ return [
 	'included_2'      => 'Kilométrage illimité',
 	'included_3'      => 'Pneus hiver en saison',
 	'included_4'      => 'Second conducteur gratuit',
-	'included_5'      => 'Livraison gratuite à l\'aéroport',
+	'included_5'      => 'Livraison gratuite à l\'aéroport de Tbilissi',
 	'included_6'      => 'Assistance routière 24h/24',
 
 	'process_title'   => 'Comment ça marche',
