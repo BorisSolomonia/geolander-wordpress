@@ -77,7 +77,7 @@ Filter chips (no sidebar): Transmission · Seats · 4x4 · Price. Sort: price as
 10. Booking widget: desktop sticky right rail (dates editable, live line-item breakdown, total, CTA "Book via WhatsApp" + microcopy "10% prepayment confirms the booking — 50% refundable at least 30 days before pickup"); mobile sticky bottom bar 64px (total left tap→sheet, green CTA right)
 
 ## WhatsApp handoff (the trust package)
-Summary sheet: car thumb, dates/times, pickup point, line-item price, total USD, deposit, cancellation restated. Fields: Name + flight number (optional) ONLY. Booking reference GL-XXXX prominent. POST to server first (logged as booking_request), then wa.me deep link:
+Summary sheet: car thumb, dates/times, pickup point, line-item price, total USD, deposit, cancellation restated. Fields: name + valid email (required); flight number remains optional if introduced later. Booking reference GL-XXXX prominent. POST to server first (logged as booking_request), then the WhatsApp deep link. Every car-specific WhatsApp action routes through this form so a reservation request cannot bypass email collection.
 ```
 Booking request GL-2417
 🚙 Subaru Forester 2021

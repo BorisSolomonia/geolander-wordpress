@@ -42,6 +42,17 @@ foreach ($expected in @('glc-b-email', 'glc-b-pickup', 'glc-b-return', 'glc-b-to
 		throw "Vehicle booking page is missing: $expected"
 	}
 }
+if ($blocks -match 'private static function whatsapp_link') {
+	throw 'Fleet cards still bypass the email-required reservation form with a direct WhatsApp link.'
+}
+foreach ($expected in @('$url . ''#glc-booking''', 'glc_ui( ''book_whatsapp'' )')) {
+	if ($blocks -notmatch [regex]::Escape($expected)) {
+		throw "Fleet card does not route car bookings through the email-required form: $expected"
+	}
+}
+if (-not $gateway.Contains("'Email: ' . `$customer['email']")) {
+	throw 'The generated WhatsApp reservation message does not include the required customer email.'
+}
 if ($pattern -notmatch 'geolander/rental-facts') {
 	throw 'Every car page must render the complete rental facts block.'
 }

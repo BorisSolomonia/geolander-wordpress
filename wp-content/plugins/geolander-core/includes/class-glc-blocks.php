@@ -96,25 +96,6 @@ class GLC_Blocks {
 		return [ $from, $to ];
 	}
 
-	/**
-	 * Direct WhatsApp link for a car — no dates, no quote, just a conversation.
-	 *
-	 * Deliberately does NOT go through GLC_Gateways::checkout(): this is the
-	 * "just asking" path from the fleet grid, so it must not mint a booking
-	 * reference or log a booking_request. The dated quote flow on the car page
-	 * still does all of that for real enquiries.
-	 *
-	 * Message stays English on purpose — Geolander staff read these; see the note
-	 * in class-glc-gateways.php.
-	 */
-	private static function whatsapp_link( WP_Post $car ): string {
-		// One builder for every WhatsApp link on the site — the URL format is
-		// exacting (see GLC_Gateway_WhatsApp::url()) and must not be duplicated.
-		return GLC_Gateway_WhatsApp::url(
-			sprintf( 'Hi! I am interested in the %s. Is it available?', $car->post_title )
-		);
-	}
-
 	/* --------------------------------------------------------- Fleet grid */
 
 	public static function fleet_grid( array $attrs ): string {
@@ -211,13 +192,10 @@ class GLC_Blocks {
 					<?php endif; ?>
 				<?php endif; ?>
 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
-				<?php $glc_wa = self::whatsapp_link( $car ); ?>
 				<div class="glc-card-actions">
-					<?php if ( $glc_wa ) : ?>
-						<a class="glc-card-wa" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener">
-							<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'ask_whatsapp' ) ); ?>
-						</a>
-					<?php endif; ?>
+					<a class="glc-card-wa" href="<?php echo esc_url( $url . '#glc-booking' ); ?>">
+						<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?>
+					</a>
 					<a class="glc-card-details" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( glc_ui( 'check_details' ) ); ?></a>
 				</div>
 			</div>
