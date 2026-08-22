@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $ai = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-ai.php')
 $seo = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-seo.php')
+$perf = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-perf.php')
 $schema = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-schema.php')
 $notFound = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/themes/geolander/patterns/not-found.php')
 $footer = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/themes/geolander/patterns/footer.php')
@@ -24,6 +25,12 @@ foreach ($expected in @('agent-instructions.md', 'openapi.json', 'Geolander Rese
 foreach ($bot in @('ChatGPT-User', 'ClaudeBot', 'Claude-SearchBot', 'Google-Extended', 'PerplexityBot', 'Bingbot', 'DeepSeekBot', 'ora-agent')) {
 	if (-not $seo.Contains("'$bot'")) {
 		throw "robots.txt generator is missing an explicit allow for $bot"
+	}
+}
+
+foreach ($expected in @("get_query_var( 'robots' )", 'Cache-Control: no-store, max-age=0')) {
+	if (-not $perf.Contains($expected)) {
+		throw "robots.txt cache-safety contract is missing: $expected"
 	}
 }
 

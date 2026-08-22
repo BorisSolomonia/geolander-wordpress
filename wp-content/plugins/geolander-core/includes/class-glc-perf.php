@@ -11,6 +11,7 @@
  *
  * Excluded from public caching:
  *  - non-GET requests and logged-in users
+ *  - robots.txt (crawler policy changes must become visible immediately)
  *  - AI pseudo-files such as /llms.txt, /pricing.md, and /openapi.json
  *    (they set their own headers)
  *  - car/fleet pages carrying ?from&to (live seasonal quotes vary by dates)
@@ -48,6 +49,12 @@ class GLC_Perf {
 			return;
 		}
 		if ( is_user_logged_in() ) {
+			return;
+		}
+		// A stale edge copy can keep newly allowed agents blocked for a full day.
+		// robots.txt is tiny and infrequently requested, so always serve it fresh.
+		if ( get_query_var( 'robots' ) ) {
+			header( 'Cache-Control: no-store, max-age=0' );
 			return;
 		}
 		// AI pseudo-files manage their own caching.
