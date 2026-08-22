@@ -24,6 +24,7 @@ return [
 	'nav_blog'        => 'ბლოგი',
 	'nav_terms'       => 'პირობები',
 	'nav_contact'     => 'კონტაქტი',
+	'nav_about'       => 'Geolander-ის შესახებ',
 	'book_now'        => 'დაჯავშნე ახლავე',
 
 	// Hero.
@@ -171,4 +172,5 @@ return [
 	'nf_home'         => 'მთავარ გვერდზე',
 	'nf_or'           => 'ან',
 	'nf_fleet'        => 'იხილეთ ჩვენი ავტოპარკი',
+	'nf_agent_recovery' => 'აგენტისთვის გამოსადეგი ბმულები',
 ];

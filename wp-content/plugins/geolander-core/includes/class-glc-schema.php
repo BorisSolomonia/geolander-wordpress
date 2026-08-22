@@ -123,7 +123,10 @@ class GLC_Schema {
 		}
 
 		return [
-			'@type'      => 'AutoRental',
+			// AutoRental is already an Organization subtype, but the explicit
+			// Organization token helps simpler agent parsers recognize identity
+			// without requiring them to traverse the Schema.org hierarchy.
+			'@type'      => [ 'Organization', 'LocalBusiness', 'AutoRental' ],
 			'@id'        => home_url( '/#business' ),
 			// Must match the Google Business Profile name exactly so search
 			// engines reconcile the site and the Maps listing as one entity.
@@ -139,6 +142,14 @@ class GLC_Schema {
 			'image'      => $image,
 			'telephone'  => GLC_Settings::get( 'phone' ),
 			'email'      => GLC_Settings::get( 'email' ),
+			'contactPoint' => [
+				'@type'             => 'ContactPoint',
+				'contactType'       => 'customer service and reservations',
+				'telephone'         => GLC_Settings::get( 'phone' ),
+				'email'             => GLC_Settings::get( 'email' ),
+				'availableLanguage' => [ 'English', 'Georgian', 'Russian', 'Ukrainian', 'Arabic', 'Chinese', 'French' ],
+				'areaServed'        => 'GE',
+			],
 			// Reads the settings range, so schema can't drift from the site copy.
 			'priceRange' => GLC_Format::range_display( 'en' ),
 			'hasMap'     => GLC_Settings::get( 'google_maps_url' ),

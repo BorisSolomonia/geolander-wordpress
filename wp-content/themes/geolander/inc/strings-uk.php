@@ -19,6 +19,7 @@ return [
 	'nav_blog'        => 'Блог',
 	'nav_terms'       => 'Умови',
 	'nav_contact'     => 'Контакти',
+	'nav_about'       => 'Про Geolander',
 	'book_now'        => 'Забронювати',
 
 	'hero_title'      => 'Відкрийте Грузію по-своєму',
@@ -155,4 +156,5 @@ return [
 	'nf_home'          => 'на головну',
 	'nf_or'            => 'або',
 	'nf_fleet'         => 'перегляньте наш автопарк',
+	'nf_agent_recovery'=> 'Посилання для агента',
 ];

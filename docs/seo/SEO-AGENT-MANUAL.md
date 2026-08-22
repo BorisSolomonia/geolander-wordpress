@@ -91,6 +91,7 @@ Lint it, run the validator, test the logic against real data. This project has a
 | RAV4 | The RAV4 records are the same physical car. Survivor: Toyota RAV4 **Hybrid AWD**, plate GG581WG. Owner describes fuel economy as **about 25–30% better** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Damage cover | Full insurance covers everything except **tyres**; wheels and windshield are covered. Existing driving-behaviour exclusions still apply | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Booking email | No outbound email service is configured; Cloudflare currently provides DNS only. The app generates confirmations and activates automatic delivery through `GLC_SMTP_*` Railway variables | `[OBSERVED]` owner confirmation + implementation, 2026-08-21 |
+| Agent surfaces | Canonical public pages negotiate `text/html` / `text/markdown` with `Vary: Accept, Accept-Encoding`; `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` are generated from live settings/content | `[OBSERVED]` implementation, 2026-08-22 |
 | **Fleet floor** | **$26/day** — measured from the cheapest bookable car | `[OBSERVED]` computed from `cars.json` |
 | Advertised ceiling | $120/day — **a settings value, not a real car.** Highest actual seasonal rate is **$90** | `[OBSERVED]` |
 
@@ -147,7 +148,7 @@ wp-content/plugins/geolander-core/includes/
   class-glc-i18n.php      locale prefix routing · hreflang · Accept-Language negotiation
   class-glc-pricing.php   seasonal engine · normalize() · seasons() · is_priced() · rate_range() · fleet_floor()
   class-glc-city.php      city CPT · /car-rental-{slug}/ rewrite · per-city Service schema
-  class-glc-ai.php        /llms.txt and /pricing.md generators
+  class-glc-ai.php        Markdown negotiation · agent-safe 404 · /llms.txt · /pricing.md · agent instructions · OpenAPI
   class-glc-blocks.php    fleet grid · booking widget · car specs · price table · FAQ · places grid
   class-glc-format.php    locale money/date formatting · range() ← the price floor
   class-glc-content.php   per-locale content meta resolver (glc_body_ru, glc_title_ka, …)
@@ -209,6 +210,7 @@ Branch `seo/p0-p1-implementation`, commits `2c248b7` and `34e6f44`. **Not merged
 | **i18n** | 7 new UI keys across all 7 catalogues |
 | **Guard** | `validate-schema.mjs` fails the build on a zero price, on `$0` in `llms.txt`/`pricing.md`, and on any locale homepage not returning 200 |
 | **Tools** | `audit-fleet.php` (read-only) · `setup-seo-pages.php` (hubs published, 3 drafts created) |
+| **Agent readiness** | Explicit crawler allows · canonical Markdown negotiation · recovery 404 · Organization/contactPoint identity · `/about/` + `/developers/` migration · agent instructions · OpenAPI 3.1 |
 
 ## 3.2 · Verified how
 

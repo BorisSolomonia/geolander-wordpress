@@ -11,7 +11,8 @@
  *
  * Excluded from public caching:
  *  - non-GET requests and logged-in users
- *  - the /llms.txt and /pricing.md pseudo-files (they set their own headers)
+ *  - AI pseudo-files such as /llms.txt, /pricing.md, and /openapi.json
+ *    (they set their own headers)
  *  - car/fleet pages carrying ?from&to (live seasonal quotes vary by dates)
  *  - 404s (short cache only)
  *  - the unprefixed front page (language negotiation makes it origin-decided)

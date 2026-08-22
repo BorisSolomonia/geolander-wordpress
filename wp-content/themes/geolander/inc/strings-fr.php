@@ -19,6 +19,7 @@ return [
 	'nav_blog'        => 'Blog',
 	'nav_terms'       => 'Conditions',
 	'nav_contact'     => 'Contact',
+	'nav_about'       => 'À propos de Geolander',
 	'book_now'        => 'Réserver',
 
 	'hero_title'      => 'Explorez la Géorgie à votre façon',
@@ -155,4 +156,5 @@ return [
 	'nf_home'          => 'l’accueil',
 	'nf_or'            => 'ou',
 	'nf_fleet'         => 'découvrez notre flotte',
+	'nf_agent_recovery'=> 'Liens de récupération pour agents',
 ];

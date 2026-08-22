@@ -19,6 +19,7 @@ return [
 	'nav_blog'        => 'المدونة',
 	'nav_terms'       => 'الشروط',
 	'nav_contact'     => 'اتصل بنا',
+	'nav_about'       => 'حول Geolander',
 	'book_now'        => 'احجز الآن',
 
 	'hero_title'      => 'اكتشف جورجيا على طريقتك',
@@ -155,4 +156,5 @@ return [
 	'nf_home'          => 'الصفحة الرئيسية',
 	'nf_or'            => 'أو',
 	'nf_fleet'         => 'تصفح أسطولنا',
+	'nf_agent_recovery'=> 'روابط استعادة الوكيل',
 ];

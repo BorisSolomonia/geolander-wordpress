@@ -23,7 +23,7 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    `/var/www/html/wp-content/uploads`.
 5. First boot: open the app URL, run the WP install (STRONG password), then in the service shell
    (or `railway ssh`): activate plugin + theme, permalinks, import content:
-   `wp plugin activate geolander-core && wp theme activate geolander && wp rewrite structure '/%postname%/' && wp rewrite flush && wp eval-file /migration/import.php && wp eval-file /migration/setup-pages.php && wp eval-file /migration/setup-seo.php`
+   `wp plugin activate geolander-core && wp theme activate geolander && wp rewrite structure '/%postname%/' && wp rewrite flush && wp eval-file /migration/import.php && wp eval-file /migration/setup-pages.php && wp eval-file /migration/setup-seo.php && wp eval-file /migration/setup-agent-readiness.php && wp rewrite flush`
 6. Custom domain: add `geo-lander.com` to the service, set the CNAME at your DNS. **Recommended:**
    put Cloudflare (free) in front for CDN + page caching — Railway has no built-in page cache.
    The `geolander-core` plugin (`GLC_Perf`) now emits `Cache-Control: public, max-age=300,
@@ -55,6 +55,24 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    `GLC_SMTP_FROM` (normally `info@geo-lander.com`). Authenticate the domain with the provider's
    SPF/DKIM records in Cloudflare before enabling customer delivery.
 8. Backups: enable Railway MySQL backups; the uploads volume + repo are the rest of the state.
+
+## 0.1 Agent-readable endpoints
+
+After every deployment that changes agent routes, run:
+
+```text
+wp eval-file /migration/setup-agent-readiness.php
+wp rewrite flush
+```
+
+Then verify:
+
+- `/` returns HTML for `Accept: text/html` and Markdown for `Accept: text/markdown`.
+- Both variants include `Vary: Accept, Accept-Encoding`.
+- A nonexistent URL returns HTTP 404; its Markdown variant links to `/llms.txt`, `/wp-sitemap.xml`, and `/fleet/`.
+- `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` return 200 with the documented content type.
+- `/about/` and `/developers/` return 200 and appear in `/wp-sitemap.xml`.
+- `node _migration/validate-schema.mjs https://geo-lander.com` passes after deployment.
 
 ## 1. Production hosting (alternative: managed WP host)
 Any PHP 8.1+ / MySQL host works. Recommended: managed WP hosting with server-level

@@ -19,6 +19,7 @@ return [
 	'nav_blog'        => '博客',
 	'nav_terms'       => '条款',
 	'nav_contact'     => '联系我们',
+	'nav_about'       => '关于 Geolander',
 	'book_now'        => '立即预订',
 
 	'hero_title'      => '以你的方式探索格鲁吉亚',
@@ -155,4 +156,5 @@ return [
 	'nf_home'          => '首页',
 	'nf_or'            => '或',
 	'nf_fleet'         => '浏览我们的车队',
+	'nf_agent_recovery'=> '智能代理恢复链接',
 ];

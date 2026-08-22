@@ -18,4 +18,10 @@
 		<?php echo esc_html( glc_t( 'nf_or' ) ); ?>
 		<a href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>"><?php echo esc_html( glc_t( 'nf_fleet' ) ); ?></a>.
 	</p>
+	<p style="margin:0;color:var(--glc-stone);max-width:56ch;">
+		<?php echo esc_html( glc_t( 'nf_agent_recovery' ) ); ?>:
+		<a href="<?php echo esc_url( home_url( '/llms.txt' ) ); ?>">llms.txt</a> ·
+		<a href="<?php echo esc_url( home_url( '/wp-sitemap.xml' ) ); ?>">XML sitemap</a> ·
+		<a href="<?php echo esc_url( home_url( '/developers/' ) ); ?>">Geolander developer resources</a>
+	</p>
 </main>

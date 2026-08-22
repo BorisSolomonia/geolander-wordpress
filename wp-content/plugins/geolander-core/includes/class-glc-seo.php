@@ -127,7 +127,21 @@ class GLC_SEO {
 	 */
 	public static function robots( string $output ): string {
 		$ai = '';
-		foreach ( [ 'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-SearchBot', 'PerplexityBot', 'Google-Extended', 'CCBot' ] as $bot ) {
+		foreach ( [
+			'GPTBot',
+			'OAI-SearchBot',
+			'ChatGPT-User',
+			'ClaudeBot',
+			'Claude-SearchBot',
+			'Claude-User',
+			'anthropic-ai',
+			'PerplexityBot',
+			'Google-Extended',
+			'Bingbot',
+			'DeepSeekBot',
+			'ora-agent',
+			'CCBot',
+		] as $bot ) {
 			$ai .= "\nUser-agent: {$bot}\nAllow: /\n";
 		}
 		return $output . $ai;

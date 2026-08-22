@@ -26,7 +26,7 @@ const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const LOCALES = ['ka', 'ru', 'uk', 'ar', 'zh', 'fr'];
 
 /* Machine-readable surfaces that must never quote a zero price. */
-const AI_FILES = ['/llms.txt', '/pricing.md'];
+const AI_FILES = ['/llms.txt', '/pricing.md', '/agent-instructions.md'];
 
 const PAGES = [
 	['home', `${BASE}/`],
@@ -36,6 +36,8 @@ const PAGES = [
 	['place', `${BASE}/places/gergeti-trinity-church/`],
 	['city-tbilisi', `${BASE}/car-rental-tbilisi/`],
 	['contact', `${BASE}/contact/`],
+	['about', `${BASE}/about/`],
+	['developers', `${BASE}/developers/`],
 	['kazbegi-rental', `${BASE}/car-rental-kazbegi/`],
 	['4x4-category', `${BASE}/fleet/4x4-suv/`],
 	['guide-driver', `${BASE}/rent-a-car-or-hire-a-driver/`],
@@ -96,6 +98,7 @@ function checkFAQ(page, node) {
 }
 
 function checkBusiness(page, node) {
+	if (!types(node).includes('Organization')) err(page, 'Business identity missing explicit Organization type'); else ok();
 	for (const field of ['name', 'address', 'telephone', 'url']) {
 		if (!node[field]) err(page, `AutoRental missing ${field}`); else ok();
 	}
@@ -106,6 +109,9 @@ function checkBusiness(page, node) {
 	if (!node.geo?.latitude || !node.geo?.longitude) warn(page, 'AutoRental missing geo coordinates'); else ok();
 	if (!node.openingHoursSpecification) warn(page, 'AutoRental missing openingHours'); else ok();
 	if (!node.sameAs?.length) warn(page, 'AutoRental missing sameAs'); else ok();
+	if (!node.contactPoint?.telephone) err(page, 'Organization contactPoint missing telephone'); else ok();
+	if (!node.contactPoint?.email) err(page, 'Organization contactPoint missing email'); else ok();
+	if (!node.contactPoint?.contactType) err(page, 'Organization contactPoint missing contactType'); else ok();
 }
 
 function checkArticle(page, node) {
@@ -215,6 +221,89 @@ for (const path of AI_FILES) {
 		err(path, `contains ${zeros.length} zero-price quotation(s) — this file is read verbatim by AI systems`);
 	} else ok();
 	if (/\$\d+–\$0|\$0–/.test(body)) { err(path, 'contains a zero-bounded price range'); } else ok();
+}
+
+console.log('\nagent content negotiation');
+try {
+	const markdown = await fetch(`${BASE}/`, { headers: { Accept: 'text/markdown, text/html;q=0.8' } });
+	if (!markdown.ok) err('markdown-home', `HTTP ${markdown.status}`); else ok();
+	if (!String(markdown.headers.get('content-type') || '').toLowerCase().startsWith('text/markdown')) {
+		err('markdown-home', `wrong Content-Type: ${markdown.headers.get('content-type')}`);
+	} else ok();
+	if (!String(markdown.headers.get('vary') || '').toLowerCase().split(',').map((v) => v.trim()).includes('accept')) {
+		err('markdown-home', 'Vary header does not include Accept');
+	} else ok();
+	const markdownBody = await markdown.text();
+	if (!markdownBody.startsWith('# Geolander')) err('markdown-home', 'Markdown representation has no Geolander H1'); else ok();
+
+	const html = await fetch(`${BASE}/`, { headers: { Accept: 'text/html' } });
+	if (!html.ok) err('html-home', `HTTP ${html.status}`); else ok();
+	if (!String(html.headers.get('content-type') || '').toLowerCase().startsWith('text/html')) {
+		err('html-home', `wrong Content-Type: ${html.headers.get('content-type')}`);
+	} else ok();
+	if (!String(html.headers.get('vary') || '').toLowerCase().split(',').map((v) => v.trim()).includes('accept')) {
+		err('html-home', 'Vary header does not include Accept');
+	} else ok();
+
+	const unsupported = await fetch(`${BASE}/`, { headers: { Accept: 'application/json' } });
+	if (unsupported.status !== 406) err('content-negotiation', `unsupported representation must return 406, received ${unsupported.status}`); else ok();
+} catch (e) {
+	err('content-negotiation', `fetch failed: ${e.message}`);
+}
+
+console.log('\nagent-friendly 404');
+try {
+	const missing = await fetch(`${BASE}/agent-validator-path-that-does-not-exist`, { headers: { Accept: 'text/markdown' }, redirect: 'manual' });
+	if (missing.status !== 404) err('404-markdown', `expected 404, received ${missing.status}`); else ok();
+	if (!String(missing.headers.get('content-type') || '').toLowerCase().startsWith('text/markdown')) {
+		err('404-markdown', `wrong Content-Type: ${missing.headers.get('content-type')}`);
+	} else ok();
+	if (!String(missing.headers.get('vary') || '').toLowerCase().split(',').map((v) => v.trim()).includes('accept')) {
+		err('404-markdown', 'Vary header does not include Accept');
+	} else ok();
+	const missingBody = await missing.text();
+	for (const recovery of ['llms.txt', 'wp-sitemap.xml', '/fleet/']) {
+		if (!missingBody.includes(recovery)) err('404-markdown', `missing recovery link: ${recovery}`); else ok();
+	}
+} catch (e) {
+	err('404-markdown', `fetch failed: ${e.message}`);
+}
+
+console.log('\nagent crawler reachability');
+const AGENT_BOTS = ['ChatGPT-User', 'ClaudeBot', 'Claude-SearchBot', 'Google-Extended', 'PerplexityBot', 'Bingbot', 'DeepSeekBot', 'ora-agent'];
+let robotsBody = '';
+try {
+	const robots = await fetch(`${BASE}/robots.txt`);
+	robotsBody = await robots.text();
+	if (!robots.ok) err('robots', `HTTP ${robots.status}`); else ok();
+} catch (e) {
+	err('robots', `fetch failed: ${e.message}`);
+}
+for (const bot of AGENT_BOTS) {
+	if (!robotsBody.includes(`User-agent: ${bot}`)) err('robots', `missing explicit allow for ${bot}`); else ok();
+	try {
+		const res = await fetch(`${BASE}/`, { headers: { 'User-Agent': bot, Accept: 'text/html' } });
+		if (!res.ok) err(bot, `homepage HTTP ${res.status}`); else ok();
+	} catch (e) {
+		err(bot, `homepage fetch failed: ${e.message}`);
+	}
+}
+
+console.log('\ndeveloper resources');
+try {
+	const specResponse = await fetch(`${BASE}/openapi.json`);
+	if (!specResponse.ok) {
+		err('openapi', `HTTP ${specResponse.status}`);
+	} else {
+		const spec = await specResponse.json();
+		if (spec.openapi !== '3.1.0') err('openapi', 'must declare OpenAPI 3.1.0'); else ok();
+		if (!String(spec.info?.title || '').includes('Geolander')) err('openapi', 'title must name Geolander'); else ok();
+		for (const route of ['/wp-json/geolander/v1/quote', '/wp-json/geolander/v1/checkout']) {
+			if (!spec.paths?.[route]) err('openapi', `missing documented route ${route}`); else ok();
+		}
+	}
+} catch (e) {
+	err('openapi', `invalid or unreachable: ${e.message}`);
 }
 
 console.log('\nlocalized homepages — no redirect loop');

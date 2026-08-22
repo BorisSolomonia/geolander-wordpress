@@ -13,6 +13,10 @@ $glc_nav = [
 	home_url( '/terms/' )       => glc_t( 'nav_terms' ),
 	home_url( '/contact/' )     => glc_t( 'nav_contact' ),
 ];
+$glc_about = get_page_by_path( 'about' );
+if ( $glc_about instanceof WP_Post && 'publish' === $glc_about->post_status ) {
+	$glc_nav[ home_url( '/about/' ) ] = glc_t( 'nav_about' );
+}
 $glc_phone = GLC_Settings::get( 'phone' );
 // Verified deep-link format (keeps the "+", opens the app) — see
 // GLC_Gateway_WhatsApp::url(). The old bare-digit wa.me link was unreliable.
