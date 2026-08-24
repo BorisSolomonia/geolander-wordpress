@@ -91,7 +91,7 @@ Lint it, run the validator, test the logic against real data. This project has a
 | RAV4 | The RAV4 records are the same physical car. Survivor: Toyota RAV4 **Hybrid AWD**, plate GG581WG. Owner describes fuel economy as **about 25–30% better** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Damage cover | Full insurance covers everything except **tyres**; wheels and windshield are covered. Existing driving-behaviour exclusions still apply | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Booking email | No outbound email service is configured; Cloudflare currently provides DNS only. The app generates confirmations and activates automatic delivery through `GLC_SMTP_*` Railway variables | `[OBSERVED]` owner confirmation + implementation, 2026-08-21 |
-| Agent surfaces | Canonical public pages negotiate `text/html` / `text/markdown` with `Vary: Accept, Accept-Encoding`; `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` are generated from live settings/content | `[OBSERVED]` implementation, 2026-08-22 |
+| Agent surfaces | Canonical public pages negotiate `text/html` / `text/markdown` with `Vary: Accept, Accept-Encoding`; `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, `/openapi.json`, and the RFC 9727 `/.well-known/api-catalog` Linkset are generated from live settings/content | `[OBSERVED]` implementation, 2026-08-24 |
 | **Fleet floor** | **$26/day** — measured from the cheapest bookable car | `[OBSERVED]` computed from `cars.json` |
 | Advertised ceiling | $120/day — **a settings value, not a real car.** Highest actual seasonal rate is **$90** | `[OBSERVED]` |
 
@@ -210,7 +210,7 @@ Branch `seo/p0-p1-implementation`, commits `2c248b7` and `34e6f44`. **Not merged
 | **i18n** | 7 new UI keys across all 7 catalogues |
 | **Guard** | `validate-schema.mjs` fails the build on a zero price, on `$0` in `llms.txt`/`pricing.md`, and on any locale homepage not returning 200 |
 | **Tools** | `audit-fleet.php` (read-only) · `setup-seo-pages.php` (hubs published, 3 drafts created) |
-| **Agent readiness** | Explicit crawler allows · canonical Markdown negotiation · recovery 404 · Organization/contactPoint identity · `/about/` + `/developers/` migration · agent instructions · OpenAPI 3.1 |
+| **Agent readiness** | Explicit crawler allows · canonical Markdown negotiation · recovery 404 · Organization/contactPoint identity · `/about/` + `/developers/` migration · agent instructions · OpenAPI 3.1 · RFC 9727 API catalog |
 
 ## 3.2 · Verified how
 
