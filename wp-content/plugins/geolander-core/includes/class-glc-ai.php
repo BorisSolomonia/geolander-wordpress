@@ -1,7 +1,7 @@
 <?php
 /**
  * Machine-readable surfaces for AI systems: /llms.txt, /pricing.md,
- * /agent-instructions.md, /openapi.json, and text/markdown content
+ * /agent-instructions.md, /openapi.json, /.well-known/api-catalog, and text/markdown content
  * negotiation on canonical public URLs.
  */
 
@@ -23,6 +23,7 @@ class GLC_AI {
 		add_rewrite_rule( '^pricing\.md$', 'index.php?glc_ai_file=pricing', 'top' );
 		add_rewrite_rule( '^agent-instructions\.md$', 'index.php?glc_ai_file=instructions', 'top' );
 		add_rewrite_rule( '^openapi\.json$', 'index.php?glc_ai_file=openapi', 'top' );
+		add_rewrite_rule( '^\.well-known/api-catalog/?$', 'index.php?glc_ai_file=api_catalog', 'top' );
 	}
 
 	public static function serve() {
@@ -160,6 +161,7 @@ class GLC_AI {
 			'pricing'      => 'text/markdown; charset=utf-8',
 			'instructions' => 'text/markdown; charset=utf-8',
 			'openapi'      => 'application/json; charset=utf-8',
+			'api_catalog'  => 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"',
 		];
 		if ( ! isset( $types[ $file ] ) ) {
 			status_header( 404 );
@@ -167,6 +169,9 @@ class GLC_AI {
 		}
 		header( 'Content-Type: ' . $types[ $file ] );
 		header( 'Cache-Control: public, max-age=3600' );
+		if ( 'api_catalog' === $file ) {
+			header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"', false );
+		}
 		if ( 'HEAD' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
 			if ( 'llms' === $file ) {
 				echo self::llms(); // phpcs:ignore WordPress.Security.EscapeOutput
@@ -174,8 +179,10 @@ class GLC_AI {
 				echo self::pricing(); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'instructions' === $file ) {
 				echo self::agent_instructions(); // phpcs:ignore WordPress.Security.EscapeOutput
-			} else {
+			} elseif ( 'openapi' === $file ) {
 				echo wp_json_encode( self::openapi(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} else {
+				echo wp_json_encode( self::api_catalog(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			}
 		}
 		exit;
@@ -375,6 +382,35 @@ class GLC_AI {
 		];
 	}
 
+	/** RFC 9727 API Catalog for the public Geolander Reservation API. */
+	private static function api_catalog(): array {
+		return [
+			'linkset' => [
+				[
+					'anchor'       => home_url( '/wp-json/geolander/v1/' ),
+					'service-desc' => [
+						[
+							'href' => home_url( '/openapi.json' ),
+							'type' => 'application/json',
+						],
+					],
+					'service-doc'  => [
+						[
+							'href' => home_url( '/developers/' ),
+							'type' => 'text/html',
+						],
+					],
+					'status'       => [
+						[
+							'href' => home_url( '/health.php' ),
+							'type' => 'text/plain',
+						],
+					],
+				],
+			],
+		];
+	}
+
 	private static function cars(): array {
 		return get_posts( [ 'post_type' => 'car', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 	}
@@ -459,6 +495,7 @@ class GLC_AI {
 		$out .= "- [Geolander developer resources]({$home}developers/)\n";
 		$out .= "- [Agent instructions]({$home}agent-instructions.md)\n";
 		$out .= "- [OpenAPI specification]({$home}openapi.json)\n";
+		$out .= "- [RFC 9727 API catalog]({$home}.well-known/api-catalog)\n";
 
 		$faqs = get_posts( [ 'post_type' => 'faq', 'posts_per_page' => 20, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 		if ( $faqs ) {

@@ -71,6 +71,7 @@ Then verify:
 - Both variants include `Vary: Accept, Accept-Encoding`.
 - A nonexistent URL returns HTTP 404; its Markdown variant links to `/llms.txt`, `/wp-sitemap.xml`, and `/fleet/`.
 - `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` return 200 with the documented content type.
+- `/.well-known/api-catalog` returns an RFC 9727 Linkset with `application/linkset+json` for both GET and HEAD discovery.
 - `/about/` and `/developers/` return 200 and appear in `/wp-sitemap.xml`.
 - `node _migration/validate-schema.mjs https://geo-lander.com` passes after deployment.
 

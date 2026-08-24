@@ -70,6 +70,7 @@ $developers = glc_agent_p( 'Geolander publishes a small public reservation API u
 	. glc_agent_h( 'Machine-readable resources' )
 	. glc_agent_ul( [
 		'<a href="/openapi.json">Geolander Reservation API — OpenAPI 3.1 specification</a>',
+		'<a href="/.well-known/api-catalog">Geolander API catalog — RFC 9727 Linkset discovery</a>',
 		'<a href="/agent-instructions.md">Agent instructions and when-to-use guidance</a>',
 		'<a href="/llms.txt">Geolander site and fleet context for language models</a>',
 		'<a href="/pricing.md">Live machine-readable fleet price tables</a>',

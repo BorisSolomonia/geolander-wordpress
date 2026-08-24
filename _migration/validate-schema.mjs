@@ -289,6 +289,61 @@ for (const bot of AGENT_BOTS) {
 	}
 }
 
+console.log('\nRFC 9727 API catalog');
+try {
+	const catalogUrl = `${BASE}/.well-known/api-catalog`;
+	const catalogResponse = await fetch(catalogUrl, {
+		headers: { Accept: 'application/linkset+json' },
+	});
+	if (!catalogResponse.ok) err('api-catalog', `HTTP ${catalogResponse.status}`); else ok();
+	const contentType = String(catalogResponse.headers.get('content-type') || '').toLowerCase();
+	if (!contentType.startsWith('application/linkset+json')) {
+		err('api-catalog', `wrong Content-Type: ${catalogResponse.headers.get('content-type')}`);
+	} else ok();
+	if (!contentType.includes('profile="https://www.rfc-editor.org/info/rfc9727"')) {
+		err('api-catalog', 'Content-Type missing RFC 9727 profile parameter');
+	} else ok();
+
+	const catalog = await catalogResponse.json();
+	if (!Array.isArray(catalog.linkset) || !catalog.linkset.length) {
+		err('api-catalog', 'linkset must be a non-empty array');
+	} else {
+		ok();
+		for (const [index, entry] of catalog.linkset.entries()) {
+			try { new URL(entry.anchor); ok(); } catch { err('api-catalog', `entry ${index} has no valid anchor URL`); }
+			for (const relation of ['service-desc', 'service-doc']) {
+				if (!Array.isArray(entry[relation]) || !entry[relation].length) {
+					err('api-catalog', `entry ${index} missing ${relation} relation`);
+					continue;
+				}
+				for (const link of entry[relation]) {
+					try { new URL(link.href); ok(); } catch { err('api-catalog', `entry ${index} has invalid ${relation} href`); }
+				}
+			}
+			if (entry.status) {
+				if (!Array.isArray(entry.status)) err('api-catalog', `entry ${index} status relation must be an array`);
+				else for (const link of entry.status) {
+					try { new URL(link.href); ok(); } catch { err('api-catalog', `entry ${index} has invalid status href`); }
+				}
+			}
+		}
+	}
+
+	const headResponse = await fetch(catalogUrl, {
+		method: 'HEAD',
+		headers: { Accept: 'application/linkset+json' },
+	});
+	if (!headResponse.ok) err('api-catalog-head', `HTTP ${headResponse.status}`); else ok();
+	if (!String(headResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/linkset+json')) {
+		err('api-catalog-head', `wrong Content-Type: ${headResponse.headers.get('content-type')}`);
+	} else ok();
+	if (!String(headResponse.headers.get('link') || '').includes('rel="api-catalog"')) {
+		err('api-catalog-head', 'missing api-catalog Link relation');
+	} else ok();
+} catch (e) {
+	err('api-catalog', `invalid or unreachable: ${e.message}`);
+}
+
 console.log('\ndeveloper resources');
 try {
 	const specResponse = await fetch(`${BASE}/openapi.json`);

@@ -16,7 +16,7 @@ foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-En
 	}
 }
 
-foreach ($expected in @('agent-instructions.md', 'openapi.json', 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
+foreach ($expected in @('agent-instructions.md', 'openapi.json', "^\.well-known/api-catalog/?$", 'application/linkset+json', 'https://www.rfc-editor.org/info/rfc9727', "'service-desc'", "'service-doc'", "'status'", 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
 	if (-not $ai.Contains($expected)) {
 		throw "Agent/developer resource is missing: $expected"
 	}
@@ -46,7 +46,7 @@ foreach ($expected in @('/llms.txt', '/wp-sitemap.xml', '/developers/')) {
 	}
 }
 
-foreach ($expected in @("'about'", 'About Geolander Car Rental', 'Geolander Developer Resources', 'OpenAPI 3.1 specification')) {
+foreach ($expected in @("'about'", 'About Geolander Car Rental', 'Geolander Developer Resources', 'OpenAPI 3.1 specification', 'RFC 9727 Linkset discovery')) {
 	if (-not $migration.Contains($expected)) {
 		throw "Agent-readiness page migration is missing: $expected"
 	}
@@ -64,7 +64,7 @@ foreach ($locale in @('en', 'ka', 'ru', 'uk', 'ar', 'zh', 'fr')) {
 	}
 }
 
-foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources')) {
+foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog')) {
 	if (-not $validator.Contains($expected)) {
 		throw "Public endpoint validator is missing: $expected"
 	}
