@@ -356,9 +356,55 @@ try {
 		for (const route of ['/wp-json/geolander/v1/quote', '/wp-json/geolander/v1/checkout']) {
 			if (!spec.paths?.[route]) err('openapi', `missing documented route ${route}`); else ok();
 		}
+		for (const route of ['/wp-json/geolander-agent/v1/quote', '/wp-json/geolander-agent/v1/checkout']) {
+			if (!spec.paths?.[route]) err('openapi', `missing authenticated route ${route}`); else ok();
+			const operation = spec.paths?.[route]?.get || spec.paths?.[route]?.post;
+			if (!operation?.security?.some((entry) => Object.hasOwn(entry, 'CloudflareManagedOAuth'))) {
+				err('openapi', `authenticated route ${route} lacks CloudflareManagedOAuth security`);
+			} else ok();
+		}
+		if (spec.components?.securitySchemes?.CloudflareManagedOAuth?.type !== 'oauth2') {
+			err('openapi', 'CloudflareManagedOAuth security scheme missing or not oauth2');
+		} else ok();
 	}
 } catch (e) {
 	err('openapi', `invalid or unreachable: ${e.message}`);
+}
+
+console.log('\nRFC 8414 OAuth discovery');
+try {
+	const discoveryUrl = `${BASE}/.well-known/oauth-authorization-server`;
+	const discoveryResponse = await fetch(discoveryUrl, { headers: { Accept: 'application/json' } });
+	if (!discoveryResponse.ok) err('oauth-discovery', `HTTP ${discoveryResponse.status}`); else ok();
+	if (!String(discoveryResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/json')) {
+		err('oauth-discovery', `wrong Content-Type: ${discoveryResponse.headers.get('content-type')}`);
+	} else ok();
+	const metadata = await discoveryResponse.json();
+	for (const field of ['issuer', 'authorization_endpoint', 'token_endpoint', 'jwks_uri']) {
+		try {
+			const value = new URL(metadata[field]);
+			if (value.protocol !== 'https:') throw new Error('not HTTPS');
+			ok();
+		} catch {
+			err('oauth-discovery', `missing or invalid HTTPS ${field}`);
+		}
+	}
+	for (const field of ['grant_types_supported', 'response_types_supported']) {
+		if (!Array.isArray(metadata[field]) || !metadata[field].length) err('oauth-discovery', `${field} must be a non-empty array`); else ok();
+	}
+	const jwksResponse = await fetch(metadata.jwks_uri, { headers: { Accept: 'application/json' } });
+	if (!jwksResponse.ok) err('oauth-jwks', `HTTP ${jwksResponse.status}`); else {
+		const jwks = await jwksResponse.json();
+		if (!Array.isArray(jwks.keys) || !jwks.keys.length) err('oauth-jwks', 'JWK set has no signing keys'); else ok();
+	}
+
+	const protectedResponse = await fetch(`${BASE}/wp-json/geolander-agent/v1/quote?car=1&from=2026-09-01&to=2026-09-02`, { redirect: 'manual' });
+	if (protectedResponse.status !== 401) err('agent-api-auth', `expected 401 without token, got ${protectedResponse.status}`); else ok();
+	if (new URL(BASE).hostname === 'geo-lander.com' && !String(protectedResponse.headers.get('www-authenticate') || '').includes('resource_metadata=')) {
+		err('agent-api-auth', 'Cloudflare challenge lacks resource_metadata discovery pointer');
+	} else ok();
+} catch (e) {
+	err('oauth-discovery', `invalid or unreachable: ${e.message}`);
 }
 
 console.log('\nlocalized homepages — no redirect loop');

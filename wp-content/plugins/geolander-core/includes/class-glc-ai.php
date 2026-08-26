@@ -1,8 +1,8 @@
 <?php
 /**
  * Machine-readable surfaces for AI systems: /llms.txt, /pricing.md,
- * /agent-instructions.md, /openapi.json, /.well-known/api-catalog, and text/markdown content
- * negotiation on canonical public URLs.
+ * /agent-instructions.md, /openapi.json, RFC 9727 API catalog, OAuth metadata,
+ * and text/markdown content negotiation on canonical public URLs.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -24,6 +24,7 @@ class GLC_AI {
 		add_rewrite_rule( '^agent-instructions\.md$', 'index.php?glc_ai_file=instructions', 'top' );
 		add_rewrite_rule( '^openapi\.json$', 'index.php?glc_ai_file=openapi', 'top' );
 		add_rewrite_rule( '^\.well-known/api-catalog/?$', 'index.php?glc_ai_file=api_catalog', 'top' );
+		add_rewrite_rule( '^\.well-known/oauth-authorization-server/?$', 'index.php?glc_ai_file=oauth_metadata', 'top' );
 	}
 
 	public static function serve() {
@@ -162,13 +163,23 @@ class GLC_AI {
 			'instructions' => 'text/markdown; charset=utf-8',
 			'openapi'      => 'application/json; charset=utf-8',
 			'api_catalog'  => 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"',
+			'oauth_metadata' => 'application/json; charset=utf-8',
 		];
 		if ( ! isset( $types[ $file ] ) ) {
 			status_header( 404 );
 			exit;
 		}
+		$oauth_metadata = 'oauth_metadata' === $file ? self::oauth_metadata() : null;
 		header( 'Content-Type: ' . $types[ $file ] );
-		header( 'Cache-Control: public, max-age=3600' );
+		if ( 'oauth_metadata' === $file && ! $oauth_metadata ) {
+			status_header( 503 );
+			header( 'Cache-Control: no-store' );
+			if ( 'HEAD' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+				echo wp_json_encode( [ 'error' => 'oauth_configuration_unavailable' ] ); // phpcs:ignore WordPress.Security.EscapeOutput
+			}
+			exit;
+		}
+		header( 'Cache-Control: public, max-age=' . ( 'oauth_metadata' === $file ? '300' : '3600' ) );
 		if ( 'api_catalog' === $file ) {
 			header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"', false );
 		}
@@ -181,6 +192,8 @@ class GLC_AI {
 				echo self::agent_instructions(); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'openapi' === $file ) {
 				echo wp_json_encode( self::openapi(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'oauth_metadata' === $file ) {
+				echo wp_json_encode( $oauth_metadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			} else {
 				echo wp_json_encode( self::api_catalog(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			}
@@ -289,7 +302,30 @@ class GLC_AI {
 			. "2. Use the read-only quote endpoint in the [OpenAPI specification]({$home}openapi.json) for exact dates and pickup/return locations.\n"
 			. "3. Present the exact car, rental subtotal, location charges, final shown total, 10% prepayment, and balance to the traveller.\n"
 			. "4. Obtain explicit user approval plus the traveller's name and valid email before calling checkout. Checkout creates a booking request; it does not confirm the reservation.\n"
-			. "5. Direct the traveller to the returned WhatsApp URL. Geolander staff confirm availability and payment instructions.\n";
+			. "5. Direct the traveller to the returned WhatsApp URL. Geolander staff confirm availability and payment instructions.\n\n"
+			. "Authenticated clients operated by Geolander team members may use the mirrored `/wp-json/geolander-agent/v1/` endpoints. Discover their Cloudflare Managed OAuth authorization server at `/.well-known/oauth-authorization-server`. The public customer endpoints remain available for the website booking widget.\n";
+	}
+
+	/** RFC 8414 metadata for the Cloudflare authorization server used by agents. */
+	public static function oauth_metadata(): array {
+		$issuer = GLC_Access::issuer();
+		if ( '' === $issuer ) {
+			return [];
+		}
+
+		return [
+			'issuer'                                => $issuer,
+			'authorization_endpoint'                 => $issuer . '/cdn-cgi/access/oauth/authorization',
+			'token_endpoint'                         => $issuer . '/cdn-cgi/access/oauth/token',
+			'jwks_uri'                               => $issuer . '/cdn-cgi/access/certs',
+			'registration_endpoint'                   => $issuer . '/cdn-cgi/access/oauth/registration',
+			'revocation_endpoint'                     => $issuer . '/cdn-cgi/access/oauth/revoke',
+			'grant_types_supported'                   => [ 'authorization_code', 'refresh_token' ],
+			'response_types_supported'                => [ 'code' ],
+			'response_modes_supported'                => [ 'query' ],
+			'token_endpoint_auth_methods_supported'   => [ 'client_secret_basic', 'client_secret_post', 'none' ],
+			'code_challenge_methods_supported'         => [ 'S256' ],
+		];
 	}
 
 	private static function agent_instructions(): string {
@@ -304,12 +340,12 @@ class GLC_AI {
 
 	private static function openapi(): array {
 		$base = untrailingslashit( home_url( '/' ) );
-		return [
+		$document = [
 			'openapi' => '3.1.0',
 			'info'    => [
 				'title'       => 'Geolander Reservation API',
-				'version'     => '1.0.0',
-				'description' => 'Public quote and booking-request handoff used by geo-lander.com. Checkout creates a request but does not confirm availability or payment.',
+				'version'     => '1.1.0',
+				'description' => 'Public customer quote and booking-request handoff plus Cloudflare Access authenticated mirrors for Geolander-operated agents. Checkout creates a request but does not confirm availability or payment.',
 				'contact'     => [ 'name' => 'Geolander car rental', 'email' => GLC_Settings::get( 'email' ), 'url' => home_url( '/contact/' ) ],
 			],
 			'servers' => [ [ 'url' => $base, 'description' => 'Geolander production website' ] ],
@@ -380,14 +416,47 @@ class GLC_AI {
 				],
 			],
 		];
+
+		$issuer = GLC_Access::issuer();
+		if ( $issuer ) {
+			$document['components']['securitySchemes'] = [
+				'CloudflareManagedOAuth' => [
+					'type'        => 'oauth2',
+					'description' => 'Cloudflare Access Managed OAuth. Authorization is restricted to the identity providers and policies configured for the Geolander Agent API application.',
+					'flows'       => [
+						'authorizationCode' => [
+							'authorizationUrl' => $issuer . '/cdn-cgi/access/oauth/authorization',
+							'tokenUrl'         => $issuer . '/cdn-cgi/access/oauth/token',
+							'refreshUrl'       => $issuer . '/cdn-cgi/access/oauth/token',
+							'scopes'           => (object) [],
+						],
+					],
+				],
+			];
+
+			$agent_quote = $document['paths']['/wp-json/geolander/v1/quote']['get'];
+			$agent_quote['operationId'] = 'getAuthenticatedRentalQuote';
+			$agent_quote['description'] .= ' This mirror requires Cloudflare Managed OAuth and validates the resulting Access JWT at the origin.';
+			$agent_quote['security'] = [ [ 'CloudflareManagedOAuth' => [] ] ];
+			$agent_quote['responses']['401'] = [ 'description' => 'Missing or invalid Cloudflare Access authorization' ];
+			$document['paths']['/wp-json/geolander-agent/v1/quote'] = [ 'get' => $agent_quote ];
+
+			$agent_checkout = $document['paths']['/wp-json/geolander/v1/checkout']['post'];
+			$agent_checkout['operationId'] = 'createAuthenticatedBookingRequest';
+			$agent_checkout['description'] .= ' This mirror requires Cloudflare Managed OAuth and validates the resulting Access JWT at the origin.';
+			$agent_checkout['security'] = [ [ 'CloudflareManagedOAuth' => [] ] ];
+			$agent_checkout['responses']['401'] = [ 'description' => 'Missing or invalid Cloudflare Access authorization' ];
+			$document['paths']['/wp-json/geolander-agent/v1/checkout'] = [ 'post' => $agent_checkout ];
+		}
+
+		return $document;
 	}
 
-	/** RFC 9727 API Catalog for the public Geolander Reservation API. */
+	/** RFC 9727 API Catalog for public customer and authenticated agent APIs. */
 	private static function api_catalog(): array {
-		return [
-			'linkset' => [
-				[
-					'anchor'       => home_url( '/wp-json/geolander/v1/' ),
+		$entry = static function ( string $anchor ): array {
+			return [
+					'anchor'       => home_url( $anchor ),
 					'service-desc' => [
 						[
 							'href' => home_url( '/openapi.json' ),
@@ -406,7 +475,13 @@ class GLC_AI {
 							'type' => 'text/plain',
 						],
 					],
-				],
+				];
+		};
+
+		return [
+			'linkset' => [
+				$entry( '/wp-json/geolander/v1/' ),
+				$entry( '/wp-json/geolander-agent/v1/' ),
 			],
 		];
 	}
@@ -496,6 +571,7 @@ class GLC_AI {
 		$out .= "- [Agent instructions]({$home}agent-instructions.md)\n";
 		$out .= "- [OpenAPI specification]({$home}openapi.json)\n";
 		$out .= "- [RFC 9727 API catalog]({$home}.well-known/api-catalog)\n";
+		$out .= "- [RFC 8414 OAuth discovery]({$home}.well-known/oauth-authorization-server)\n";
 
 		$faqs = get_posts( [ 'post_type' => 'faq', 'posts_per_page' => 20, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 		if ( $faqs ) {

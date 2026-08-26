@@ -72,8 +72,12 @@ Then verify:
 - A nonexistent URL returns HTTP 404; its Markdown variant links to `/llms.txt`, `/wp-sitemap.xml`, and `/fleet/`.
 - `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` return 200 with the documented content type.
 - `/.well-known/api-catalog` returns an RFC 9727 Linkset with `application/linkset+json` for both GET and HEAD discovery.
+- `/.well-known/oauth-authorization-server` returns RFC 8414 JSON with issuer, authorization, token, and JWK endpoints plus supported grant and response types.
+- `/wp-json/geolander-agent/v1/quote` returns a Cloudflare OAuth `401` challenge when no bearer token is supplied; the public `/wp-json/geolander/v1/` customer routes remain unchanged.
 - `/about/` and `/developers/` return 200 and appear in `/wp-sitemap.xml`.
 - `node _migration/validate-schema.mjs https://geo-lander.com` passes after deployment.
+
+The WordPress service must have the public (non-secret) Cloudflare Access settings `GLC_CF_ACCESS_TEAM_DOMAIN` and `GLC_CF_ACCESS_AUD`. The origin validates the rotating Access signing keys from the configured team's `/cdn-cgi/access/certs` endpoint.
 
 ## 1. Production hosting (alternative: managed WP host)
 Any PHP 8.1+ / MySQL host works. Recommended: managed WP hosting with server-level

@@ -9,6 +9,8 @@ services:
       WORDPRESS_DB_PASSWORD: geolander_dev
       WORDPRESS_DB_NAME: geolander
       WORDPRESS_DEBUG: 1
+      GLC_CF_ACCESS_TEAM_DOMAIN: ${GLC_CF_ACCESS_TEAM_DOMAIN:-jolly-sound-4ff2.cloudflareaccess.com}
+      GLC_CF_ACCESS_AUD: ${GLC_CF_ACCESS_AUD:-c15457d8a5194a5ace5568d2fed63be5f66e9b5d6c58aaa501d386ce880374da}
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8080');
         define('WP_SITEURL', 'http://localhost:8080');
@@ -45,6 +47,8 @@ services:
       WORDPRESS_DB_USER: geolander
       WORDPRESS_DB_PASSWORD: geolander_dev
       WORDPRESS_DB_NAME: geolander
+      GLC_CF_ACCESS_TEAM_DOMAIN: ${GLC_CF_ACCESS_TEAM_DOMAIN:-jolly-sound-4ff2.cloudflareaccess.com}
+      GLC_CF_ACCESS_AUD: ${GLC_CF_ACCESS_AUD:-c15457d8a5194a5ace5568d2fed63be5f66e9b5d6c58aaa501d386ce880374da}
     volumes:
       - wp_data:/var/www/html
       - ./wp-content/themes/geolander:/var/www/html/wp-content/themes/geolander
