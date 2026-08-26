@@ -17,7 +17,7 @@ foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-En
 	}
 }
 
-foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'application/mcp-server-card+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'bearer_methods_supported'", 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
+foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'application/mcp-server-card+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'scopes_supported'", "'bearer_methods_supported'", 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
 	if (-not $ai.Contains($expected)) {
 		throw "Agent/developer resource is missing: $expected"
 	}

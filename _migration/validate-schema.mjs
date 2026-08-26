@@ -430,6 +430,7 @@ try {
 	if (!Array.isArray(resource.authorization_servers) || !resource.authorization_servers.length) {
 		err('oauth-resource', 'authorization_servers must be a non-empty array');
 	} else ok();
+	if (!Array.isArray(resource.scopes_supported)) err('oauth-resource', 'scopes_supported must be an array'); else ok();
 	if (!Array.isArray(resource.bearer_methods_supported) || !resource.bearer_methods_supported.includes('header')) {
 		err('oauth-resource', 'bearer_methods_supported must include header');
 	} else ok();

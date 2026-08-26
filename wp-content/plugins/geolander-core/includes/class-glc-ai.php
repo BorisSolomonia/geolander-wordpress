@@ -383,6 +383,8 @@ class GLC_AI {
 		return [
 			'resource'                 => untrailingslashit( home_url( '/' ) ),
 			'authorization_servers'    => [ $issuer ],
+			// Cloudflare Managed OAuth currently defines no resource scopes.
+			'scopes_supported'         => [],
 			'bearer_methods_supported' => [ 'header' ],
 			'resource_name'             => 'Geolander Agent Reservation API',
 			'resource_documentation'    => home_url( '/developers/' ),
