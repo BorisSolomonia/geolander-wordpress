@@ -528,7 +528,7 @@ try {
 	const response = await fetch(`${BASE}/`, { headers: { Accept: 'text/html' } });
 	const body = await response.text();
 	if (!response.ok) err('webmcp', `homepage HTTP ${response.status}`); else ok();
-	for (const marker of ['document.modelContext?.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', "availability_status: 'not_confirmed'", "reservation_status: 'not_created'"]) {
+	for (const marker of ['document.modelContext || navigator.modelContext', 'modelContext.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', "availability_status: 'not_confirmed'", "reservation_status: 'not_created'"]) {
 		if (!body.includes(marker)) err('webmcp', `missing rendered marker: ${marker}`); else ok();
 	}
 } catch (e) {

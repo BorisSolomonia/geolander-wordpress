@@ -35,7 +35,7 @@ foreach ($expected in @('Content-Signal: search=yes, ai-input=yes, ai-train=no',
 	}
 }
 
-foreach ($expected in @('document.modelContext?.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', 'availability_status', 'reservation_status', 'readOnlyHint')) {
+foreach ($expected in @('document.modelContext || navigator.modelContext', 'modelContext.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', 'availability_status', 'reservation_status', 'readOnlyHint')) {
 	if (-not $ai.Contains($expected)) {
 		throw "WebMCP contract is missing: $expected"
 	}

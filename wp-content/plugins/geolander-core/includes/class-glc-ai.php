@@ -392,7 +392,7 @@ class GLC_AI {
 	/** Human- and agent-readable authentication instructions; no fake signup flow. */
 	private static function auth_markdown(): string {
 		$home = home_url( '/' );
-		return "# Authentication — Geolander Agent Reservation API\n\n"
+		return "# Auth.md — Geolander Agent Reservation API\n\n"
 			. "> The customer-facing website and public quote API require no account. The mirrored agent API is restricted to identities approved by Geolander through Cloudflare Access Managed OAuth.\n\n"
 			. "## Discovery\n\n"
 			. "- OAuth protected resource metadata: {$home}.well-known/oauth-protected-resource\n"
@@ -858,8 +858,11 @@ class GLC_AI {
 		?>
 <script id="glc-webmcp">
 (() => {
-	if (!document.modelContext?.registerTool) return;
-	const register = (tool) => document.modelContext.registerTool(tool).catch(() => {});
+	// WebMCP implementations currently expose modelContext on document; retain
+	// navigator compatibility for earlier implementations and discovery tools.
+	const modelContext = document.modelContext || navigator.modelContext;
+	if (!modelContext?.registerTool) return;
+	const register = (tool) => modelContext.registerTool(tool).catch(() => {});
 	register({
 		name: 'get_geolander_policy',
 		title: 'Get verified Geolander rental policy',
