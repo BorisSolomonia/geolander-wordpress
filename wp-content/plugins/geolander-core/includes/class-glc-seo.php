@@ -126,7 +126,8 @@ class GLC_SEO {
 	 * grounding — AI answer visibility is a business channel here.
 	 */
 	public static function robots( string $output ): string {
-		$ai = '';
+		// Permit search and answer-time use while reserving model-training rights.
+		$ai = "\nContent-Signal: search=yes, ai-input=yes, ai-train=no\n";
 		foreach ( [
 			'GPTBot',
 			'OAI-SearchBot',
@@ -144,6 +145,7 @@ class GLC_SEO {
 		] as $bot ) {
 			$ai .= "\nUser-agent: {$bot}\nAllow: /\n";
 		}
+		$ai .= "\nAgentmap: " . home_url( '/.well-known/ai-catalog.json' ) . "\n";
 		return $output . $ai;
 	}
 

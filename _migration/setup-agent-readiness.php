@@ -72,13 +72,18 @@ $developers = glc_agent_p( 'Geolander publishes a small public reservation API u
 		'<a href="/openapi.json">Geolander Reservation API — OpenAPI 3.1 specification</a>',
 		'<a href="/.well-known/api-catalog">Geolander API catalog — RFC 9727 Linkset discovery</a>',
 		'<a href="/.well-known/oauth-authorization-server">Geolander Agent API — RFC 8414 OAuth discovery</a>',
+		'<a href="/.well-known/oauth-protected-resource">Geolander Agent API — RFC 9728 protected-resource metadata</a>',
+		'<a href="/auth.md">Authentication guide for approved agent clients</a>',
+		'<a href="/.well-known/ai-catalog.json">Geolander ARD capability catalog</a>',
+		'<a href="/.well-known/agent-skills/index.json">Geolander Agent Skills discovery index</a>',
+		'<a href="/.well-known/mcp/server-card.json">Geolander Rental Tools MCP server card</a>',
 		'<a href="/agent-instructions.md">Agent instructions and when-to-use guidance</a>',
 		'<a href="/llms.txt">Geolander site and fleet context for language models</a>',
 		'<a href="/pricing.md">Live machine-readable fleet price tables</a>',
 		'<a href="/wp-json/">WordPress REST API index</a>',
 	] )
 	. glc_agent_h( 'Authentication and safe use' )
-	. glc_agent_p( 'The customer-facing <code>/wp-json/geolander/v1/</code> routes do not require an account. Authenticated clients operated by Geolander team members use the mirrored <code>/wp-json/geolander-agent/v1/</code> routes through Cloudflare Access Managed OAuth. Quote is read-only. Checkout is rate-limited and creates an internal booking request, so an agent must obtain explicit user approval and a valid customer name and email before calling it. The returned WhatsApp link continues the conversation with Geolander staff. A booking request is not a confirmed reservation; staff confirm availability and the 10% prepayment separately.' )
+	. glc_agent_p( 'The customer-facing <code>/wp-json/geolander/v1/</code> routes do not require an account. Authenticated clients operated by Geolander team members use the mirrored <code>/wp-json/geolander-agent/v1/</code> routes through Cloudflare Access Managed OAuth. The MCP endpoint at <code>/wp-json/geolander-agent/v1/mcp</code> exposes read-only fleet, policy, and quote tools. REST quote is read-only. REST checkout is rate-limited and creates an internal booking request, so an agent must obtain explicit user approval and a valid customer name and email before calling it. The returned WhatsApp link continues the conversation with Geolander staff. A booking request is not a confirmed reservation; staff confirm availability and the 10% prepayment separately.' )
 	. glc_agent_h( 'Support' )
 	. glc_agent_p( 'Questions about the API or booking data should be sent to <a href="mailto:info@geo-lander.com">info@geo-lander.com</a>. Do not send SMTP keys, payment credentials, passport data, or other secrets through public API fields.' );
 

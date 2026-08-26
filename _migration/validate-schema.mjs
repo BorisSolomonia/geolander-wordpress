@@ -26,7 +26,14 @@ const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const LOCALES = ['ka', 'ru', 'uk', 'ar', 'zh', 'fr'];
 
 /* Machine-readable surfaces that must never quote a zero price. */
-const AI_FILES = ['/llms.txt', '/pricing.md', '/agent-instructions.md'];
+const AI_FILES = [
+	'/llms.txt',
+	'/pricing.md',
+	'/agent-instructions.md',
+	'/auth.md',
+	'/index.md',
+	'/.well-known/agent-skills/geolander-car-rental/SKILL.md',
+];
 
 const PAGES = [
 	['home', `${BASE}/`],
@@ -288,6 +295,10 @@ for (const bot of AGENT_BOTS) {
 		err(bot, `homepage fetch failed: ${e.message}`);
 	}
 }
+if (!robotsBody.includes('Content-Signal: search=yes, ai-input=yes, ai-train=no')) {
+	err('robots', 'missing explicit Content Signals policy');
+} else ok();
+if (!robotsBody.includes('Agentmap:')) err('robots', 'missing ARD Agentmap directive'); else ok();
 
 console.log('\nRFC 9727 API catalog');
 try {
@@ -405,6 +416,123 @@ try {
 	} else ok();
 } catch (e) {
 	err('oauth-discovery', `invalid or unreachable: ${e.message}`);
+}
+
+console.log('\nRFC 9728 protected resource metadata and auth.md');
+try {
+	const resourceResponse = await fetch(`${BASE}/.well-known/oauth-protected-resource`, { headers: { Accept: 'application/json' } });
+	if (!resourceResponse.ok) err('oauth-resource', `HTTP ${resourceResponse.status}`); else ok();
+	if (!String(resourceResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/json')) {
+		err('oauth-resource', `wrong Content-Type: ${resourceResponse.headers.get('content-type')}`);
+	} else ok();
+	const resource = await resourceResponse.json();
+	if (resource.resource !== new URL(BASE).origin) err('oauth-resource', `resource must equal origin ${new URL(BASE).origin}`); else ok();
+	if (!Array.isArray(resource.authorization_servers) || !resource.authorization_servers.length) {
+		err('oauth-resource', 'authorization_servers must be a non-empty array');
+	} else ok();
+	if (!Array.isArray(resource.bearer_methods_supported) || !resource.bearer_methods_supported.includes('header')) {
+		err('oauth-resource', 'bearer_methods_supported must include header');
+	} else ok();
+	try { new URL(resource.resource_documentation); ok(); } catch { err('oauth-resource', 'resource_documentation must be an absolute URL'); }
+
+	const authResponse = await fetch(`${BASE}/auth.md`);
+	if (!authResponse.ok) err('auth.md', `HTTP ${authResponse.status}`); else ok();
+	if (!String(authResponse.headers.get('content-type') || '').toLowerCase().startsWith('text/markdown')) {
+		err('auth.md', `wrong Content-Type: ${authResponse.headers.get('content-type')}`);
+	} else ok();
+	const authBody = await authResponse.text();
+	for (const marker of ['OAuth protected resource metadata', 'Authorization Code', 'PKCE S256', 'explicit traveller approval', 'no anonymous agent registration']) {
+		if (!authBody.includes(marker)) err('auth.md', `missing marker: ${marker}`); else ok();
+	}
+} catch (e) {
+	err('oauth-resource', `invalid or unreachable: ${e.message}`);
+}
+
+console.log('\nARD capability manifest and Agent Skills discovery');
+try {
+	const catalogResponse = await fetch(`${BASE}/.well-known/ai-catalog.json`, { headers: { Accept: 'application/ai-catalog+json' } });
+	if (!catalogResponse.ok) err('ai-catalog', `HTTP ${catalogResponse.status}`); else ok();
+	if (!String(catalogResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/ai-catalog+json')) {
+		err('ai-catalog', `wrong Content-Type: ${catalogResponse.headers.get('content-type')}`);
+	} else ok();
+	const catalog = await catalogResponse.json();
+	if (catalog.specVersion !== '1.0') err('ai-catalog', 'specVersion must be 1.0'); else ok();
+	if (!Array.isArray(catalog.entries) || catalog.entries.length < 2) err('ai-catalog', 'expected API and skill entries'); else ok();
+	for (const [index, entry] of (catalog.entries || []).entries()) {
+		if (!String(entry.identifier || '').startsWith('urn:air:geo-lander.com:')) err('ai-catalog', `entry ${index} has invalid identifier`); else ok();
+		if (!entry.displayName || !entry.type) err('ai-catalog', `entry ${index} missing displayName/type`); else ok();
+		if ((entry.url ? 1 : 0) + (entry.data ? 1 : 0) !== 1) err('ai-catalog', `entry ${index} must contain exactly one of url/data`); else ok();
+		if (!Array.isArray(entry.representativeQueries) || entry.representativeQueries.length < 2) err('ai-catalog', `entry ${index} needs representative queries`); else ok();
+	}
+
+	const indexResponse = await fetch(`${BASE}/.well-known/agent-skills/index.json`);
+	if (!indexResponse.ok) err('agent-skills', `index HTTP ${indexResponse.status}`); else ok();
+	if (!String(indexResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/json')) {
+		err('agent-skills', `index wrong Content-Type: ${indexResponse.headers.get('content-type')}`);
+	} else ok();
+	if (indexResponse.headers.get('access-control-allow-origin') !== '*') err('agent-skills', 'index missing open CORS'); else ok();
+	const skillIndex = await indexResponse.json();
+	if (skillIndex.$schema !== 'https://schemas.agentskills.io/discovery/0.2.0/schema.json') err('agent-skills', 'wrong discovery schema'); else ok();
+	if (!Array.isArray(skillIndex.skills) || skillIndex.skills.length !== 1) err('agent-skills', 'expected one focused skill'); else ok();
+	const skillEntry = skillIndex.skills?.[0] || {};
+	if (skillEntry.name !== 'geolander-car-rental' || skillEntry.type !== 'skill-md') err('agent-skills', 'invalid skill name/type'); else ok();
+	if (!/^sha256:[a-f0-9]{64}$/.test(skillEntry.digest || '')) err('agent-skills', 'invalid SHA-256 digest'); else ok();
+	const skillUrl = new URL(skillEntry.url, `${BASE}/.well-known/agent-skills/index.json`);
+	const skillResponse = await fetch(skillUrl);
+	if (!skillResponse.ok) err('agent-skills', `skill HTTP ${skillResponse.status}`); else ok();
+	if (!String(skillResponse.headers.get('content-type') || '').toLowerCase().startsWith('text/markdown')) {
+		err('agent-skills', `skill wrong Content-Type: ${skillResponse.headers.get('content-type')}`);
+	} else ok();
+	if (skillResponse.headers.get('access-control-allow-origin') !== '*') err('agent-skills', 'skill missing open CORS'); else ok();
+	const skillBytes = new Uint8Array(await skillResponse.arrayBuffer());
+	const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', skillBytes))].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+	if (`sha256:${digest}` !== skillEntry.digest) err('agent-skills', 'skill digest mismatch'); else ok();
+	const skillBody = new TextDecoder().decode(skillBytes);
+	if (!skillBody.startsWith('---\nname: geolander-car-rental\ndescription:')) err('agent-skills', 'SKILL.md frontmatter invalid'); else ok();
+} catch (e) {
+	err('agent-discovery', `invalid or unreachable: ${e.message}`);
+}
+
+console.log('\nMCP server discovery and OAuth boundary');
+try {
+	const cardResponse = await fetch(`${BASE}/.well-known/mcp/server-card.json`, { headers: { Accept: 'application/mcp-server-card+json' } });
+	if (!cardResponse.ok) err('mcp-card', `HTTP ${cardResponse.status}`); else ok();
+	if (!String(cardResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/mcp-server-card+json')) {
+		err('mcp-card', `wrong Content-Type: ${cardResponse.headers.get('content-type')}`);
+	} else ok();
+	if (cardResponse.headers.get('access-control-allow-origin') !== '*') err('mcp-card', 'missing open CORS'); else ok();
+	const card = await cardResponse.json();
+	if (card.$schema !== 'https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json') err('mcp-card', 'wrong server-card schema'); else ok();
+	if (card.name !== 'com.geo-lander/reservation' || card.version !== '1.0.0') err('mcp-card', 'identity mismatch'); else ok();
+	if (!Array.isArray(card.remotes) || card.remotes.length !== 1) err('mcp-card', 'expected one remote transport'); else ok();
+	const remote = card.remotes?.[0] || {};
+	if (remote.type !== 'streamable-http') err('mcp-card', 'remote transport must be streamable-http'); else ok();
+	if (!Array.isArray(remote.supportedProtocolVersions) || !remote.supportedProtocolVersions.includes('2026-07-28')) err('mcp-card', 'modern protocol version missing'); else ok();
+	const endpoint = new URL(remote.url);
+	if (endpoint.origin !== new URL(BASE).origin || endpoint.pathname !== '/wp-json/geolander-agent/v1/mcp') err('mcp-card', 'remote endpoint is not the protected Geolander MCP route'); else ok();
+	if (!remote.headers?.some((header) => header.name === 'Authorization' && header.isRequired === true && header.isSecret === true)) err('mcp-card', 'Authorization header declaration missing'); else ok();
+
+	const challenge = await fetch(endpoint, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'server/discover', params: {} }),
+		redirect: 'manual',
+	});
+	if (challenge.status !== 401) err('mcp-auth', `expected 401 without token, got ${challenge.status}`); else ok();
+} catch (e) {
+	err('mcp-discovery', `invalid or unreachable: ${e.message}`);
+}
+
+console.log('\nWebMCP read-only browser tools');
+try {
+	const response = await fetch(`${BASE}/`, { headers: { Accept: 'text/html' } });
+	const body = await response.text();
+	if (!response.ok) err('webmcp', `homepage HTTP ${response.status}`); else ok();
+	for (const marker of ['document.modelContext?.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', "availability_status: 'not_confirmed'", "reservation_status: 'not_created'"]) {
+		if (!body.includes(marker)) err('webmcp', `missing rendered marker: ${marker}`); else ok();
+	}
+} catch (e) {
+	err('webmcp', `invalid or unreachable: ${e.message}`);
 }
 
 console.log('\nlocalized homepages — no redirect loop');

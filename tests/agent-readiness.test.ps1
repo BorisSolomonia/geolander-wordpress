@@ -9,6 +9,7 @@ $notFound = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/themes/
 $footer = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/themes/geolander/patterns/footer.php')
 $migration = Get-Content -Raw -Encoding utf8 (Join-Path $root '_migration/setup-agent-readiness.php')
 $validator = Get-Content -Raw -Encoding utf8 (Join-Path $root '_migration/validate-schema.mjs')
+$mcp = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-mcp.php')
 
 foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-Encoding', 'preferred_representation', 'status_header( 406 )', 'status_header( 404 )')) {
 	if (-not $ai.Contains($expected)) {
@@ -16,9 +17,27 @@ foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-En
 	}
 }
 
-foreach ($expected in @('agent-instructions.md', 'openapi.json', "^\.well-known/api-catalog/?$", 'application/linkset+json', 'https://www.rfc-editor.org/info/rfc9727', "'service-desc'", "'service-doc'", "'status'", 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
+foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'application/mcp-server-card+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'bearer_methods_supported'", 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
 	if (-not $ai.Contains($expected)) {
 		throw "Agent/developer resource is missing: $expected"
+	}
+}
+
+foreach ($expected in @('server/discover', '2026-07-28', 'tools/list', 'tools/call', 'list_fleet', 'get_booking_policy', 'get_rental_quote', 'readOnlyHint', 'Cloudflare JWT')) {
+	if (-not $mcp.Contains($expected)) {
+		throw "MCP server contract is missing: $expected"
+	}
+}
+
+foreach ($expected in @('Content-Signal: search=yes, ai-input=yes, ai-train=no', 'Agentmap:')) {
+	if (-not $seo.Contains($expected)) {
+		throw "robots.txt agent policy is missing: $expected"
+	}
+}
+
+foreach ($expected in @('document.modelContext?.registerTool', 'get_geolander_policy', 'list_geolander_fleet', 'get_geolander_quote', 'availability_status', 'reservation_status', 'readOnlyHint')) {
+	if (-not $ai.Contains($expected)) {
+		throw "WebMCP contract is missing: $expected"
 	}
 }
 
@@ -64,7 +83,7 @@ foreach ($locale in @('en', 'ka', 'ru', 'uk', 'ar', 'zh', 'fr')) {
 	}
 }
 
-foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog')) {
+foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog', 'RFC 9728 protected resource metadata and auth.md', 'ARD capability manifest and Agent Skills discovery', 'skill digest mismatch', 'MCP server discovery and OAuth boundary', 'application/mcp-server-card+json', 'WebMCP read-only browser tools')) {
 	if (-not $validator.Contains($expected)) {
 		throw "Public endpoint validator is missing: $expected"
 	}

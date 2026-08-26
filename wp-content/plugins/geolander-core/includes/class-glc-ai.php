@@ -2,6 +2,7 @@
 /**
  * Machine-readable surfaces for AI systems: /llms.txt, /pricing.md,
  * /agent-instructions.md, /openapi.json, RFC 9727 API catalog, OAuth metadata,
+ * OAuth protected-resource metadata, auth.md, ARD/Agent Skills discovery,
  * and text/markdown content negotiation on canonical public URLs.
  */
 
@@ -16,6 +17,7 @@ class GLC_AI {
 		add_filter( 'redirect_canonical', fn( $redirect ) => get_query_var( 'glc_ai_file' ) ? false : $redirect );
 		add_action( 'send_headers', [ __CLASS__, 'vary_accept' ], 20 );
 		add_action( 'template_redirect', [ __CLASS__, 'serve' ], 5 );
+		add_action( 'wp_footer', [ __CLASS__, 'webmcp' ], 50 );
 	}
 
 	public static function rewrites() {
@@ -23,8 +25,15 @@ class GLC_AI {
 		add_rewrite_rule( '^pricing\.md$', 'index.php?glc_ai_file=pricing', 'top' );
 		add_rewrite_rule( '^agent-instructions\.md$', 'index.php?glc_ai_file=instructions', 'top' );
 		add_rewrite_rule( '^openapi\.json$', 'index.php?glc_ai_file=openapi', 'top' );
+		add_rewrite_rule( '^auth\.md$', 'index.php?glc_ai_file=auth', 'top' );
+		add_rewrite_rule( '^index\.md$', 'index.php?glc_ai_file=index_markdown', 'top' );
 		add_rewrite_rule( '^\.well-known/api-catalog/?$', 'index.php?glc_ai_file=api_catalog', 'top' );
 		add_rewrite_rule( '^\.well-known/oauth-authorization-server/?$', 'index.php?glc_ai_file=oauth_metadata', 'top' );
+		add_rewrite_rule( '^\.well-known/oauth-protected-resource/?$', 'index.php?glc_ai_file=oauth_resource', 'top' );
+		add_rewrite_rule( '^\.well-known/ai-catalog\.json$', 'index.php?glc_ai_file=ai_catalog', 'top' );
+		add_rewrite_rule( '^\.well-known/agent-skills/index\.json$', 'index.php?glc_ai_file=skills_index', 'top' );
+		add_rewrite_rule( '^\.well-known/agent-skills/geolander-car-rental/SKILL\.md$', 'index.php?glc_ai_file=booking_skill', 'top' );
+		add_rewrite_rule( '^\.well-known/mcp/server-card(?:\.json)?$', 'index.php?glc_ai_file=mcp_card', 'top' );
 	}
 
 	public static function serve() {
@@ -66,6 +75,9 @@ class GLC_AI {
 		if ( self::is_document_request() ) {
 			header( 'Vary: Accept, Accept-Encoding', true );
 		}
+		header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"; type="application/linkset+json"', false );
+		header( 'Link: <' . home_url( '/.well-known/ai-catalog.json' ) . '>; rel="ai-catalog"; type="application/ai-catalog+json"', false );
+		header( 'Link: <' . home_url( '/.well-known/agent-skills/index.json' ) . '>; rel="agent-skills"; type="application/json"', false );
 	}
 
 	private static function is_document_request(): bool {
@@ -161,15 +173,23 @@ class GLC_AI {
 			'llms'         => 'text/plain; charset=utf-8',
 			'pricing'      => 'text/markdown; charset=utf-8',
 			'instructions' => 'text/markdown; charset=utf-8',
+			'auth'          => 'text/markdown; charset=utf-8',
+			'index_markdown'=> 'text/markdown; charset=utf-8',
+			'booking_skill' => 'text/markdown; charset=utf-8',
 			'openapi'      => 'application/json; charset=utf-8',
 			'api_catalog'  => 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"',
 			'oauth_metadata' => 'application/json; charset=utf-8',
+			'oauth_resource' => 'application/json; charset=utf-8',
+			'ai_catalog'     => 'application/ai-catalog+json; charset=utf-8',
+			'skills_index'   => 'application/json; charset=utf-8',
+			'mcp_card'       => 'application/mcp-server-card+json; charset=utf-8',
 		];
 		if ( ! isset( $types[ $file ] ) ) {
 			status_header( 404 );
 			exit;
 		}
 		$oauth_metadata = 'oauth_metadata' === $file ? self::oauth_metadata() : null;
+		$oauth_resource = 'oauth_resource' === $file ? self::oauth_resource_metadata() : null;
 		header( 'Content-Type: ' . $types[ $file ] );
 		if ( 'oauth_metadata' === $file && ! $oauth_metadata ) {
 			status_header( 503 );
@@ -179,7 +199,18 @@ class GLC_AI {
 			}
 			exit;
 		}
-		header( 'Cache-Control: public, max-age=' . ( 'oauth_metadata' === $file ? '300' : '3600' ) );
+		if ( 'oauth_resource' === $file && ! $oauth_resource ) {
+			status_header( 503 );
+			header( 'Cache-Control: no-store' );
+			if ( 'HEAD' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+				echo wp_json_encode( [ 'error' => 'oauth_configuration_unavailable' ] ); // phpcs:ignore WordPress.Security.EscapeOutput
+			}
+			exit;
+		}
+		if ( in_array( $file, [ 'skills_index', 'booking_skill', 'mcp_card' ], true ) ) {
+			header( 'Access-Control-Allow-Origin: *' );
+		}
+		header( 'Cache-Control: public, max-age=' . ( in_array( $file, [ 'oauth_metadata', 'oauth_resource' ], true ) ? '300' : '3600' ) );
 		if ( 'api_catalog' === $file ) {
 			header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"', false );
 		}
@@ -190,10 +221,24 @@ class GLC_AI {
 				echo self::pricing(); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'instructions' === $file ) {
 				echo self::agent_instructions(); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'auth' === $file ) {
+				echo self::auth_markdown(); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'index_markdown' === $file ) {
+				echo self::llms(); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'booking_skill' === $file ) {
+				echo self::booking_skill(); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'openapi' === $file ) {
 				echo wp_json_encode( self::openapi(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'oauth_metadata' === $file ) {
 				echo wp_json_encode( $oauth_metadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'oauth_resource' === $file ) {
+				echo wp_json_encode( $oauth_resource, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'ai_catalog' === $file ) {
+				echo wp_json_encode( self::ai_catalog(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'skills_index' === $file ) {
+				echo wp_json_encode( self::skills_index(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'mcp_card' === $file ) {
+				echo wp_json_encode( self::mcp_server_card(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			} else {
 				echo wp_json_encode( self::api_catalog(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			}
@@ -326,6 +371,40 @@ class GLC_AI {
 			'token_endpoint_auth_methods_supported'   => [ 'client_secret_basic', 'client_secret_post', 'none' ],
 			'code_challenge_methods_supported'         => [ 'S256' ],
 		];
+	}
+
+	/** RFC 9728 metadata for the Cloudflare Access protected agent API. */
+	public static function oauth_resource_metadata(): array {
+		$issuer = GLC_Access::issuer();
+		if ( '' === $issuer ) {
+			return [];
+		}
+
+		return [
+			'resource'                 => untrailingslashit( home_url( '/' ) ),
+			'authorization_servers'    => [ $issuer ],
+			'bearer_methods_supported' => [ 'header' ],
+			'resource_name'             => 'Geolander Agent Reservation API',
+			'resource_documentation'    => home_url( '/developers/' ),
+		];
+	}
+
+	/** Human- and agent-readable authentication instructions; no fake signup flow. */
+	private static function auth_markdown(): string {
+		$home = home_url( '/' );
+		return "# Authentication — Geolander Agent Reservation API\n\n"
+			. "> The customer-facing website and public quote API require no account. The mirrored agent API is restricted to identities approved by Geolander through Cloudflare Access Managed OAuth.\n\n"
+			. "## Discovery\n\n"
+			. "- OAuth protected resource metadata: {$home}.well-known/oauth-protected-resource\n"
+			. "- OAuth authorization server metadata: {$home}.well-known/oauth-authorization-server\n"
+			. "- OpenAPI 3.1 specification: {$home}openapi.json\n"
+			. "- Developer documentation: {$home}developers/\n\n"
+			. "## Supported flow\n\n"
+			. "Use OAuth 2.0 Authorization Code with PKCE S256. Dynamic client registration is advertised by the authorization-server metadata. Access is limited by Geolander's Cloudflare Access policy; there is no anonymous agent registration and no API-key flow. Present the resulting bearer token in the Authorization header.\n\n"
+			. "## Safety and user approval\n\n"
+			. "The quote operation is read-only. Before checkout, obtain explicit traveller approval and collect the traveller's name and valid email. Checkout creates a booking request and WhatsApp handoff; it does not confirm availability, take payment, or confirm a reservation.\n\n"
+			. "## Support\n\n"
+			. "For access or integration questions, contact " . GLC_Settings::get( 'email' ) . ".\n";
 	}
 
 	private static function agent_instructions(): string {
@@ -486,6 +565,130 @@ class GLC_AI {
 		];
 	}
 
+	/** ARD v0.9 capability manifest; catalogs only resources that really exist. */
+	private static function ai_catalog(): array {
+		return [
+			'specVersion' => '1.0',
+			'host'        => [
+				'displayName'      => 'Geolander car rental',
+				'identifier'       => untrailingslashit( home_url( '/' ) ),
+				'documentationUrl' => home_url( '/developers/' ),
+			],
+			'entries'     => [
+				[
+					'identifier'            => 'urn:air:geo-lander.com:mcp:reservation',
+					'displayName'           => 'Geolander Rental Tools MCP Server',
+					'type'                  => 'application/mcp-server-card+json',
+					'url'                   => home_url( '/.well-known/mcp/server-card.json' ),
+					'description'           => 'OAuth-protected read-only MCP tools for exact-car fleet discovery, verified rental policy, and date-specific quotes.',
+					'capabilities'          => [ 'FleetList', 'RentalPolicyLookup', 'RentalQuote' ],
+					'representativeQueries' => [
+						'List exact Geolander rental cars and their published rate ranges.',
+						'Get a date-specific quote for an exact car and airport handover.',
+						'Explain Geolander insurance, deposit, mileage, and cancellation policy.',
+					],
+					'version'               => '1.0.0',
+				],
+				[
+					'identifier'            => 'urn:air:geo-lander.com:api:reservation',
+					'displayName'           => 'Geolander Reservation API',
+					'type'                  => 'application/vnd.oai.openapi+json',
+					'url'                   => home_url( '/openapi.json' ),
+					'description'           => 'Date-specific rental quotes and customer-approved booking-request handoff for exact Geolander vehicles in Georgia.',
+					'capabilities'          => [ 'RentalQuote', 'BookingRequest' ],
+					'representativeQueries' => [
+						'Get a quote for an exact AWD rental car in Tbilisi.',
+						'Calculate Kutaisi Airport pickup and return fees for a Geolander booking.',
+						'Prepare a booking request after the traveller approves the quote.',
+					],
+					'version'               => '1.1.0',
+				],
+				[
+					'identifier'            => 'urn:air:geo-lander.com:skill:car-rental',
+					'displayName'           => 'Geolander exact-car rental',
+					'type'                  => 'application/ai-skill+md',
+					'url'                   => home_url( '/.well-known/agent-skills/geolander-car-rental/SKILL.md' ),
+					'description'           => 'Instructions for quoting and requesting an exact Geolander rental car without inventing availability, prices, or route conditions.',
+					'capabilities'          => [ 'RentalQuote', 'BookingRequest', 'RentalPolicyLookup' ],
+					'representativeQueries' => [
+						'Find an exact 4x4 rental for my trip in Georgia.',
+						'What insurance and deposit terms apply to this Geolander car?',
+					],
+				],
+			],
+		];
+	}
+
+	/** SEP-2127 experimental server card for the real protected MCP endpoint. */
+	private static function mcp_server_card(): array {
+		return [
+			'$schema'     => 'https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json',
+			'name'        => 'com.geo-lander/reservation',
+			'title'       => 'Geolander Rental Tools',
+			'version'     => '1.0.0',
+			'description' => 'Read-only exact-car fleet discovery, verified rental policy, and date-specific Geolander quotes. Quotes do not confirm availability or create reservations.',
+			'websiteUrl'  => home_url( '/developers/' ),
+			'remotes'     => [
+				[
+					'type'                      => 'streamable-http',
+					'url'                       => home_url( '/wp-json/geolander-agent/v1/mcp' ),
+					'headers'                   => [
+						[
+							'name'        => 'Authorization',
+							'description' => 'Bearer token issued through Geolander Cloudflare Access Managed OAuth.',
+							'isRequired'  => true,
+							'isSecret'    => true,
+						],
+					],
+					'supportedProtocolVersions' => [ '2026-07-28', '2025-11-25', '2025-06-18' ],
+				],
+			],
+		];
+	}
+
+	private static function skills_index(): array {
+		$skill = self::booking_skill();
+		return [
+			'$schema' => 'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+			'skills'  => [
+				[
+					'name'        => 'geolander-car-rental',
+					'type'        => 'skill-md',
+					'description' => 'Use when a traveller needs verified Geolander fleet facts, a date-specific quote, or a customer-approved exact-car booking request in Georgia.',
+					'url'         => home_url( '/.well-known/agent-skills/geolander-car-rental/SKILL.md' ),
+					'digest'      => 'sha256:' . hash( 'sha256', $skill ),
+				],
+			],
+		];
+	}
+
+	private static function booking_skill(): string {
+		$home = home_url( '/' );
+		return "---\n"
+			. "name: geolander-car-rental\n"
+			. "description: Use when a traveller needs verified Geolander fleet facts, a date-specific quote, or a customer-approved exact-car booking request in Georgia.\n"
+			. "---\n\n"
+			. "# Geolander exact-car rental\n\n"
+			. "## When to use this skill\n\n"
+			. "Use it for exact AWD or 4x4 vehicle selection, dated rental quotes, Tbilisi/Kutaisi/Batumi handover fees, insurance and deposit questions, or a booking-request handoff.\n\n"
+			. "Do not use it to claim live availability, current road safety, or a confirmed reservation. Weather, official closures, and damaged-road conditions override general route permission.\n\n"
+			. "## Procedure\n\n"
+			. "1. Read the live fleet and prices at {$home}pricing.md. Never invent a missing price or publish a zero.\n"
+			. "2. Read {$home}openapi.json and call the read-only quote operation with the exact car ID, dates, pickup, and return location.\n"
+			. "3. Show the traveller the exact car, rental subtotal, each location fee, final shown total, 10% prepayment, and balance.\n"
+			. "4. Before checkout, obtain explicit approval and a valid traveller name and email.\n"
+			. "5. Call checkout only after approval. Explain that it creates a request and WhatsApp handoff, not a confirmed reservation. Geolander staff confirm availability and payment instructions.\n\n"
+			. "## Verified policy summary\n\n"
+			. "- No security deposit or card preauthorization hold.\n"
+			. "- Full insurance is included with no deductible; tyres are excluded.\n"
+			. "- Unlimited mileage applies within Georgia.\n"
+			. "- Winter tyres are included free in winter.\n"
+			. "- Tbilisi office and Tbilisi Airport handovers are free. Location charges for Kutaisi and Batumi must come from the quote.\n"
+			. "- A 10% prepayment confirms a booking. Cancellation terms are published at {$home}terms/.\n\n"
+			. "## Fallback\n\n"
+			. "If the API or price table cannot provide a verified answer, do not guess. Contact Geolander through {$home}contact/.\n";
+	}
+
 	private static function cars(): array {
 		return get_posts( [ 'post_type' => 'car', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 	}
@@ -572,6 +775,11 @@ class GLC_AI {
 		$out .= "- [OpenAPI specification]({$home}openapi.json)\n";
 		$out .= "- [RFC 9727 API catalog]({$home}.well-known/api-catalog)\n";
 		$out .= "- [RFC 8414 OAuth discovery]({$home}.well-known/oauth-authorization-server)\n";
+		$out .= "- [RFC 9728 protected-resource metadata]({$home}.well-known/oauth-protected-resource)\n";
+		$out .= "- [Authentication guide]({$home}auth.md)\n";
+		$out .= "- [ARD capability catalog]({$home}.well-known/ai-catalog.json)\n";
+		$out .= "- [Agent Skills discovery index]({$home}.well-known/agent-skills/index.json)\n";
+		$out .= "- [MCP server card]({$home}.well-known/mcp/server-card.json)\n";
 
 		$faqs = get_posts( [ 'post_type' => 'faq', 'posts_per_page' => 20, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 		if ( $faqs ) {
@@ -633,5 +841,82 @@ class GLC_AI {
 			$out .= "\n";
 		}
 		return $out;
+	}
+
+	/**
+	 * Register read-only in-page tools for browsers implementing WebMCP.
+	 *
+	 * Booking submission is intentionally absent: browser agents can quote and
+	 * explain policy, while the human-visible form remains the approval boundary.
+	 */
+	public static function webmcp(): void {
+		if ( is_admin() ) {
+			return;
+		}
+		$quote_url   = rest_url( 'geolander/v1/quote' );
+		$pricing_url = home_url( '/pricing.md' );
+		?>
+<script id="glc-webmcp">
+(() => {
+	if (!document.modelContext?.registerTool) return;
+	const register = (tool) => document.modelContext.registerTool(tool).catch(() => {});
+	register({
+		name: 'get_geolander_policy',
+		title: 'Get verified Geolander rental policy',
+		description: 'Return verified insurance, deposit, mileage, winter tyre, route, handover, prepayment, cancellation, and confirmation facts.',
+		inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+		annotations: { readOnlyHint: true, untrustedContentHint: false },
+		execute: async () => ({
+			security_deposit: 'None; no card preauthorization hold.',
+			insurance: 'Full insurance included with no deductible. Wheels and windshield are covered; tyres and the interior are excluded. Single-vehicle accidents are covered. Third-party liability limit: 30,000 GEL.',
+			mileage: 'Unlimited within Georgia.',
+			winter_tyres: 'Included free in winter.',
+			route_policy: 'All vehicles and routes unless bad weather, an official road closure, or damaged-road conditions apply. Current safety and opening status must be checked before departure.',
+			prepayment: '10% confirms the booking after availability is checked.',
+			cancellation: 'At least 30 days before pickup, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.',
+			confirmation: 'A quote or booking request is not a confirmed reservation.'
+		})
+	});
+	register({
+		name: 'list_geolander_fleet',
+		title: 'List exact Geolander cars and prices',
+		description: 'Fetch the current machine-readable exact-car fleet and positive published rate tables. Missing prices are labelled price on request, never zero.',
+		inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+		annotations: { readOnlyHint: true, untrustedContentHint: true },
+		execute: async () => {
+			const response = await fetch(<?php echo wp_json_encode( $pricing_url ); ?>, { headers: { Accept: 'text/markdown' } });
+			if (!response.ok) throw new Error(`Fleet price list unavailable (HTTP ${response.status}).`);
+			return { pricing_markdown: await response.text(), source: response.url };
+		}
+	});
+	register({
+		name: 'get_geolander_quote',
+		title: 'Get a date-specific Geolander quote',
+		description: 'Calculate a read-only quote for one published exact car, dates, pickup, and return. This does not confirm availability or create a booking.',
+		inputSchema: {
+			type: 'object',
+			additionalProperties: false,
+			required: ['car', 'from', 'to'],
+			properties: {
+				car: { type: 'integer', minimum: 1, description: 'Published car ID from the fleet.' },
+				from: { type: 'string', format: 'date' },
+				to: { type: 'string', format: 'date' },
+				pickup: { type: 'string', enum: ['tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport'], default: 'tbilisi_office' },
+				return: { type: 'string', enum: ['tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport'], default: 'tbilisi_office' }
+			}
+		},
+		annotations: { readOnlyHint: true, untrustedContentHint: false },
+		execute: async (input) => {
+			const url = new URL(<?php echo wp_json_encode( $quote_url ); ?>);
+			for (const [key, value] of Object.entries(input)) if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
+			const response = await fetch(url, { headers: { Accept: 'application/json' } });
+			const body = await response.json();
+			if (!response.ok) throw new Error(body?.message || `Quote unavailable (HTTP ${response.status}).`);
+			return { ...body, availability_status: 'not_confirmed', reservation_status: 'not_created' };
+		}
+	});
+})();
+</script>
+		<?php
 	}
 }
