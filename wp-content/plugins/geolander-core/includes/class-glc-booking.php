@@ -17,7 +17,7 @@ class GLC_Booking {
 	}
 
 	public static function routes() {
-		register_rest_route( 'geolander/v1', '/quote', [
+		$quote = [
 			'methods'             => 'GET',
 			'callback'            => [ __CLASS__, 'quote' ],
 			'permission_callback' => '__return_true',
@@ -28,9 +28,9 @@ class GLC_Booking {
 				'pickup' => [ 'required' => false, 'type' => 'string', 'default' => GLC_Rental::DEFAULT_PICKUP ],
 				'return' => [ 'required' => false, 'type' => 'string', 'default' => GLC_Rental::DEFAULT_RETURN ],
 			],
-		] );
+		];
 
-		register_rest_route( 'geolander/v1', '/checkout', [
+		$checkout = [
 			'methods'             => 'POST',
 			'callback'            => [ __CLASS__, 'checkout' ],
 			'permission_callback' => '__return_true',
@@ -43,7 +43,19 @@ class GLC_Booking {
 				'pickup' => [ 'required' => true, 'type' => 'string' ],
 				'return' => [ 'required' => true, 'type' => 'string' ],
 			],
-		] );
+		];
+
+		// Customer-facing routes remain public so the booking widget does not
+		// acquire an identity-provider login step.
+		register_rest_route( 'geolander/v1', '/quote', $quote );
+		register_rest_route( 'geolander/v1', '/checkout', $checkout );
+
+		// Automated clients use a distinct Cloudflare Access application. The
+		// edge performs OAuth; WordPress independently validates its signed JWT.
+		$quote['permission_callback']    = [ 'GLC_Access', 'authorize_agent_request' ];
+		$checkout['permission_callback'] = [ 'GLC_Access', 'authorize_agent_request' ];
+		register_rest_route( 'geolander-agent/v1', '/quote', $quote );
+		register_rest_route( 'geolander-agent/v1', '/checkout', $checkout );
 	}
 
 	private static function validate( WP_REST_Request $req ): array|WP_Error {
