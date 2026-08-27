@@ -403,6 +403,33 @@ try {
 	for (const field of ['grant_types_supported', 'response_types_supported']) {
 		if (!Array.isArray(metadata[field]) || !metadata[field].length) err('oauth-discovery', `${field} must be a non-empty array`); else ok();
 	}
+	const agentAuth = metadata.agent_auth;
+	if (!agentAuth || typeof agentAuth !== 'object') err('auth.md', 'authorization metadata lacks agent_auth'); else ok();
+	try {
+		const skill = new URL(agentAuth?.skill);
+		if (skill.href !== `${BASE}/auth.md`) throw new Error('wrong Auth.md URL');
+		ok();
+	} catch {
+		err('auth.md', `agent_auth.skill must equal ${BASE}/auth.md`);
+	}
+	for (const field of ['register_uri', 'claim_uri', 'revocation_uri']) {
+		try {
+			const value = new URL(agentAuth?.[field]);
+			if (value.protocol !== 'https:') throw new Error('not HTTPS');
+			ok();
+		} catch {
+			err('auth.md', `agent_auth.${field} must be an HTTPS URL`);
+		}
+	}
+	if (!Array.isArray(agentAuth?.identity_types_supported) || !agentAuth.identity_types_supported.includes('anonymous')) {
+		err('auth.md', 'agent_auth must advertise anonymous public-client registration');
+	} else ok();
+	if (!Array.isArray(agentAuth?.anonymous?.credential_types_supported) || !agentAuth.anonymous.credential_types_supported.includes('access_token')) {
+		err('auth.md', 'anonymous registration must advertise access_token credentials');
+	} else ok();
+	if (agentAuth?.anonymous?.requires_user_authentication !== true) {
+		err('auth.md', 'anonymous client registration must require subsequent user authentication');
+	} else ok();
 	const jwksResponse = await fetch(metadata.jwks_uri, { headers: { Accept: 'application/json' } });
 	if (!jwksResponse.ok) err('oauth-jwks', `HTTP ${jwksResponse.status}`); else {
 		const jwks = await jwksResponse.json();
@@ -442,7 +469,7 @@ try {
 		err('auth.md', `wrong Content-Type: ${authResponse.headers.get('content-type')}`);
 	} else ok();
 	const authBody = await authResponse.text();
-	for (const marker of ['OAuth protected resource metadata', 'Authorization Code', 'PKCE S256', 'explicit traveller approval', 'no anonymous agent registration']) {
+	for (const marker of ['OAuth protected resource metadata', 'OAuth public-client registration', 'PKCE S256', 'explicit traveller approval', 'POST https://', '/oauth/registration', 'client_id', 'access_token', 'refresh_token', 'Authorization: Bearer', 'no anonymous access']) {
 		if (!authBody.includes(marker)) err('auth.md', `missing marker: ${marker}`); else ok();
 	}
 } catch (e) {

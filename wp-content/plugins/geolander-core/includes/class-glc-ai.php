@@ -366,19 +366,39 @@ class GLC_AI {
 		if ( '' === $issuer ) {
 			return [];
 		}
+		$authorization_endpoint = $issuer . '/cdn-cgi/access/oauth/authorization';
+		$registration_endpoint  = $issuer . '/cdn-cgi/access/oauth/registration';
+		$revocation_endpoint    = $issuer . '/cdn-cgi/access/oauth/revoke';
 
 		return [
 			'issuer'                                => $issuer,
-			'authorization_endpoint'                 => $issuer . '/cdn-cgi/access/oauth/authorization',
+			'authorization_endpoint'                 => $authorization_endpoint,
 			'token_endpoint'                         => $issuer . '/cdn-cgi/access/oauth/token',
 			'jwks_uri'                               => $issuer . '/cdn-cgi/access/certs',
-			'registration_endpoint'                   => $issuer . '/cdn-cgi/access/oauth/registration',
-			'revocation_endpoint'                     => $issuer . '/cdn-cgi/access/oauth/revoke',
+			'registration_endpoint'                   => $registration_endpoint,
+			'revocation_endpoint'                     => $revocation_endpoint,
 			'grant_types_supported'                   => [ 'authorization_code', 'refresh_token' ],
 			'response_types_supported'                => [ 'code' ],
 			'response_modes_supported'                => [ 'query' ],
 			'token_endpoint_auth_methods_supported'   => [ 'client_secret_basic', 'client_secret_post', 'none' ],
 			'code_challenge_methods_supported'         => [ 'S256' ],
+			/*
+			 * "anonymous" describes public-client registration only. A client_id
+			 * is not an API credential: the user must authenticate at claim_uri
+			 * before Cloudflare Access issues a bearer token.
+			 */
+			'agent_auth'                              => [
+				'skill'                    => home_url( '/auth.md' ),
+				'register_uri'             => $registration_endpoint,
+				'claim_uri'                => $authorization_endpoint,
+				'revocation_uri'           => $revocation_endpoint,
+				'identity_types_supported' => [ 'anonymous' ],
+				'anonymous'                => [
+					'credential_types_supported'  => [ 'access_token', 'refresh_token' ],
+					'claim_uri'                    => $authorization_endpoint,
+					'requires_user_authentication' => true,
+				],
+			],
 		];
 	}
 
@@ -402,17 +422,45 @@ class GLC_AI {
 
 	/** Human- and agent-readable authentication instructions; no fake signup flow. */
 	private static function auth_markdown(): string {
-		$home = home_url( '/' );
+		$home                   = home_url( '/' );
+		$issuer                 = GLC_Access::issuer();
+		$registration_endpoint  = $issuer . '/cdn-cgi/access/oauth/registration';
+		$authorization_endpoint = $issuer . '/cdn-cgi/access/oauth/authorization';
+		$token_endpoint         = $issuer . '/cdn-cgi/access/oauth/token';
+		$revocation_endpoint    = $issuer . '/cdn-cgi/access/oauth/revoke';
 		return "# Auth.md — Geolander Agent Reservation API\n\n"
-			. "> The customer-facing website and public quote API require no account. The mirrored agent API is restricted to identities approved by Geolander through Cloudflare Access Managed OAuth.\n\n"
+			. "> You are an agent acting for a traveller or a Geolander operator. This file describes how to register an OAuth public client and obtain credentials for the protected Geolander Agent Reservation API.\n\n"
+			. "Resource server: `{$home}wp-json/geolander-agent/v1/`  \n"
+			. "Authorization server: `{$issuer}`\n\n"
+			. "The customer-facing website and public quote API require no account. The protected agent API uses Cloudflare Access Managed OAuth. There is no API-key flow and no anonymous access to protected resources. Passive scanners must not POST to the registration endpoint because registration creates persistent OAuth client state.\n\n"
 			. "## Discovery\n\n"
 			. "- OAuth protected resource metadata: {$home}.well-known/oauth-protected-resource\n"
 			. "- OAuth authorization server metadata: {$home}.well-known/oauth-authorization-server\n"
 			. "- A2A v1.0 Agent Card: {$home}.well-known/agent-card.json\n"
 			. "- OpenAPI 3.1 specification: {$home}openapi.json\n"
 			. "- Developer documentation: {$home}developers/\n\n"
-			. "## Supported flow\n\n"
-			. "Use OAuth 2.0 Authorization Code with PKCE S256. Dynamic client registration is advertised by the authorization-server metadata. Access is limited by Geolander's Cloudflare Access policy; there is no anonymous agent registration and no API-key flow. Present the resulting bearer token in the Authorization header.\n\n"
+			. "## Step 1 — Discover\n\n"
+			. "Request a protected endpoint and read the `WWW-Authenticate: Bearer` header. Its `resource_metadata` parameter points to route-specific Cloudflare Protected Resource Metadata. The stable Geolander metadata above publishes `resource`, `authorization_servers`, `scopes_supported`, and `bearer_methods_supported`. Geolander has no fine-grained OAuth scopes: Cloudflare binds authorization to the RFC 8707 `resource` value and evaluates the Access policy.\n\n"
+			. "Fetch the authorization-server metadata and read its standard OAuth fields plus the `agent_auth` block. That block is the source of truth for the Auth.md skill, registration URI, claim URI, supported credential types, and revocation URI.\n\n"
+			. "## Step 2 — Pick the supported method\n\n"
+			. "Supported method: anonymous OAuth public-client registration followed by required user authentication. Anonymous means only that creating a `client_id` does not require an existing client credential; it never grants anonymous API access. The user must complete Cloudflare Access authentication before an `access_token` or `refresh_token` is issued.\n\n"
+			. "- Registration endpoint: `POST {$registration_endpoint}`\n"
+			. "- Claim / user authorization endpoint: `{$authorization_endpoint}`\n"
+			. "- Credential types: `access_token`, `refresh_token`\n"
+			. "- Credential presentation: `Authorization: Bearer <access_token>`\n"
+			. "- Revocation endpoint: `POST {$revocation_endpoint}`\n\n"
+			. "## Step 3 — Register the OAuth public client\n\n"
+			. "Choose a localhost or loopback callback URI. Dynamic client registration is enabled for both by the Geolander Cloudflare Access application. Then send:\n\n"
+			. "```http\nPOST {$registration_endpoint}\nContent-Type: application/json\n\n"
+			. "{\n  \"redirect_uris\": [\"http://127.0.0.1:8400/callback\"],\n  \"token_endpoint_auth_method\": \"none\",\n  \"grant_types\": [\"authorization_code\"],\n  \"response_types\": [\"code\"],\n  \"resource\": \"{$home}wp-json/geolander-agent/v1/\"\n}\n```\n\n"
+			. "A successful registration returns a `client_id`. Store it with the exact `redirect_uri`. The client ID is registration metadata, not a bearer credential and not permission to use the protected API.\n\n"
+			. "## Step 4 — Authorize with PKCE S256\n\n"
+			. "Generate a high-entropy `code_verifier` and its base64url SHA-256 `code_challenge`. Open the claim URI for the user with `client_id`, the exact `redirect_uri`, `response_type=code`, `code_challenge`, `code_challenge_method=S256`, and the protected API URL in `resource`. The user signs in through Cloudflare Access. Do not claim success until the callback receives an authorization code.\n\n"
+			. "## Step 5 — Exchange and use the credential\n\n"
+			. "```http\nPOST {$token_endpoint}\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=authorization_code&code=<authorization_code>&client_id=<client_id>&redirect_uri=http%3A%2F%2F127.0.0.1%3A8400%2Fcallback&code_verifier=<code_verifier>\n```\n\n"
+			. "Use the returned credential only in the HTTP header: `Authorization: Bearer <access_token>`. Use the returned `refresh_token` at the same token endpoint when the access token expires. Never put a token in a URL, log, WhatsApp message, or booking note.\n\n"
+			. "## Step 6 — Revoke and recover\n\n"
+			. "Revoke an access or refresh token at `{$revocation_endpoint}`. On `401`, discard an invalid access token, attempt the refresh-token grant once, and otherwise restart registration and user authorization. Geolander does not advertise Auth.md revocation events because Cloudflare Managed OAuth does not publish them.\n\n"
 			. "## Safety and user approval\n\n"
 			. "The quote operation is read-only. Before checkout, obtain explicit traveller approval and collect the traveller's name and valid email. Checkout creates a booking request and WhatsApp handoff; it does not confirm availability, take payment, or confirm a reservation.\n\n"
 			. "## Support\n\n"
