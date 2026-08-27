@@ -300,6 +300,33 @@ if (!robotsBody.includes('Content-Signal: search=yes, ai-input=yes, ai-train=no'
 } else ok();
 if (!robotsBody.includes('Agentmap:')) err('robots', 'missing ARD Agentmap directive'); else ok();
 
+console.log('\nRFC 8288 homepage Link discovery');
+const REQUIRED_HOME_LINKS = [
+	['api-catalog', `${BASE}/.well-known/api-catalog`, 'application/linkset+json'],
+	['service-desc', `${BASE}/openapi.json`, 'application/json'],
+	['service-doc', `${BASE}/developers/`, 'text/html'],
+	['describedby', `${BASE}/llms.txt`, 'text/plain'],
+];
+for (const accept of ['text/html', 'text/markdown']) {
+	try {
+		const response = await fetch(`${BASE}/`, { headers: { Accept: accept } });
+		if (!response.ok) err('link-headers', `${accept} homepage HTTP ${response.status}`); else ok();
+		const link = String(response.headers.get('link') || '');
+		if (!link) {
+			err('link-headers', `${accept} homepage has no Link response header`);
+			continue;
+		}
+		for (const [relation, href, type] of REQUIRED_HOME_LINKS) {
+			const escapedHref = href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const escapedType = type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const value = new RegExp(`<${escapedHref}>\\s*;\\s*rel="${relation}"\\s*;\\s*type="${escapedType}"`, 'i');
+			if (!value.test(link)) err('link-headers', `${accept} homepage missing ${relation} link to ${href}`); else ok();
+		}
+	} catch (e) {
+		err('link-headers', `${accept} homepage fetch failed: ${e.message}`);
+	}
+}
+
 console.log('\nRFC 9727 API catalog');
 try {
 	const catalogUrl = `${BASE}/.well-known/api-catalog`;

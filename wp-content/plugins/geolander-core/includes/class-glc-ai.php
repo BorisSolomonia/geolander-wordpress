@@ -79,6 +79,9 @@ class GLC_AI {
 			header( 'Vary: Accept, Accept-Encoding', true );
 		}
 		header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"; type="application/linkset+json"', false );
+		header( 'Link: <' . home_url( '/openapi.json' ) . '>; rel="service-desc"; type="application/json"', false );
+		header( 'Link: <' . home_url( '/developers/' ) . '>; rel="service-doc"; type="text/html"', false );
+		header( 'Link: <' . home_url( '/llms.txt' ) . '>; rel="describedby"; type="text/plain"', false );
 		header( 'Link: <' . home_url( '/.well-known/ai-catalog.json' ) . '>; rel="ai-catalog"; type="application/ai-catalog+json"', false );
 		header( 'Link: <' . home_url( '/.well-known/agent-skills/index.json' ) . '>; rel="agent-skills"; type="application/json"', false );
 		header( 'Link: <' . home_url( '/.well-known/agent-card.json' ) . '>; rel="service-desc"; type="application/a2a+json"', false );

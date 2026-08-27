@@ -19,6 +19,17 @@ foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-En
 	}
 }
 
+foreach ($expected in @(
+	"home_url( '/.well-known/api-catalog' ) . '>; rel=`"api-catalog`"; type=`"application/linkset+json`"'",
+	"home_url( '/openapi.json' ) . '>; rel=`"service-desc`"; type=`"application/json`"'",
+	"home_url( '/developers/' ) . '>; rel=`"service-doc`"; type=`"text/html`"'",
+	"home_url( '/llms.txt' ) . '>; rel=`"describedby`"; type=`"text/plain`"'"
+)) {
+	if (-not $ai.Contains($expected)) {
+		throw "RFC 8288 homepage discovery header is missing: $expected"
+	}
+}
+
 foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'agent-card.json', 'http-message-signatures-directory', 'application/mcp-server-card+json', 'application/a2a+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'scopes_supported'", "'bearer_methods_supported'", "'agent_auth'", "'register_uri'", "'identity_types_supported'", "'credential_types_supported'", "'claim_uri'", "'revocation_uri'", "'upstream_issuer'", "'upstream_authorization_server'", "untrailingslashit( home_url( '/' ) )", 'geolander.agent', 'supportedInterfaces', 'protocolBinding', 'protocolVersion', 'defaultInputModes', 'defaultOutputModes', 'securityRequirements', 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval', 'OAuth public-client registration', 'client_id', 'access_token', 'refresh_token')) {
 	if (-not $ai.Contains($expected)) {
 		throw "Agent/developer resource is missing: $expected"
@@ -97,7 +108,7 @@ foreach ($locale in @('en', 'ka', 'ru', 'uk', 'ar', 'zh', 'fr')) {
 	}
 }
 
-foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog', 'RFC 9728 protected resource metadata and auth.md', 'ARD capability manifest and Agent Skills discovery', 'skill digest mismatch', 'MCP server discovery and OAuth boundary', 'application/mcp-server-card+json', 'A2A v1.0 Agent Card and OAuth boundary', 'application/a2a+json', 'Web Bot Auth signed key directory', 'application/http-message-signatures-directory+json', 'WebMCP read-only browser tools')) {
+foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'RFC 8288 homepage Link discovery', 'developer resources', 'RFC 9727 API catalog', 'RFC 9728 protected resource metadata and auth.md', 'ARD capability manifest and Agent Skills discovery', 'skill digest mismatch', 'MCP server discovery and OAuth boundary', 'application/mcp-server-card+json', 'A2A v1.0 Agent Card and OAuth boundary', 'application/a2a+json', 'Web Bot Auth signed key directory', 'application/http-message-signatures-directory+json', 'WebMCP read-only browser tools')) {
 	if (-not $validator.Contains($expected)) {
 		throw "Public endpoint validator is missing: $expected"
 	}
