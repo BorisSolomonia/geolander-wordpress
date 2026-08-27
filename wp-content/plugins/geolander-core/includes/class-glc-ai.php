@@ -428,7 +428,7 @@ class GLC_AI {
 		$authorization_endpoint = $issuer . '/cdn-cgi/access/oauth/authorization';
 		$token_endpoint         = $issuer . '/cdn-cgi/access/oauth/token';
 		$revocation_endpoint    = $issuer . '/cdn-cgi/access/oauth/revoke';
-		return "# Auth.md — Geolander Agent Reservation API\n\n"
+		return "# auth.md — Geolander Agent Registration\n\n"
 			. "> You are an agent acting for a traveller or a Geolander operator. This file describes how to register an OAuth public client and obtain credentials for the protected Geolander Agent Reservation API.\n\n"
 			. "Resource server: `{$home}wp-json/geolander-agent/v1/`  \n"
 			. "Authorization server: `{$issuer}`\n\n"
@@ -449,6 +449,9 @@ class GLC_AI {
 			. "- Credential types: `access_token`, `refresh_token`\n"
 			. "- Credential presentation: `Authorization: Bearer <access_token>`\n"
 			. "- Revocation endpoint: `POST {$revocation_endpoint}`\n\n"
+			. "### Machine-readable registration profile\n\n"
+			. "The same complete registration method is embedded here so an agent can provision credentials even when it cannot parse OAuth metadata:\n\n"
+			. "```json\n{\n  \"agent_auth\": {\n    \"skill\": \"{$home}auth.md\",\n    \"register_uri\": \"{$registration_endpoint}\",\n    \"claim_uri\": \"{$authorization_endpoint}\",\n    \"revocation_uri\": \"{$revocation_endpoint}\",\n    \"identity_types_supported\": [\"anonymous\"],\n    \"anonymous\": {\n      \"credential_types_supported\": [\"access_token\", \"refresh_token\"],\n      \"claim_uri\": \"{$authorization_endpoint}\",\n      \"requires_user_authentication\": true\n    }\n  }\n}\n```\n\n"
 			. "## Step 3 — Register the OAuth public client\n\n"
 			. "Choose a localhost or loopback callback URI. Dynamic client registration is enabled for both by the Geolander Cloudflare Access application. Then send:\n\n"
 			. "```http\nPOST {$registration_endpoint}\nContent-Type: application/json\n\n"

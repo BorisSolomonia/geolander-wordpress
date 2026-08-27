@@ -469,7 +469,7 @@ try {
 		err('auth.md', `wrong Content-Type: ${authResponse.headers.get('content-type')}`);
 	} else ok();
 	const authBody = await authResponse.text();
-	for (const marker of ['OAuth protected resource metadata', 'OAuth public-client registration', 'PKCE S256', 'explicit traveller approval', 'POST https://', '/oauth/registration', 'client_id', 'access_token', 'refresh_token', 'Authorization: Bearer', 'no anonymous access']) {
+	for (const marker of ['# auth.md', 'OAuth protected resource metadata', 'OAuth public-client registration', 'Machine-readable registration profile', '"agent_auth"', '"register_uri"', '"identity_types_supported"', '"credential_types_supported"', 'PKCE S256', 'explicit traveller approval', 'POST https://', '/oauth/registration', 'client_id', 'access_token', 'refresh_token', 'Authorization: Bearer', 'no anonymous access']) {
 		if (!authBody.includes(marker)) err('auth.md', `missing marker: ${marker}`); else ok();
 	}
 } catch (e) {
