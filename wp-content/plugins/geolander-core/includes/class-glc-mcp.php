@@ -192,65 +192,81 @@ class GLC_MCP {
 		$arguments = is_array( $params['arguments'] ?? null ) ? $params['arguments'] : [];
 
 		if ( 'list_fleet' === $name ) {
-			$cars = [];
-			foreach ( get_posts( [ 'post_type' => 'car', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] ) as $car ) {
-				$item = [
-					'id'    => $car->ID,
-					'name'  => $car->post_title,
-					'url'   => get_permalink( $car ),
-					'year'  => (int) get_post_meta( $car->ID, 'glc_year', true ),
-					'seats' => (int) get_post_meta( $car->ID, 'glc_seats', true ),
-					'transmission' => (string) get_post_meta( $car->ID, 'glc_transmission', true ),
-					'drivetrain'   => (string) get_post_meta( $car->ID, 'glc_drivetrain', true ),
-				];
-				[ $low, $high ] = GLC_Pricing::rate_range( $car->ID );
-				if ( $low > 0 && $high > 0 ) {
-					$item['published_daily_rate_usd'] = [ 'low' => $low, 'high' => $high ];
-				}
-				$cars[] = array_filter( $item, static fn( $value ) => '' !== $value && 0 !== $value );
-			}
-			return self::tool_result( $id, [ 'cars' => $cars, 'count' => count( $cars ) ] );
+			return self::tool_result( $id, self::fleet_data() );
 		}
 
 		if ( 'get_booking_policy' === $name ) {
-			return self::tool_result(
-				$id,
-				[
-					'security_deposit' => 'None; no card preauthorization hold.',
-					'insurance'        => 'Full insurance included with no deductible. Wheels and windshield are covered; tyres and the interior are excluded. Single-vehicle accidents are covered. Third-party liability limit: 30,000 GEL.',
-					'mileage'          => 'Unlimited within Georgia.',
-					'winter_tyres'     => 'Included free in winter.',
-					'route_policy'     => 'All vehicles and routes unless bad weather, an official road closure, or damaged-road conditions apply. Current safety and opening status must be checked before departure.',
-					'cross_border'     => 'Armenia is allowed; confirm trip documents and insurance before departure.',
-					'handover'         => 'Tbilisi office and Tbilisi Airport are free. Kutaisi and Batumi charges must be calculated by the dated quote.',
-					'prepayment'       => '10% confirms the booking after availability is checked.',
-					'cancellation'     => 'At least 30 days before pickup, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.',
-					'confirmation'     => 'A quote or booking request is not a confirmed reservation. Geolander staff confirm availability and payment instructions.',
-				]
-			);
+			return self::tool_result( $id, self::policy_data() );
 		}
 
 		if ( 'get_rental_quote' === $name ) {
-			$wp_request = new WP_REST_Request( 'GET', '/geolander-agent/v1/quote' );
-			foreach ( [ 'car', 'from', 'to', 'pickup', 'return' ] as $field ) {
-				if ( array_key_exists( $field, $arguments ) ) {
-					$wp_request->set_param( $field, $arguments[ $field ] );
-				}
+			$data = self::quote_data( $arguments );
+			if ( is_wp_error( $data ) ) {
+				return self::tool_error( $id, $data->get_error_message() );
 			}
-			$response = GLC_Booking::quote( $wp_request );
-			if ( is_wp_error( $response ) ) {
-				return self::tool_error( $id, $response->get_error_message() );
-			}
-			$data = $response instanceof WP_REST_Response ? $response->get_data() : $response;
-			if ( ! is_array( $data ) ) {
-				return self::tool_error( $id, 'The quote service returned an invalid response.' );
-			}
-			$data['availability_status'] = 'not_confirmed';
-			$data['reservation_status']  = 'not_created';
 			return self::tool_result( $id, $data );
 		}
 
 		return self::error( $id, -32602, 'Unknown tool name.', 400 );
+	}
+
+	/** Shared read-only fleet result for MCP and A2A transports. */
+	public static function fleet_data(): array {
+		$cars = [];
+		foreach ( get_posts( [ 'post_type' => 'car', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ] ) as $car ) {
+			$item = [
+				'id'           => $car->ID,
+				'name'         => $car->post_title,
+				'url'          => get_permalink( $car ),
+				'year'         => (int) get_post_meta( $car->ID, 'glc_year', true ),
+				'seats'        => (int) get_post_meta( $car->ID, 'glc_seats', true ),
+				'transmission' => (string) get_post_meta( $car->ID, 'glc_transmission', true ),
+				'drivetrain'   => (string) get_post_meta( $car->ID, 'glc_drivetrain', true ),
+			];
+			[ $low, $high ] = GLC_Pricing::rate_range( $car->ID );
+			if ( $low > 0 && $high > 0 ) {
+				$item['published_daily_rate_usd'] = [ 'low' => $low, 'high' => $high ];
+			}
+			$cars[] = array_filter( $item, static fn( $value ) => '' !== $value && 0 !== $value );
+		}
+		return [ 'cars' => $cars, 'count' => count( $cars ) ];
+	}
+
+	/** Shared owner-verified policy result for MCP and A2A transports. */
+	public static function policy_data(): array {
+		return [
+			'security_deposit' => 'None; no card preauthorization hold.',
+			'insurance'        => 'Full insurance included with no deductible. Wheels and windshield are covered; tyres and the interior are excluded. Single-vehicle accidents are covered. Third-party liability limit: 30,000 GEL.',
+			'mileage'          => 'Unlimited within Georgia.',
+			'winter_tyres'     => 'Included free in winter.',
+			'route_policy'     => 'All vehicles and routes unless bad weather, an official road closure, or damaged-road conditions apply. Current safety and opening status must be checked before departure.',
+			'cross_border'     => 'Armenia is allowed; confirm trip documents and insurance before departure.',
+			'handover'         => 'Tbilisi office and Tbilisi Airport are free. Kutaisi and Batumi charges must be calculated by the dated quote.',
+			'prepayment'       => '10% confirms the booking after availability is checked.',
+			'cancellation'     => 'At least 30 days before pickup, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.',
+			'confirmation'     => 'A quote or booking request is not a confirmed reservation. Geolander staff confirm availability and payment instructions.',
+		];
+	}
+
+	/** Shared dated quote result; never creates a booking or claims availability. */
+	public static function quote_data( array $arguments ) {
+		$wp_request = new WP_REST_Request( 'GET', '/geolander-agent/v1/quote' );
+		foreach ( [ 'car', 'from', 'to', 'pickup', 'return' ] as $field ) {
+			if ( array_key_exists( $field, $arguments ) ) {
+				$wp_request->set_param( $field, $arguments[ $field ] );
+			}
+		}
+		$response = GLC_Booking::quote( $wp_request );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		$data = $response instanceof WP_REST_Response ? $response->get_data() : $response;
+		if ( ! is_array( $data ) ) {
+			return new WP_Error( 'glc_agent_quote', 'The quote service returned an invalid response.' );
+		}
+		$data['availability_status'] = 'not_confirmed';
+		$data['reservation_status']  = 'not_created';
+		return $data;
 	}
 
 	private static function tool_result( $id, array $data ): WP_REST_Response {

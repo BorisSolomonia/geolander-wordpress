@@ -2,7 +2,7 @@
 /**
  * Machine-readable surfaces for AI systems: /llms.txt, /pricing.md,
  * /agent-instructions.md, /openapi.json, RFC 9727 API catalog, OAuth metadata,
- * OAuth protected-resource metadata, auth.md, ARD/Agent Skills discovery,
+ * OAuth protected-resource metadata, auth.md, A2A/ARD/Agent Skills discovery,
  * and text/markdown content negotiation on canonical public URLs.
  */
 
@@ -34,6 +34,7 @@ class GLC_AI {
 		add_rewrite_rule( '^\.well-known/agent-skills/index\.json$', 'index.php?glc_ai_file=skills_index', 'top' );
 		add_rewrite_rule( '^\.well-known/agent-skills/geolander-car-rental/SKILL\.md$', 'index.php?glc_ai_file=booking_skill', 'top' );
 		add_rewrite_rule( '^\.well-known/mcp/server-card(?:\.json)?$', 'index.php?glc_ai_file=mcp_card', 'top' );
+		add_rewrite_rule( '^\.well-known/agent-card\.json$', 'index.php?glc_ai_file=a2a_card', 'top' );
 	}
 
 	public static function serve() {
@@ -78,6 +79,7 @@ class GLC_AI {
 		header( 'Link: <' . home_url( '/.well-known/api-catalog' ) . '>; rel="api-catalog"; type="application/linkset+json"', false );
 		header( 'Link: <' . home_url( '/.well-known/ai-catalog.json' ) . '>; rel="ai-catalog"; type="application/ai-catalog+json"', false );
 		header( 'Link: <' . home_url( '/.well-known/agent-skills/index.json' ) . '>; rel="agent-skills"; type="application/json"', false );
+		header( 'Link: <' . home_url( '/.well-known/agent-card.json' ) . '>; rel="service-desc"; type="application/a2a+json"', false );
 	}
 
 	private static function is_document_request(): bool {
@@ -183,6 +185,7 @@ class GLC_AI {
 			'ai_catalog'     => 'application/ai-catalog+json; charset=utf-8',
 			'skills_index'   => 'application/json; charset=utf-8',
 			'mcp_card'       => 'application/mcp-server-card+json; charset=utf-8',
+			'a2a_card'       => 'application/a2a+json; charset=utf-8',
 		];
 		if ( ! isset( $types[ $file ] ) ) {
 			status_header( 404 );
@@ -207,7 +210,7 @@ class GLC_AI {
 			}
 			exit;
 		}
-		if ( in_array( $file, [ 'skills_index', 'booking_skill', 'mcp_card' ], true ) ) {
+		if ( in_array( $file, [ 'skills_index', 'booking_skill', 'mcp_card', 'a2a_card' ], true ) ) {
 			header( 'Access-Control-Allow-Origin: *' );
 		}
 		header( 'Cache-Control: public, max-age=' . ( in_array( $file, [ 'oauth_metadata', 'oauth_resource' ], true ) ? '300' : '3600' ) );
@@ -239,6 +242,8 @@ class GLC_AI {
 				echo wp_json_encode( self::skills_index(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			} elseif ( 'mcp_card' === $file ) {
 				echo wp_json_encode( self::mcp_server_card(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
+			} elseif ( 'a2a_card' === $file ) {
+				echo wp_json_encode( self::a2a_agent_card(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			} else {
 				echo wp_json_encode( self::api_catalog(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ); // phpcs:ignore WordPress.Security.EscapeOutput
 			}
@@ -348,7 +353,7 @@ class GLC_AI {
 			. "3. Present the exact car, rental subtotal, location charges, final shown total, 10% prepayment, and balance to the traveller.\n"
 			. "4. Obtain explicit user approval plus the traveller's name and valid email before calling checkout. Checkout creates a booking request; it does not confirm the reservation.\n"
 			. "5. Direct the traveller to the returned WhatsApp URL. Geolander staff confirm availability and payment instructions.\n\n"
-			. "Authenticated clients operated by Geolander team members may use the mirrored `/wp-json/geolander-agent/v1/` endpoints. Discover their Cloudflare Managed OAuth authorization server at `/.well-known/oauth-authorization-server`. The public customer endpoints remain available for the website booking widget.\n";
+			. "Authenticated clients operated by Geolander team members may use the mirrored `/wp-json/geolander-agent/v1/` endpoints. Discover the read-only A2A v1.0 agent at `/.well-known/agent-card.json` and the Cloudflare Managed OAuth authorization server at `/.well-known/oauth-authorization-server`. The public customer endpoints remain available for the website booking widget.\n";
 	}
 
 	/** RFC 8414 metadata for the Cloudflare authorization server used by agents. */
@@ -399,6 +404,7 @@ class GLC_AI {
 			. "## Discovery\n\n"
 			. "- OAuth protected resource metadata: {$home}.well-known/oauth-protected-resource\n"
 			. "- OAuth authorization server metadata: {$home}.well-known/oauth-authorization-server\n"
+			. "- A2A v1.0 Agent Card: {$home}.well-known/agent-card.json\n"
 			. "- OpenAPI 3.1 specification: {$home}openapi.json\n"
 			. "- Developer documentation: {$home}developers/\n\n"
 			. "## Supported flow\n\n"
@@ -578,6 +584,19 @@ class GLC_AI {
 			],
 			'entries'     => [
 				[
+					'identifier'            => 'urn:air:geo-lander.com:a2a:reservation',
+					'displayName'           => 'Geolander Rental Agent',
+					'type'                  => 'application/a2a+json',
+					'url'                   => home_url( '/.well-known/agent-card.json' ),
+					'description'           => 'A2A v1.0 read-only agent for exact-car fleet discovery, verified rental policy, and date-specific quotes.',
+					'capabilities'          => [ 'FleetList', 'RentalPolicyLookup', 'RentalQuote' ],
+					'representativeQueries' => [
+						'Ask the Geolander agent which exact rental cars are published.',
+						'Delegate a date-specific quote calculation without creating a reservation.',
+					],
+					'version'               => '1.0.0',
+				],
+				[
 					'identifier'            => 'urn:air:geo-lander.com:mcp:reservation',
 					'displayName'           => 'Geolander Rental Tools MCP Server',
 					'type'                  => 'application/mcp-server-card+json',
@@ -616,6 +635,75 @@ class GLC_AI {
 						'Find an exact 4x4 rental for my trip in Georgia.',
 						'What insurance and deposit terms apply to this Geolander car?',
 					],
+				],
+			],
+		];
+	}
+
+	/** A2A Protocol v1.0 public Agent Card for the protected JSON-RPC service. */
+	private static function a2a_agent_card(): array {
+		return [
+			'name'               => 'Geolander Rental Agent',
+			'version'            => '1.0.0',
+			'description'        => 'Read-only exact-car fleet discovery, verified Geolander rental policy, and date-specific rental quotes. Quotes do not confirm availability or create reservations.',
+			'supportedInterfaces' => [
+				[
+					'url'             => home_url( '/wp-json/geolander-agent/v1/a2a' ),
+					'protocolBinding' => 'JSONRPC',
+					'protocolVersion' => '1.0',
+				],
+			],
+			'provider'           => [
+				'organization' => 'Geolander',
+				'url'          => home_url( '/' ),
+			],
+			'documentationUrl'   => home_url( '/developers/' ),
+			'capabilities'       => [
+				'streaming'         => false,
+				'pushNotifications' => false,
+				'extendedAgentCard' => false,
+			],
+			'securitySchemes'    => [
+				'CloudflareAccess' => [
+					'httpAuthSecurityScheme' => [
+						'description'  => 'Bearer JWT issued through Geolander Cloudflare Access Managed OAuth.',
+						'scheme'       => 'Bearer',
+						'bearerFormat' => 'JWT',
+					],
+				],
+			],
+			'securityRequirements' => [
+				[ 'schemes' => [ 'CloudflareAccess' => [ 'list' => [] ] ] ],
+			],
+			'defaultInputModes'  => [ 'application/json', 'text/plain' ],
+			'defaultOutputModes' => [ 'application/json', 'text/plain' ],
+			'skills'             => [
+				[
+					'id'          => 'fleet-discovery',
+					'name'        => 'Exact-car fleet discovery',
+					'description' => 'Returns published exact Geolander vehicles and verified positive rate ranges. Unpriced cars omit prices instead of reporting zero.',
+					'tags'        => [ 'car-rental', 'fleet', '4x4', 'tbilisi', 'georgia' ],
+					'examples'    => [ 'List the exact Geolander cars currently published.' ],
+					'inputModes'  => [ 'application/json', 'text/plain' ],
+					'outputModes' => [ 'application/json', 'text/plain' ],
+				],
+				[
+					'id'          => 'rental-policy',
+					'name'        => 'Verified rental policy lookup',
+					'description' => 'Returns owner-verified insurance, deposit, mileage, winter-tyre, route, handover, prepayment, and cancellation facts.',
+					'tags'        => [ 'car-rental', 'insurance', 'deposit', 'policy', 'georgia' ],
+					'examples'    => [ 'What insurance, deposit, and mileage terms apply?' ],
+					'inputModes'  => [ 'application/json', 'text/plain' ],
+					'outputModes' => [ 'application/json', 'text/plain' ],
+				],
+				[
+					'id'          => 'rental-quote',
+					'name'        => 'Date-specific rental quote',
+					'description' => 'Calculates a read-only quote for one published exact car, dates, pickup, and return. It does not confirm availability or create a booking.',
+					'tags'        => [ 'car-rental', 'quote', 'pricing', 'airport', 'georgia' ],
+					'examples'    => [ 'Calculate a quote using a published car ID, pickup date, return date, pickup location, and return location.' ],
+					'inputModes'  => [ 'application/json' ],
+					'outputModes' => [ 'application/json', 'text/plain' ],
 				],
 			],
 		];
@@ -782,6 +870,7 @@ class GLC_AI {
 		$out .= "- [ARD capability catalog]({$home}.well-known/ai-catalog.json)\n";
 		$out .= "- [Agent Skills discovery index]({$home}.well-known/agent-skills/index.json)\n";
 		$out .= "- [MCP server card]({$home}.well-known/mcp/server-card.json)\n";
+		$out .= "- [A2A Agent Card]({$home}.well-known/agent-card.json)\n";
 
 		$faqs = get_posts( [ 'post_type' => 'faq', 'posts_per_page' => 20, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 		if ( $faqs ) {

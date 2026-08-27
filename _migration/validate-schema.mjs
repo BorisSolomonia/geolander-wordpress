@@ -524,6 +524,46 @@ try {
 	err('mcp-discovery', `invalid or unreachable: ${e.message}`);
 }
 
+console.log('\nA2A v1.0 Agent Card and OAuth boundary');
+try {
+	const cardResponse = await fetch(`${BASE}/.well-known/agent-card.json`, { headers: { Accept: 'application/a2a+json' } });
+	if (!cardResponse.ok) err('a2a-card', `HTTP ${cardResponse.status}`); else ok();
+	if (!String(cardResponse.headers.get('content-type') || '').toLowerCase().startsWith('application/a2a+json')) {
+		err('a2a-card', `wrong Content-Type: ${cardResponse.headers.get('content-type')}`);
+	} else ok();
+	if (cardResponse.headers.get('access-control-allow-origin') !== '*') err('a2a-card', 'missing open CORS'); else ok();
+	const card = await cardResponse.json();
+	for (const field of ['name', 'version', 'description']) {
+		if (!String(card[field] || '').trim()) err('a2a-card', `missing ${field}`); else ok();
+	}
+	if (!Array.isArray(card.supportedInterfaces) || card.supportedInterfaces.length < 1) err('a2a-card', 'supportedInterfaces missing'); else ok();
+	const a2aInterface = card.supportedInterfaces?.[0] || {};
+	if (a2aInterface.protocolBinding !== 'JSONRPC' || a2aInterface.protocolVersion !== '1.0') err('a2a-card', 'interface must advertise JSONRPC A2A v1.0'); else ok();
+	const endpoint = new URL(a2aInterface.url);
+	if (endpoint.origin !== new URL(BASE).origin || endpoint.pathname !== '/wp-json/geolander-agent/v1/a2a') err('a2a-card', 'service URL is not the protected Geolander A2A route'); else ok();
+	if (!card.capabilities || card.capabilities.streaming !== false || card.capabilities.pushNotifications !== false || card.capabilities.extendedAgentCard !== false) err('a2a-card', 'capability flags must truthfully disable unsupported operations'); else ok();
+	if (!Array.isArray(card.defaultInputModes) || !card.defaultInputModes.includes('application/json')) err('a2a-card', 'defaultInputModes missing application/json'); else ok();
+	if (!Array.isArray(card.defaultOutputModes) || !card.defaultOutputModes.includes('application/json')) err('a2a-card', 'defaultOutputModes missing application/json'); else ok();
+	if (!card.securitySchemes?.CloudflareAccess?.httpAuthSecurityScheme || !Array.isArray(card.securityRequirements)) err('a2a-card', 'Cloudflare Access security declaration missing'); else ok();
+	if (!Array.isArray(card.skills) || card.skills.length !== 3) err('a2a-card', 'expected three focused skills'); else ok();
+	for (const [index, skill] of (card.skills || []).entries()) {
+		for (const field of ['id', 'name', 'description']) {
+			if (!String(skill[field] || '').trim()) err('a2a-card', `skill ${index} missing ${field}`); else ok();
+		}
+		if (!Array.isArray(skill.tags) || skill.tags.length < 1) err('a2a-card', `skill ${index} missing tags`); else ok();
+	}
+
+	const challenge = await fetch(endpoint, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json', 'a2a-version': '1.0' },
+		body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'SendMessage', params: { message: { messageId: crypto.randomUUID(), role: 'ROLE_USER', parts: [{ text: 'List the fleet' }] } } }),
+		redirect: 'manual',
+	});
+	if (challenge.status !== 401) err('a2a-auth', `expected 401 without token, got ${challenge.status}`); else ok();
+} catch (e) {
+	err('a2a-discovery', `invalid or unreachable: ${e.message}`);
+}
+
 console.log('\nWebMCP read-only browser tools');
 try {
 	const response = await fetch(`${BASE}/`, { headers: { Accept: 'text/html' } });

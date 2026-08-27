@@ -66,7 +66,7 @@ glc_agent_upsert(
 	]
 );
 
-$developers = glc_agent_p( 'Geolander publishes a small public reservation API used by the booking form on geo-lander.com. It supports read-only, date-specific quotes and a customer-approved booking-request handoff. The API does not confirm vehicle availability, accept payment, expose customer records, provide webhooks, or operate an MCP server.' )
+$developers = glc_agent_p( 'Geolander publishes a small public reservation API used by the booking form on geo-lander.com. It supports read-only, date-specific quotes and a customer-approved booking-request handoff. The API does not confirm vehicle availability, accept payment, expose customer records, or provide webhooks. Geolander also operates OAuth-protected read-only MCP and A2A interfaces for verified fleet, policy, and quote retrieval.' )
 	. glc_agent_h( 'Machine-readable resources' )
 	. glc_agent_ul( [
 		'<a href="/openapi.json">Geolander Reservation API — OpenAPI 3.1 specification</a>',
@@ -77,13 +77,16 @@ $developers = glc_agent_p( 'Geolander publishes a small public reservation API u
 		'<a href="/.well-known/ai-catalog.json">Geolander ARD capability catalog</a>',
 		'<a href="/.well-known/agent-skills/index.json">Geolander Agent Skills discovery index</a>',
 		'<a href="/.well-known/mcp/server-card.json">Geolander Rental Tools MCP server card</a>',
+		'<a href="/.well-known/agent-card.json">Geolander Rental Agent — A2A v1.0 Agent Card</a>',
 		'<a href="/agent-instructions.md">Agent instructions and when-to-use guidance</a>',
 		'<a href="/llms.txt">Geolander site and fleet context for language models</a>',
 		'<a href="/pricing.md">Live machine-readable fleet price tables</a>',
 		'<a href="/wp-json/">WordPress REST API index</a>',
 	] )
 	. glc_agent_h( 'Authentication and safe use' )
-	. glc_agent_p( 'The customer-facing <code>/wp-json/geolander/v1/</code> routes do not require an account. Authenticated clients operated by Geolander team members use the mirrored <code>/wp-json/geolander-agent/v1/</code> routes through Cloudflare Access Managed OAuth. The MCP endpoint at <code>/wp-json/geolander-agent/v1/mcp</code> exposes read-only fleet, policy, and quote tools. REST quote is read-only. REST checkout is rate-limited and creates an internal booking request, so an agent must obtain explicit user approval and a valid customer name and email before calling it. The returned WhatsApp link continues the conversation with Geolander staff. A booking request is not a confirmed reservation; staff confirm availability and the 10% prepayment separately.' )
+	. glc_agent_p( 'The customer-facing <code>/wp-json/geolander/v1/</code> routes do not require an account. Authenticated clients operated by Geolander team members use the mirrored <code>/wp-json/geolander-agent/v1/</code> routes through Cloudflare Access Managed OAuth. The MCP endpoint at <code>/wp-json/geolander-agent/v1/mcp</code> and A2A v1.0 JSON-RPC endpoint at <code>/wp-json/geolander-agent/v1/a2a</code> expose read-only fleet, policy, and quote capabilities. REST quote is read-only. REST checkout is rate-limited and creates an internal booking request, so an agent must obtain explicit user approval and a valid customer name and email before calling it. The returned WhatsApp link continues the conversation with Geolander staff. A booking request is not a confirmed reservation; staff confirm availability and the 10% prepayment separately.' )
+	. glc_agent_h( 'A2A request format' )
+	. glc_agent_p( 'A2A clients send JSON-RPC 2.0 <code>SendMessage</code> requests with <code>A2A-Version: 1.0</code>. Use a structured <code>application/json</code> data part whose <code>skill</code> is <code>fleet-discovery</code>, <code>rental-policy</code>, or <code>rental-quote</code>. The quote skill also needs a published car ID, <code>from</code> and <code>to</code> dates, plus pickup and return location identifiers. The response is an immediate A2A agent Message with both a text summary and structured data.' )
 	. glc_agent_h( 'Support' )
 	. glc_agent_p( 'Questions about the API or booking data should be sent to <a href="mailto:info@geo-lander.com">info@geo-lander.com</a>. Do not send SMTP keys, payment credentials, passport data, or other secrets through public API fields.' );
 
