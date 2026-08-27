@@ -35,6 +35,7 @@ class GLC_AI {
 		add_rewrite_rule( '^\.well-known/agent-skills/geolander-car-rental/SKILL\.md$', 'index.php?glc_ai_file=booking_skill', 'top' );
 		add_rewrite_rule( '^\.well-known/mcp/server-card(?:\.json)?$', 'index.php?glc_ai_file=mcp_card', 'top' );
 		add_rewrite_rule( '^\.well-known/agent-card\.json$', 'index.php?glc_ai_file=a2a_card', 'top' );
+		add_rewrite_rule( '^\.well-known/http-message-signatures-directory$', 'index.php?glc_ai_file=web_bot_auth', 'top' );
 	}
 
 	public static function serve() {
@@ -171,6 +172,9 @@ class GLC_AI {
 	}
 
 	private static function serve_file( string $file ): void {
+		if ( 'web_bot_auth' === $file ) {
+			GLC_Web_Bot_Auth::serve_directory();
+		}
 		$types = [
 			'llms'         => 'text/plain; charset=utf-8',
 			'pricing'      => 'text/markdown; charset=utf-8',
@@ -871,6 +875,7 @@ class GLC_AI {
 		$out .= "- [Agent Skills discovery index]({$home}.well-known/agent-skills/index.json)\n";
 		$out .= "- [MCP server card]({$home}.well-known/mcp/server-card.json)\n";
 		$out .= "- [A2A Agent Card]({$home}.well-known/agent-card.json)\n";
+		$out .= "- [Web Bot Auth public key directory]({$home}.well-known/http-message-signatures-directory)\n";
 
 		$faqs = get_posts( [ 'post_type' => 'faq', 'posts_per_page' => 20, 'orderby' => 'menu_order', 'order' => 'ASC' ] );
 		if ( $faqs ) {

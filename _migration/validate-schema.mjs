@@ -564,6 +564,58 @@ try {
 	err('a2a-discovery', `invalid or unreachable: ${e.message}`);
 }
 
+console.log('\nWeb Bot Auth signed key directory');
+try {
+	const directoryUrl = `${BASE}/.well-known/http-message-signatures-directory`;
+	const response = await fetch(directoryUrl, { headers: { Accept: 'application/http-message-signatures-directory+json' } });
+	if (!response.ok) err('web-bot-auth', `HTTP ${response.status}`); else ok();
+	if (!String(response.headers.get('content-type') || '').toLowerCase().startsWith('application/http-message-signatures-directory+json')) {
+		err('web-bot-auth', `wrong Content-Type: ${response.headers.get('content-type')}`);
+	} else ok();
+	if (response.headers.get('access-control-allow-origin') !== '*') err('web-bot-auth', 'missing open CORS'); else ok();
+	if (!String(response.headers.get('cache-control') || '').toLowerCase().includes('no-store')) err('web-bot-auth', 'signed directory must not be cached past signature expiry'); else ok();
+
+	const bodyBytes = new Uint8Array(await response.arrayBuffer());
+	const body = new TextDecoder().decode(bodyBytes);
+	const directory = JSON.parse(body);
+	if (!Array.isArray(directory.keys) || directory.keys.length < 1) err('web-bot-auth', 'JWKS has no public keys'); else ok();
+	const key = directory.keys?.[0] || {};
+	if (key.kty !== 'OKP' || key.crv !== 'Ed25519' || !key.x || !key.kid) err('web-bot-auth', 'first key is not a complete Ed25519 public JWK'); else ok();
+	if (Object.hasOwn(key, 'd')) err('web-bot-auth', 'JWKS exposes private key material'); else ok();
+
+	const thumbprintDocument = JSON.stringify({ crv: 'Ed25519', kty: 'OKP', x: key.x });
+	const thumbprintBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(thumbprintDocument)));
+	const thumbprint = Buffer.from(thumbprintBytes).toString('base64url');
+	if (key.kid !== thumbprint) err('web-bot-auth', 'JWK kid is not its RFC 7638 thumbprint'); else ok();
+
+	const digestBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', bodyBytes));
+	const expectedDigest = `sha-256=:${Buffer.from(digestBytes).toString('base64')}:`;
+	const contentDigest = response.headers.get('content-digest') || '';
+	if (contentDigest !== expectedDigest) err('web-bot-auth', 'Content-Digest does not match the JWKS body'); else ok();
+
+	const signatureInputHeader = response.headers.get('signature-input') || '';
+	const inputMatch = /^binding0=(\("@authority";req "content-digest"\).+)$/.exec(signatureInputHeader);
+	if (!inputMatch) throw new Error('Signature-Input does not cover @authority;req and content-digest');
+	const signatureParams = inputMatch[1];
+	const keyId = /;keyid="([^"]+)"/.exec(signatureParams)?.[1];
+	const created = Number(/;created=(\d+)/.exec(signatureParams)?.[1]);
+	const expires = Number(/;expires=(\d+)/.exec(signatureParams)?.[1]);
+	const nonce = /;nonce="([^"]+)"/.exec(signatureParams)?.[1] || '';
+	if (keyId !== key.kid || !signatureParams.includes(';alg="ed25519"') || !signatureParams.includes(';tag="http-message-signatures-directory"')) err('web-bot-auth', 'signature parameters do not identify the published key/profile'); else ok();
+	if (!created || !expires || expires <= created || expires - created > 60 || Math.abs(Math.floor(Date.now() / 1000) - created) > 10) err('web-bot-auth', 'signature timestamps are stale or invalid'); else ok();
+	if (Buffer.from(nonce, 'base64').length !== 64) err('web-bot-auth', 'nonce is not 64 random bytes'); else ok();
+
+	const signatureHeader = response.headers.get('signature') || '';
+	const signatureMatch = /^binding0=:([^:]+):$/.exec(signatureHeader);
+	if (!signatureMatch) throw new Error('Signature header is malformed');
+	const signatureBase = `"@authority";req: ${new URL(BASE).host}\n"content-digest": ${contentDigest}\n"@signature-params": ${signatureParams}`;
+	const verifyKey = await crypto.subtle.importKey('jwk', { kty: 'OKP', crv: 'Ed25519', x: key.x }, { name: 'Ed25519' }, false, ['verify']);
+	const valid = await crypto.subtle.verify('Ed25519', verifyKey, Buffer.from(signatureMatch[1], 'base64'), new TextEncoder().encode(signatureBase));
+	if (!valid) err('web-bot-auth', 'directory response self-signature is invalid'); else ok();
+} catch (e) {
+	err('web-bot-auth', `invalid or unreachable: ${e.message}`);
+}
+
 console.log('\nWebMCP read-only browser tools');
 try {
 	const response = await fetch(`${BASE}/`, { headers: { Accept: 'text/html' } });

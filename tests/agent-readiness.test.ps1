@@ -11,6 +11,7 @@ $migration = Get-Content -Raw -Encoding utf8 (Join-Path $root '_migration/setup-
 $validator = Get-Content -Raw -Encoding utf8 (Join-Path $root '_migration/validate-schema.mjs')
 $mcp = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-mcp.php')
 $a2a = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-a2a.php')
+$webBotAuth = Get-Content -Raw -Encoding utf8 (Join-Path $root 'wp-content/plugins/geolander-core/includes/class-glc-web-bot-auth.php')
 
 foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-Encoding', 'preferred_representation', 'status_header( 406 )', 'status_header( 404 )')) {
 	if (-not $ai.Contains($expected)) {
@@ -18,9 +19,15 @@ foreach ($expected in @('text/markdown; charset=utf-8', 'Vary: Accept, Accept-En
 	}
 }
 
-foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'agent-card.json', 'application/mcp-server-card+json', 'application/a2a+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'scopes_supported'", "'bearer_methods_supported'", 'supportedInterfaces', 'protocolBinding', 'protocolVersion', 'defaultInputModes', 'defaultOutputModes', 'securityRequirements', 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
+foreach ($expected in @('agent-instructions.md', 'openapi.json', 'auth.md', 'index_markdown', "^\.well-known/api-catalog/?$", 'oauth-protected-resource', 'ai-catalog.json', 'agent-skills/index.json', 'geolander-car-rental/SKILL.md', 'mcp/server-card', 'agent-card.json', 'http-message-signatures-directory', 'application/mcp-server-card+json', 'application/a2a+json', 'application/linkset+json', 'application/ai-catalog+json', 'https://www.rfc-editor.org/info/rfc9727', 'https://schemas.agentskills.io/discovery/0.2.0/schema.json', "'service-desc'", "'service-doc'", "'status'", "'digest'", "'scopes_supported'", "'bearer_methods_supported'", 'supportedInterfaces', 'protocolBinding', 'protocolVersion', 'defaultInputModes', 'defaultOutputModes', 'securityRequirements', 'Geolander Reservation API', 'When to use Geolander', 'explicit user approval')) {
 	if (-not $ai.Contains($expected)) {
 		throw "Agent/developer resource is missing: $expected"
+	}
+}
+
+foreach ($expected in @('GLC_WEB_BOT_AUTH_PRIVATE_KEY', 'application/http-message-signatures-directory+json', 'Content-Digest', 'Signature-Agent', 'Signature-Input', 'Signature', 'sodium_crypto_sign_detached', '"@authority";req', '"signature-agent"', 'REQUEST_TAG', 'web-bot-auth', 'glc_web_bot_auth', 'Geolander-Agent/')) {
+	if (-not $webBotAuth.Contains($expected)) {
+		throw "Web Bot Auth contract is missing: $expected"
 	}
 }
 
@@ -90,7 +97,7 @@ foreach ($locale in @('en', 'ka', 'ru', 'uk', 'ar', 'zh', 'fr')) {
 	}
 }
 
-foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog', 'RFC 9728 protected resource metadata and auth.md', 'ARD capability manifest and Agent Skills discovery', 'skill digest mismatch', 'MCP server discovery and OAuth boundary', 'application/mcp-server-card+json', 'A2A v1.0 Agent Card and OAuth boundary', 'application/a2a+json', 'WebMCP read-only browser tools')) {
+foreach ($expected in @('agent content negotiation', 'agent-friendly 404', 'agent crawler reachability', 'developer resources', 'RFC 9727 API catalog', 'RFC 9728 protected resource metadata and auth.md', 'ARD capability manifest and Agent Skills discovery', 'skill digest mismatch', 'MCP server discovery and OAuth boundary', 'application/mcp-server-card+json', 'A2A v1.0 Agent Card and OAuth boundary', 'application/a2a+json', 'Web Bot Auth signed key directory', 'application/http-message-signatures-directory+json', 'WebMCP read-only browser tools')) {
 	if (-not $validator.Contains($expected)) {
 		throw "Public endpoint validator is missing: $expected"
 	}

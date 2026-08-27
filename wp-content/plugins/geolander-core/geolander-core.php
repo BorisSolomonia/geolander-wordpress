@@ -20,6 +20,7 @@ require_once GLC_DIR . 'includes/class-glc-meta-boxes.php';
 require_once GLC_DIR . 'includes/class-glc-pricing.php';
 require_once GLC_DIR . 'includes/class-glc-rental.php';
 require_once GLC_DIR . 'includes/class-glc-access.php';
+require_once GLC_DIR . 'includes/class-glc-web-bot-auth.php';
 require_once GLC_DIR . 'includes/class-glc-booking.php';
 require_once GLC_DIR . 'includes/class-glc-mcp.php';
 require_once GLC_DIR . 'includes/class-glc-a2a.php';
@@ -46,6 +47,7 @@ add_action( 'plugins_loaded', function () {
 	GLC_CPT::init();
 	GLC_Meta_Boxes::init();
 	GLC_Rental::init();
+	GLC_Web_Bot_Auth::init();
 	GLC_Booking::init();
 	GLC_MCP::init();
 	GLC_A2A::init();
