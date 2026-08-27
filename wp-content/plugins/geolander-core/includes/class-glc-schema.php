@@ -122,7 +122,7 @@ class GLC_Schema {
 			}
 		}
 
-		return [
+		$business = [
 			// AutoRental is already an Organization subtype, but the explicit
 			// Organization token helps simpler agent parsers recognize identity
 			// without requiring them to traverse the Schema.org hierarchy.
@@ -174,11 +174,27 @@ class GLC_Schema {
 				'closes'    => '23:59',
 			],
 			'sameAs'     => array_values( array_filter( [
+				GLC_Settings::get( 'google_maps_url' ),
 				GLC_Settings::get( 'instagram' ),
 				GLC_Settings::get( 'facebook' ),
 			] ) ),
 			'areaServed' => $area,
 		];
+
+		$legal_name = trim( (string) GLC_Settings::get( 'legal_name', '' ) );
+		$georgian_id = trim( (string) GLC_Settings::get( 'georgian_id', '' ) );
+		if ( '' !== $legal_name ) {
+			$business['legalName'] = $legal_name;
+		}
+		if ( '' !== $georgian_id ) {
+			$business['identifier'] = [
+				'@type'      => 'PropertyValue',
+				'propertyID' => 'Georgian identification number',
+				'value'      => $georgian_id,
+			];
+		}
+
+		return $business;
 	}
 
 	private static function website(): array {

@@ -5,7 +5,7 @@
  * Inserter: no
  *
  * Everything below the hero on the front page, in golden-path order:
- * fleet → how it works → routes → included → testimonials → FAQ → CTA.
+ * fleet → how it works → routes → included → Google proof → FAQ → CTA.
  */
 ?>
 <div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;display:grid;gap:var(--wp--preset--spacing--70);padding-block:var(--wp--preset--spacing--60);">
@@ -66,7 +66,7 @@
 
 	<section class="glc-reveal">
 		<div class="glc-section-head">
-			<div class="glc-kicker"><?php echo glc_sign( 'included_title', 'ALL-INCLUSIVE · $0 EXTRAS' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<div class="glc-kicker"><?php echo glc_sign( 'included_title', 'VERIFIED RENTAL TERMS' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'included_title' ) ); ?></h2>
 		</div>
 		<ul class="glc-included glc-stagger" style="padding:0;margin:0;">
@@ -76,19 +76,25 @@
 		</ul>
 	</section>
 
-	<section class="glc-reveal">
+	<?php if ( GLC_Settings::get( 'google_rating' ) && GLC_Settings::get( 'google_maps_url' ) ) : ?>
+	<section class="glc-reveal" aria-labelledby="glc-google-reviews-title">
 		<div class="glc-section-head">
-			<?php if ( GLC_Settings::get( 'google_rating' ) && GLC_Settings::get( 'google_maps_url' ) ) : ?>
-				<div class="glc-kicker">
-					<a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">
-						<?php echo glc_sign( 'testimonials_title', sprintf( glc_t( 'contact_google_rating' ), GLC_Settings::get( 'google_rating' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-					</a>
-				</div>
-			<?php endif; ?>
-			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'testimonials_title' ) ); ?></h2>
+			<div class="glc-kicker">
+				<a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">
+					<?php echo glc_sign( 'testimonials_title', sprintf( glc_t( 'contact_google_rating' ), GLC_Settings::get( 'google_rating' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				</a>
+			</div>
+			<h2 id="glc-google-reviews-title" style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'testimonials_title' ) ); ?></h2>
+			<p style="margin:0;color:var(--glc-stone);max-width:62ch;"><?php echo esc_html( sprintf( glc_t( 'office_location' ), GLC_Settings::get( 'office_district' ), GLC_Settings::get( 'address' ) ) ); ?></p>
 		</div>
-		<?php echo do_blocks( '<!-- wp:geolander/testimonials /-->' ); ?>
+		<p style="margin:0;">
+			<a class="wp-element-button glc-btn" href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" target="_blank" rel="noopener">
+				<span aria-hidden="true">★★★★★</span>
+				<?php echo esc_html( sprintf( glc_t( 'contact_google_rating' ), GLC_Settings::get( 'google_rating' ) ) . ' · ' . glc_t( 'view_on_map' ) ); ?>
+			</a>
+		</p>
 	</section>
+	<?php endif; ?>
 
 	<section class="glc-reveal">
 		<div class="glc-section-head">

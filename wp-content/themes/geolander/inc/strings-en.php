@@ -102,13 +102,13 @@ return [
 
 	'terrain_title'   => 'Where you can go',
 	'terrain_text'    => 'Kazbegi, Gudauri, Kakheti, Svaneti — all our cars are permitted on mountain and gravel roads. Ask us about Tusheti too.',
-	'included_title'  => 'Everything included',
+	'included_title'  => 'Included with every rental',
 	'included_1'      => 'Full insurance',
 	'included_2'      => 'Unlimited mileage',
 	'included_3'      => 'Winter tires in season',
-	'included_4'      => 'Free second driver',
+	'included_4'      => 'No security deposit',
 	'included_5'      => 'Free Tbilisi Airport delivery',
-	'included_6'      => '24/7 roadside assistance',
+	'included_6'      => '24/7 WhatsApp support',
 
 	'rental_facts_title'              => 'Clear rental terms for this exact car',
 	'rental_exact_car'                => 'Vehicle guarantee',
@@ -146,7 +146,7 @@ return [
 	'route_2'            => 'Kakheti Wine Route',
 	'route_3'            => 'Svaneti',
 	'route_4'            => 'Black Sea Coast',
-	'testimonials_title' => 'What our customers say',
+	'testimonials_title' => 'Customer reviews on Google Maps',
 	'faq_title'          => 'Frequently asked questions',
 	'cta_title'          => 'Ready to explore Georgia?',
 	'cta_subtitle'       => 'Pick a car, pick your dates — we handle the rest',
@@ -189,6 +189,7 @@ return [
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Come for the roads. Leave with the memories.',
 	'price_range_label' => 'All cars',
+	'price_range_sentence' => 'From %1$s to %2$s per day',
 	'ask_whatsapp'      => 'Ask on WhatsApp',
 	'check_details'      => 'Check details',
 

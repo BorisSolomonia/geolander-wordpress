@@ -83,7 +83,7 @@ $terms = implode( '', [
 	glc_h( '10. Contact' ),
 	glc_p( 'For any questions about these terms, please contact us via WhatsApp or email at info@geo-lander.com.' ),
 ] );
-glc_upsert_page( 'terms', 'წესები და პირობები', $terms );
+glc_upsert_page( 'terms', 'Terms and Conditions', $terms );
 
 /* ----------------------------------------------------------- Travel Info */
 

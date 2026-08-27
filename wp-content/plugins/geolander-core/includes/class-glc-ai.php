@@ -478,13 +478,20 @@ class GLC_AI {
 	}
 
 	private static function agent_instructions(): string {
-		return "# Geolander agent instructions\n\n"
+		$out = "# Geolander agent instructions\n\n"
 			. "> Safe usage guidance for AI agents helping travellers rent an exact car in Tbilisi and Georgia (country).\n\n"
 			. self::agent_guidance()
 			. "\n## Human contact\n\n"
 			. '- Email: ' . GLC_Settings::get( 'email' ) . "\n"
 			. '- Phone / WhatsApp: ' . GLC_Settings::get( 'phone' ) . "\n"
 			. '- Office: ' . GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'office_district' ) . ', Tbilisi ' . GLC_Settings::get( 'postal_code' ) . ", Georgia\n";
+		if ( trim( (string) GLC_Settings::get( 'legal_name', '' ) ) ) {
+			$out .= '- Registered legal name: ' . GLC_Settings::get( 'legal_name' ) . "\n";
+		}
+		if ( trim( (string) GLC_Settings::get( 'georgian_id', '' ) ) ) {
+			$out .= '- Georgian identification number: ' . GLC_Settings::get( 'georgian_id' ) . "\n";
+		}
+		return $out;
 	}
 
 	private static function openapi(): array {

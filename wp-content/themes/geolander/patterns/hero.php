@@ -7,6 +7,11 @@
 $glc_today    = current_datetime()->format( 'Y-m-d' );
 $glc_default1 = current_datetime()->modify( '+3 days' )->format( 'Y-m-d' );
 $glc_default2 = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
+$glc_range    = '';
+if ( class_exists( 'GLC_Format' ) ) {
+	[ $glc_low, $glc_high ] = GLC_Format::range();
+	$glc_range = sprintf( glc_t( 'price_range_sentence' ), GLC_Format::money( $glc_low ), GLC_Format::money( $glc_high ) );
+}
 ?>
 <section class="glc-hero">
 	<div class="glc-hero-media">
@@ -27,9 +32,7 @@ $glc_default2 = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
 		</p>
 		<?php // One honest range instead of a price on every car. ?>
 		<p class="glc-hero-range">
-			<?php echo esc_html( glc_t( 'price_range_label' ) ); ?>
-			<strong><?php echo esc_html( class_exists( 'GLC_Format' ) ? GLC_Format::range_display() : '' ); ?></strong>
-			<span><?php echo esc_html( glc_t( 'per_day' ) ); ?></span>
+			<strong><?php echo esc_html( $glc_range ); ?></strong>
 		</p>
 
 		<form class="glc-hero-widget" action="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" method="get">

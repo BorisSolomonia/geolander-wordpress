@@ -83,13 +83,13 @@ return [
 
 	'terrain_title'   => '您可以去哪里',
 	'terrain_text'    => '卡兹别克、古道里、卡赫季、斯瓦涅季 — 我们所有车辆均可行驶山路和碎石路。图舍季路线也欢迎咨询。',
-	'included_title'  => '全部包含',
+	'included_title'  => '每次租车均包含',
 	'included_1'      => '全额保险',
 	'included_2'      => '不限里程',
 	'included_3'      => '冬季轮胎（应季）',
-	'included_4'      => '免费第二驾驶员',
+	'included_4'      => '无需押金',
 	'included_5'      => '第比利斯机场免费送车',
-	'included_6'      => '24/7 道路救援',
+	'included_6'      => '全天候 WhatsApp 支持',
 
 	'process_title'   => '预订流程',
 	'process_1_t'     => '选择车辆和日期',
@@ -104,7 +104,7 @@ return [
 	'route_2'            => '卡赫季葡萄酒之路',
 	'route_3'            => '斯瓦涅季',
 	'route_4'            => '黑海海岸',
-	'testimonials_title' => '客户评价',
+	'testimonials_title' => 'Google 地图上的客户评价',
 	'faq_title'          => '常见问题',
 	'cta_title'          => '准备好探索格鲁吉亚了吗？',
 	'cta_subtitle'       => '选好车和日期 — 其余交给我们',
@@ -147,6 +147,7 @@ return [
 	// Positioning + fleet card CTA.
 	'slogan'            => '为道路而来，带回忆而归。',
 	'price_range_label' => '所有车辆',
+	'price_range_sentence' => '每天 %1$s 至 %2$s',
 	'ask_whatsapp'      => '通过 WhatsApp 咨询',
 	'check_details'      => '查看详情',
 

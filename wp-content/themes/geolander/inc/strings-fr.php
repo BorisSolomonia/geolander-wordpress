@@ -83,13 +83,13 @@ return [
 
 	'terrain_title'   => 'Où pouvez-vous aller',
 	'terrain_text'    => 'Kazbegi, Goudaouri, Kakhétie, Svanétie — toutes nos voitures sont autorisées sur les routes de montagne et les pistes. Demandez-nous aussi pour la Touchétie.',
-	'included_title'  => 'Tout est inclus',
+	'included_title'  => 'Inclus dans chaque location',
 	'included_1'      => 'Assurance complète',
 	'included_2'      => 'Kilométrage illimité',
 	'included_3'      => 'Pneus hiver en saison',
-	'included_4'      => 'Second conducteur gratuit',
+	'included_4'      => 'Aucun dépôt de garantie',
 	'included_5'      => 'Livraison gratuite à l\'aéroport de Tbilissi',
-	'included_6'      => 'Assistance routière 24h/24',
+	'included_6'      => 'Assistance WhatsApp 24 h/24',
 
 	'process_title'   => 'Comment ça marche',
 	'process_1_t'     => 'Choisissez votre voiture et vos dates',
@@ -104,7 +104,7 @@ return [
 	'route_2'            => 'Route des vins de Kakhétie',
 	'route_3'            => 'Svanétie',
 	'route_4'            => 'Côte de la mer Noire',
-	'testimonials_title' => 'Ce que disent nos clients',
+	'testimonials_title' => 'Avis clients sur Google Maps',
 	'faq_title'          => 'Questions fréquentes',
 	'cta_title'          => 'Prêt à explorer la Géorgie ?',
 	'cta_subtitle'       => 'Choisissez une voiture et vos dates — nous nous occupons du reste',
@@ -147,6 +147,7 @@ return [
 	// Positioning + fleet card CTA.
 	'slogan'            => 'Venez pour les routes. Repartez avec les souvenirs.',
 	'price_range_label' => 'Toutes les voitures',
+	'price_range_sentence' => 'De %1$s à %2$s par jour',
 	'ask_whatsapp'      => 'Écrire sur WhatsApp',
 	'check_details'      => 'Voir les détails',
 

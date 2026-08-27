@@ -17,6 +17,8 @@ class GLC_Settings {
 		'email'               => 'info@geo-lander.com',
 		// NAP must match the Google Business Profile exactly.
 		'business_name'       => 'Geolander car rental',
+		'legal_name'          => '',
+		'georgian_id'         => '',
 		'address'             => '8/5 Vedzini Street',
 		'address_locality'    => 'Tbilisi',
 		'postal_code'         => '0108',
@@ -36,8 +38,8 @@ class GLC_Settings {
 		// Headline price range. Single source of truth: the hero, SEO titles,
 		// llms.txt and the AutoRental schema all read these, so the advertised
 		// range can never drift between them again.
-		'price_min'           => '28',
-		'price_max'           => '120',
+		'price_min'           => '26',
+		'price_max'           => '90',
 		'bog_client_id'       => '',
 		'bog_client_secret'   => '',
 		// Google tags — paste IDs when campaigns are created.
@@ -49,11 +51,37 @@ class GLC_Settings {
 	public static function init() {
 		add_action( 'admin_menu', [ __CLASS__, 'menu' ] );
 		add_action( 'admin_init', [ __CLASS__, 'register' ] );
+		add_shortcode( 'geolander_business_identity', [ __CLASS__, 'business_identity_shortcode' ] );
 	}
 
 	public static function get( string $key, $default = null ) {
 		$options = get_option( self::OPTION, [] );
 		return $options[ $key ] ?? self::DEFAULTS[ $key ] ?? $default;
+	}
+
+	/** Public identity block. Legal fields stay absent until the owner supplies them. */
+	public static function business_identity_shortcode(): string {
+		$rows = [
+			[ 'Trading name', self::get( 'business_name' ), '' ],
+			[ 'Official website', untrailingslashit( home_url( '/' ) ), home_url( '/' ) ],
+			[ 'Official reservation email', self::get( 'email' ), 'mailto:' . self::get( 'email' ) ],
+			[ 'Phone and WhatsApp', self::get( 'phone' ), 'tel:' . preg_replace( '/[^+0-9]/', '', self::get( 'phone' ) ) ],
+			[ 'Tbilisi office', self::get( 'address' ) . ', ' . self::get( 'office_district' ) . ', ' . self::get( 'address_locality' ) . ' ' . self::get( 'postal_code' ) . ', Georgia', self::get( 'google_maps_url' ) ],
+		];
+		if ( trim( (string) self::get( 'legal_name' ) ) ) {
+			$rows[] = [ 'Registered legal name', self::get( 'legal_name' ), '' ];
+		}
+		if ( trim( (string) self::get( 'georgian_id' ) ) ) {
+			$rows[] = [ 'Georgian identification number', self::get( 'georgian_id' ), '' ];
+		}
+
+		$out = '<dl class="glc-business-identity" style="display:grid;grid-template-columns:minmax(12rem,0.45fr) 1fr;gap:0.65rem 1rem;">';
+		foreach ( $rows as [ $label, $value, $href ] ) {
+			$out .= '<dt><strong>' . esc_html( $label ) . '</strong></dt><dd style="margin:0;">';
+			$out .= $href ? '<a href="' . esc_url( $href ) . '" rel="noopener">' . esc_html( $value ) . '</a>' : esc_html( $value );
+			$out .= '</dd>';
+		}
+		return $out . '</dl><p>Geolander publishes email only on the <strong>@geo-lander.com</strong> domain. An address on the separate geolander.com domain is not a contact published by this website.</p>';
 	}
 
 	public static function menu() {
@@ -85,6 +113,8 @@ class GLC_Settings {
 		$fields = [
 			__( 'Contact / NAP (must match Google Business Profile exactly)', 'geolander' ) => [
 				'business_name'    => __( 'Business name (as on GBP)', 'geolander' ),
+				'legal_name'       => __( 'Registered legal name (leave empty until verified)', 'geolander' ),
+				'georgian_id'      => __( 'Georgian identification number (leave empty until verified)', 'geolander' ),
 				'phone'            => __( 'Phone', 'geolander' ),
 				'whatsapp_number'  => __( 'WhatsApp number', 'geolander' ),
 				'email'            => __( 'Email', 'geolander' ),

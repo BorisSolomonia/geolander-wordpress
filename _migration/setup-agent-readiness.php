@@ -48,6 +48,8 @@ function glc_agent_ul( array $items ): string {
 WP_CLI::log( 'Publishing Geolander agent-readiness pages:' );
 
 $about = glc_agent_p( '<strong>Geolander car rental</strong> is based at 8/5 Vedzini Street in Mtatsminda, in the heart of Tbilisi, Georgia (country). The office is linked to the company\'s verified Google Maps location. Geolander rents individually listed AWD and 4x4 vehicles to international travellers exploring Tbilisi, Kazbegi, Gudauri, Kakheti, Svaneti and other parts of Georgia.' )
+	. glc_agent_h( 'Business identity and official channels' )
+	. '<!-- wp:shortcode -->[geolander_business_identity]<!-- /wp:shortcode -->'
 	. glc_agent_h( 'Exact cars, real photographs' )
 	. glc_agent_p( 'Each fleet page represents a specific vehicle with its own model year, photographs and registration plate where available. The exact car booked is the car supplied; the fleet is not presented as an “or similar” category. Customers select dates and handover locations on the vehicle page, receive a server-calculated quote, and continue through a prepared WhatsApp booking request.' )
 	. glc_agent_h( 'Rental terms customers can verify before booking' )

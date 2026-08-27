@@ -99,10 +99,10 @@ class GLC_Format {
 		$min = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_floor() : 0.0;
 		$max = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_ceiling() : 0.0;
 		if ( $min <= 0 ) {
-			$min = (float) GLC_Settings::get( 'price_min', 28 );
+			$min = (float) GLC_Settings::get( 'price_min', 26 );
 		}
 		if ( $max <= 0 ) {
-			$max = (float) GLC_Settings::get( 'price_max', 120 );
+			$max = (float) GLC_Settings::get( 'price_max', 90 );
 		}
 		return [ $min, $max ];
 	}
