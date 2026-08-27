@@ -9,6 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 class GLC_AI {
+	private const AGENT_SCOPE = 'geolander.agent';
 
 	public static function init() {
 		add_action( 'init', [ __CLASS__, 'rewrites' ] );
@@ -380,6 +381,7 @@ class GLC_AI {
 			'grant_types_supported'                   => [ 'authorization_code', 'refresh_token' ],
 			'response_types_supported'                => [ 'code' ],
 			'response_modes_supported'                => [ 'query' ],
+			'scopes_supported'                        => [ self::AGENT_SCOPE ],
 			'token_endpoint_auth_methods_supported'   => [ 'client_secret_basic', 'client_secret_post', 'none' ],
 			'code_challenge_methods_supported'         => [ 'S256' ],
 			/*
@@ -412,8 +414,8 @@ class GLC_AI {
 		return [
 			'resource'                 => untrailingslashit( home_url( '/' ) ),
 			'authorization_servers'    => [ $issuer ],
-			// Cloudflare Managed OAuth currently defines no resource scopes.
-			'scopes_supported'         => [],
+			// One coarse permission: Access still evaluates the resource and policy.
+			'scopes_supported'         => [ self::AGENT_SCOPE ],
 			'bearer_methods_supported' => [ 'header' ],
 			'resource_name'             => 'Geolander Agent Reservation API',
 			'resource_documentation'    => home_url( '/developers/' ),
@@ -440,7 +442,7 @@ class GLC_AI {
 			. "- OpenAPI 3.1 specification: {$home}openapi.json\n"
 			. "- Developer documentation: {$home}developers/\n\n"
 			. "## Step 1 — Discover\n\n"
-			. "Request a protected endpoint and read the `WWW-Authenticate: Bearer` header. Its `resource_metadata` parameter points to route-specific Cloudflare Protected Resource Metadata. The stable Geolander metadata above publishes `resource`, `authorization_servers`, `scopes_supported`, and `bearer_methods_supported`. Geolander has no fine-grained OAuth scopes: Cloudflare binds authorization to the RFC 8707 `resource` value and evaluates the Access policy.\n\n"
+			. "Request a protected endpoint and read the `WWW-Authenticate: Bearer` header. Its `resource_metadata` parameter points to route-specific Cloudflare Protected Resource Metadata. The stable Geolander metadata above publishes `resource`, `authorization_servers`, `scopes_supported`, and `bearer_methods_supported`. Geolander exposes the single coarse scope `" . self::AGENT_SCOPE . "`, representing access to the protected agent API. Cloudflare binds authorization to the RFC 8707 `resource` value and evaluates the Access policy; it may return an empty OAuth `scope` string because permissions are enforced at the protected-resource boundary.\n\n"
 			. "Fetch the authorization-server metadata and read its standard OAuth fields plus the `agent_auth` block. That block is the source of truth for the Auth.md skill, registration URI, claim URI, supported credential types, and revocation URI.\n\n"
 			. "## Step 2 — Pick the supported method\n\n"
 			. "Supported method: anonymous OAuth public-client registration followed by required user authentication. Anonymous means only that creating a `client_id` does not require an existing client credential; it never grants anonymous API access. The user must complete Cloudflare Access authentication before an `access_token` or `refresh_token` is issued.\n\n"
@@ -570,7 +572,7 @@ class GLC_AI {
 							'authorizationUrl' => $issuer . '/cdn-cgi/access/oauth/authorization',
 							'tokenUrl'         => $issuer . '/cdn-cgi/access/oauth/token',
 							'refreshUrl'       => $issuer . '/cdn-cgi/access/oauth/token',
-							'scopes'           => (object) [],
+							'scopes'           => [ self::AGENT_SCOPE => 'Access the Cloudflare-protected Geolander Agent Reservation API' ],
 						],
 					],
 				],
@@ -579,14 +581,14 @@ class GLC_AI {
 			$agent_quote = $document['paths']['/wp-json/geolander/v1/quote']['get'];
 			$agent_quote['operationId'] = 'getAuthenticatedRentalQuote';
 			$agent_quote['description'] .= ' This mirror requires Cloudflare Managed OAuth and validates the resulting Access JWT at the origin.';
-			$agent_quote['security'] = [ [ 'CloudflareManagedOAuth' => [] ] ];
+			$agent_quote['security'] = [ [ 'CloudflareManagedOAuth' => [ self::AGENT_SCOPE ] ] ];
 			$agent_quote['responses']['401'] = [ 'description' => 'Missing or invalid Cloudflare Access authorization' ];
 			$document['paths']['/wp-json/geolander-agent/v1/quote'] = [ 'get' => $agent_quote ];
 
 			$agent_checkout = $document['paths']['/wp-json/geolander/v1/checkout']['post'];
 			$agent_checkout['operationId'] = 'createAuthenticatedBookingRequest';
 			$agent_checkout['description'] .= ' This mirror requires Cloudflare Managed OAuth and validates the resulting Access JWT at the origin.';
-			$agent_checkout['security'] = [ [ 'CloudflareManagedOAuth' => [] ] ];
+			$agent_checkout['security'] = [ [ 'CloudflareManagedOAuth' => [ self::AGENT_SCOPE ] ] ];
 			$agent_checkout['responses']['401'] = [ 'description' => 'Missing or invalid Cloudflare Access authorization' ];
 			$document['paths']['/wp-json/geolander-agent/v1/checkout'] = [ 'post' => $agent_checkout ];
 		}

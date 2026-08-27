@@ -370,12 +370,15 @@ try {
 		for (const route of ['/wp-json/geolander-agent/v1/quote', '/wp-json/geolander-agent/v1/checkout']) {
 			if (!spec.paths?.[route]) err('openapi', `missing authenticated route ${route}`); else ok();
 			const operation = spec.paths?.[route]?.get || spec.paths?.[route]?.post;
-			if (!operation?.security?.some((entry) => Object.hasOwn(entry, 'CloudflareManagedOAuth'))) {
-				err('openapi', `authenticated route ${route} lacks CloudflareManagedOAuth security`);
+			if (!operation?.security?.some((entry) => Array.isArray(entry.CloudflareManagedOAuth) && entry.CloudflareManagedOAuth.includes('geolander.agent'))) {
+				err('openapi', `authenticated route ${route} lacks the geolander.agent OAuth scope`);
 			} else ok();
 		}
 		if (spec.components?.securitySchemes?.CloudflareManagedOAuth?.type !== 'oauth2') {
 			err('openapi', 'CloudflareManagedOAuth security scheme missing or not oauth2');
+		} else ok();
+		if (!Object.hasOwn(spec.components?.securitySchemes?.CloudflareManagedOAuth?.flows?.authorizationCode?.scopes || {}, 'geolander.agent')) {
+			err('openapi', 'CloudflareManagedOAuth must describe geolander.agent');
 		} else ok();
 	}
 } catch (e) {
@@ -403,6 +406,9 @@ try {
 	for (const field of ['grant_types_supported', 'response_types_supported']) {
 		if (!Array.isArray(metadata[field]) || !metadata[field].length) err('oauth-discovery', `${field} must be a non-empty array`); else ok();
 	}
+	if (!Array.isArray(metadata.scopes_supported) || !metadata.scopes_supported.includes('geolander.agent')) {
+		err('oauth-discovery', 'scopes_supported must include geolander.agent');
+	} else ok();
 	const agentAuth = metadata.agent_auth;
 	if (!agentAuth || typeof agentAuth !== 'object') err('auth.md', 'authorization metadata lacks agent_auth'); else ok();
 	try {
@@ -457,7 +463,9 @@ try {
 	if (!Array.isArray(resource.authorization_servers) || !resource.authorization_servers.length) {
 		err('oauth-resource', 'authorization_servers must be a non-empty array');
 	} else ok();
-	if (!Array.isArray(resource.scopes_supported)) err('oauth-resource', 'scopes_supported must be an array'); else ok();
+	if (!Array.isArray(resource.scopes_supported) || !resource.scopes_supported.includes('geolander.agent')) {
+		err('oauth-resource', 'scopes_supported must include geolander.agent');
+	} else ok();
 	if (!Array.isArray(resource.bearer_methods_supported) || !resource.bearer_methods_supported.includes('header')) {
 		err('oauth-resource', 'bearer_methods_supported must include header');
 	} else ok();
