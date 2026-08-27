@@ -394,10 +394,14 @@ try {
 		err('oauth-discovery', `wrong Content-Type: ${discoveryResponse.headers.get('content-type')}`);
 	} else ok();
 	const metadata = await discoveryResponse.json();
+	if (metadata.issuer !== new URL(BASE).origin) err('oauth-discovery', `issuer must equal ${new URL(BASE).origin}`); else ok();
 	for (const field of ['issuer', 'authorization_endpoint', 'token_endpoint', 'jwks_uri']) {
 		try {
 			const value = new URL(metadata[field]);
-			if (value.protocol !== 'https:') throw new Error('not HTTPS');
+			const localIssuer = field === 'issuer'
+				&& value.origin === new URL(BASE).origin
+				&& ['localhost', '127.0.0.1', '[::1]'].includes(value.hostname);
+			if (value.protocol !== 'https:' && !localIssuer) throw new Error('not HTTPS');
 			ok();
 		} catch {
 			err('oauth-discovery', `missing or invalid HTTPS ${field}`);
@@ -462,6 +466,9 @@ try {
 	if (resource.resource !== new URL(BASE).origin) err('oauth-resource', `resource must equal origin ${new URL(BASE).origin}`); else ok();
 	if (!Array.isArray(resource.authorization_servers) || !resource.authorization_servers.length) {
 		err('oauth-resource', 'authorization_servers must be a non-empty array');
+	} else ok();
+	if (!resource.authorization_servers.includes(new URL(BASE).origin)) {
+		err('oauth-resource', `authorization_servers must advertise ${new URL(BASE).origin}`);
 	} else ok();
 	if (!Array.isArray(resource.scopes_supported) || !resource.scopes_supported.includes('geolander.agent')) {
 		err('oauth-resource', 'scopes_supported must include geolander.agent');

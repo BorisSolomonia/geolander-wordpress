@@ -361,21 +361,23 @@ class GLC_AI {
 			. "Authenticated clients operated by Geolander team members may use the mirrored `/wp-json/geolander-agent/v1/` endpoints. Discover the read-only A2A v1.0 agent at `/.well-known/agent-card.json` and the Cloudflare Managed OAuth authorization server at `/.well-known/oauth-authorization-server`. The public customer endpoints remain available for the website booking widget.\n";
 	}
 
-	/** RFC 8414 metadata for the Cloudflare authorization server used by agents. */
+	/** RFC 8414 metadata for Geolander's Cloudflare-backed authorization service. */
 	public static function oauth_metadata(): array {
-		$issuer = GLC_Access::issuer();
-		if ( '' === $issuer ) {
+		$upstream_issuer = GLC_Access::issuer();
+		if ( '' === $upstream_issuer ) {
 			return [];
 		}
-		$authorization_endpoint = $issuer . '/cdn-cgi/access/oauth/authorization';
-		$registration_endpoint  = $issuer . '/cdn-cgi/access/oauth/registration';
-		$revocation_endpoint    = $issuer . '/cdn-cgi/access/oauth/revoke';
+		$issuer                 = untrailingslashit( home_url( '/' ) );
+		$authorization_endpoint = $upstream_issuer . '/cdn-cgi/access/oauth/authorization';
+		$registration_endpoint  = $upstream_issuer . '/cdn-cgi/access/oauth/registration';
+		$revocation_endpoint    = $upstream_issuer . '/cdn-cgi/access/oauth/revoke';
 
 		return [
 			'issuer'                                => $issuer,
+			'upstream_issuer'                       => $upstream_issuer,
 			'authorization_endpoint'                 => $authorization_endpoint,
-			'token_endpoint'                         => $issuer . '/cdn-cgi/access/oauth/token',
-			'jwks_uri'                               => $issuer . '/cdn-cgi/access/certs',
+			'token_endpoint'                         => $upstream_issuer . '/cdn-cgi/access/oauth/token',
+			'jwks_uri'                               => $upstream_issuer . '/cdn-cgi/access/certs',
 			'registration_endpoint'                   => $registration_endpoint,
 			'revocation_endpoint'                     => $revocation_endpoint,
 			'grant_types_supported'                   => [ 'authorization_code', 'refresh_token' ],
@@ -406,17 +408,18 @@ class GLC_AI {
 
 	/** RFC 9728 metadata for the Cloudflare Access protected agent API. */
 	public static function oauth_resource_metadata(): array {
-		$issuer = GLC_Access::issuer();
-		if ( '' === $issuer ) {
+		$upstream_issuer = GLC_Access::issuer();
+		if ( '' === $upstream_issuer ) {
 			return [];
 		}
 
 		return [
-			'resource'                 => untrailingslashit( home_url( '/' ) ),
-			'authorization_servers'    => [ $issuer ],
+			'resource'                      => untrailingslashit( home_url( '/' ) ),
+			'authorization_servers'         => [ untrailingslashit( home_url( '/' ) ) ],
+			'upstream_authorization_server' => $upstream_issuer,
 			// One coarse permission: Access still evaluates the resource and policy.
-			'scopes_supported'         => [ self::AGENT_SCOPE ],
-			'bearer_methods_supported' => [ 'header' ],
+			'scopes_supported'              => [ self::AGENT_SCOPE ],
+			'bearer_methods_supported'      => [ 'header' ],
 			'resource_name'             => 'Geolander Agent Reservation API',
 			'resource_documentation'    => home_url( '/developers/' ),
 		];
@@ -425,15 +428,17 @@ class GLC_AI {
 	/** Human- and agent-readable authentication instructions; no fake signup flow. */
 	private static function auth_markdown(): string {
 		$home                   = home_url( '/' );
-		$issuer                 = GLC_Access::issuer();
-		$registration_endpoint  = $issuer . '/cdn-cgi/access/oauth/registration';
-		$authorization_endpoint = $issuer . '/cdn-cgi/access/oauth/authorization';
-		$token_endpoint         = $issuer . '/cdn-cgi/access/oauth/token';
-		$revocation_endpoint    = $issuer . '/cdn-cgi/access/oauth/revoke';
+		$issuer                 = untrailingslashit( $home );
+		$upstream_issuer        = GLC_Access::issuer();
+		$registration_endpoint  = $upstream_issuer . '/cdn-cgi/access/oauth/registration';
+		$authorization_endpoint = $upstream_issuer . '/cdn-cgi/access/oauth/authorization';
+		$token_endpoint         = $upstream_issuer . '/cdn-cgi/access/oauth/token';
+		$revocation_endpoint    = $upstream_issuer . '/cdn-cgi/access/oauth/revoke';
 		return "# auth.md — Geolander Agent Registration\n\n"
 			. "> You are an agent acting for a traveller or a Geolander operator. This file describes how to register an OAuth public client and obtain credentials for the protected Geolander Agent Reservation API.\n\n"
 			. "Resource server: `{$home}wp-json/geolander-agent/v1/`  \n"
-			. "Authorization server: `{$issuer}`\n\n"
+			. "Authorization server issuer: `{$issuer}`  \n"
+			. "Managed OAuth upstream: `{$upstream_issuer}`\n\n"
 			. "The customer-facing website and public quote API require no account. The protected agent API uses Cloudflare Access Managed OAuth. There is no API-key flow and no anonymous access to protected resources. Passive scanners must not POST to the registration endpoint because registration creates persistent OAuth client state.\n\n"
 			. "## Discovery\n\n"
 			. "- OAuth protected resource metadata: {$home}.well-known/oauth-protected-resource\n"
