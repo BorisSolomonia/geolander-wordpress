@@ -24,6 +24,13 @@ if (($vehicleTitles | Sort-Object -Unique).Count -ne 19) {
 	throw 'Vehicle SEO titles must be unique.'
 }
 
+if ($vehicleBlock.Groups['body'].Value -notmatch "'jeep-renegade-2017-nn-545-kn'") {
+	throw 'The 19-title map must include the published Jeep Renegade.'
+}
+if ($vehicleBlock.Groups['body'].Value -match "'mitsubishi-outlander-2018-gray'") {
+	throw 'The 19-title map must not reference the skipped duplicate Outlander source.'
+}
+
 foreach ($title in $vehicleTitles) {
 	$renderedLength = ($title + ' | Geolander').Length
 	if ($renderedLength -lt 50 -or $renderedLength -gt 60) {
