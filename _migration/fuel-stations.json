@@ -1,0 +1,32 @@
+[
+  {
+    "id": "00000000-0000-0000-0004-000000000001",
+    "name": "Wissol",
+    "descriptionEn": "One of Georgia's largest fuel station chains with stations throughout the country. Offers high-quality fuel, convenience stores, and often includes cafes and car wash services.",
+    "descriptionKa": "საქართველოს ერთ-ერთი უმსხვილესი ბენზინგასამართი ქსელი სადგურებით მთელ ქვეყანაში.",
+    "website": "https://wissol.ge",
+    "logo": null,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0004-000000000002",
+    "name": "Rompetrol",
+    "descriptionEn": "International fuel station chain with modern facilities across Georgia. Known for reliable service and clean stations.",
+    "descriptionKa": "საერთაშორისო ბენზინგასამართი ქსელი თანამედროვე ობიექტებით საქართველოში.",
+    "website": "https://rompetrol.ge",
+    "logo": null,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0004-000000000003",
+    "name": "SOCAR",
+    "descriptionEn": "Major fuel provider in Georgia with competitive prices and widespread coverage.",
+    "descriptionKa": "საქართველოში მოქმედი მსხვილი საწვავის მიმწოდებელი კონკურენტული ფასებით.",
+    "website": "https://socar.ge",
+    "logo": null,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]

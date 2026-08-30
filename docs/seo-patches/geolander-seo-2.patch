@@ -1,0 +1,100 @@
+--- a/_migration/import-fleet.php
++++ b/_migration/import-fleet.php
+@@ -167,17 +167,60 @@
+ 	// sets it if absent, so it never overrides a later admin/car.json choice.
+ 	add_post_meta( $post_id, 'glc_available', true, true );
+ 
+-	// Optional specs / pricing.
+-	$json = $dir . '/car.json';
++	/*
++	 * Optional specs / pricing.
++	 *
++	 * THIS LOOKUP IS WHY EVERY IMPORTED CAR PUBLISHED "$0/day".
++	 *
++	 * Every sidecar file in _migration/fleet-import/ is actually named
++	 * "car.json.json" — the classic result of saving a file on Windows with
++	 * "hide extensions for known file types" enabled. This asked for "car.json",
++	 * found nothing, and silently carried on: no registration plate, no seasonal
++	 * pricing, no body type and no specs were ever applied to a single one of
++	 * those cars.
++	 *
++	 * Downstream, that produced the zero prices in Product schema and in
++	 * /pricing.md, the cars missing from the price list entirely, and the
++	 * "duplicate" records that could not be told apart because none of them had
++	 * a plate. One extra ".json".
++	 *
++	 * So: accept the obvious variants and — more importantly — WARN LOUDLY when a
++	 * folder has no sidecar at all, rather than failing silently.
++	 */
++	$json        = '';
+ 	$has_pricing = false;
+-	if ( is_file( $json ) ) {
++	foreach ( [ '/car.json', '/car.json.json', '/car.JSON' ] as $glc_candidate ) {
++		if ( is_file( $dir . $glc_candidate ) ) {
++			$json = $dir . $glc_candidate;
++			break;
++		}
++	}
++	// Last resort: any *.json* in the folder that is not the shipped example.
++	if ( ! $json ) {
++		foreach ( glob( $dir . '/*.json*' ) ?: [] as $glc_candidate ) {
++			if ( false === stripos( basename( $glc_candidate ), '_EXAMPLE' ) ) {
++				$json = $glc_candidate;
++				break;
++			}
++		}
++	}
++
++	if ( $json ) {
+ 		$data = json_decode( (string) file_get_contents( $json ), true );
+ 		if ( is_array( $data ) ) {
+ 			glc_fleet_apply_json( $post_id, $data );
+ 			$has_pricing = ! empty( $data['pricing'] );
++			if ( 'car.json' !== basename( $json ) ) {
++				WP_CLI::log( sprintf( '  ↪ used %s (expected car.json — rename it to avoid confusion)', basename( $json ) ) );
++			}
+ 		} else {
+-			WP_CLI::warning( "  car.json in {$title} is not valid JSON — skipped its specs." );
++			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON — skipped its specs.', basename( $json ), $title ) );
+ 		}
++	} else {
++		WP_CLI::warning( sprintf(
++			'  NO car.json in "%s" — this car gets no plate, no specs and NO PRICE. Do not publish it in that state.',
++			$title
++		) );
+ 	}
+ 
+ 	// Images: sorted so a NN- prefix controls order; first = featured.
+--- a/wp-content/plugins/geolander-core/includes/class-glc-pricing.php
++++ b/wp-content/plugins/geolander-core/includes/class-glc-pricing.php
+@@ -25,16 +25,23 @@
+ 	];
+ 
+ 	/**
+-	 * Legacy import shape → canonical shape.
++	 * Legacy import shape → canonical shape. Defensive, not the root cause.
+ 	 *
+ 	 * `_migration/cars.json` stores a season as
+ 	 * `{"period": "Apr 01 - Oct 31", "prices": {"days1To2": 50, …}}` while this
+-	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. Imported verbatim the
+-	 * keys never match, so season_for_date() finds nothing for EVERY car and
+-	 * rate_range() silently collapses each AggregateOffer to the headline price —
+-	 * or, when that is empty too, to zero. That is the root of the published
+-	 * "$0/day". Normalising on read makes both shapes work, and keeps the fix
+-	 * independent of whether the data is ever re-imported.
++	 * class reads `from`/`to`/`rates` keyed `d1_2, d3_4, …`. `import.php` does
++	 * convert between the two, so the original fleet is stored correctly — but
++	 * anything that writes `glc_pricing` straight from a JSON payload (as
++	 * `import-fleet.php` does) is one shape mismatch away from a season table
++	 * that silently matches nothing, which collapses every AggregateOffer to the
++	 * headline price or, when that is empty too, to zero.
++	 *
++	 * Normalising on READ means the engine cannot be broken by whichever shape
++	 * happens to be in the database, now or after a future import.
++	 *
++	 * The actual cause of the published "$0/day" was simpler and is fixed in
++	 * `import-fleet.php`: every sidecar is named `car.json.json`, the importer
++	 * looked for `car.json`, and so no pricing was ever applied at all.
+ 	 */
+ 	public static function normalize( $pricing ): array {
+ 		if ( ! is_array( $pricing ) ) {

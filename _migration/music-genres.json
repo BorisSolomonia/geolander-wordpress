@@ -1,0 +1,54 @@
+[
+  {
+    "id": "00000000-0000-0000-0003-000000000001",
+    "slug": "rock",
+    "nameEn": "Georgian Rock",
+    "nameKa": "ქართული როკი",
+    "descriptionEn": "Experience the powerful sound of Georgian rock music, blending traditional Caucasian melodies with modern rock elements.",
+    "descriptionKa": "გაიცანით ქართული როკ მუსიკის ძლიერი ხმა, ტრადიციული კავკასიური მელოდიებისა და თანამედროვე როკ ელემენტების შერწყმა.",
+    "youtubeLinks": [],
+    "images": [],
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0003-000000000002",
+    "slug": "hip-hop",
+    "nameEn": "Hip-Hop",
+    "nameKa": "ჰიპ-ჰოპი",
+    "descriptionEn": "Discover Georgian hip-hop artists who combine urban beats with Georgian language and cultural references.",
+    "descriptionKa": "აღმოაჩინეთ ქართველი ჰიპ-ჰოპ არტისტები, რომლებიც აერთიანებენ ურბანულ ბითებს ქართულ ენასთან და კულტურულ მითითებებთან.",
+    "youtubeLinks": [],
+    "images": [],
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0003-000000000003",
+    "slug": "pop",
+    "nameEn": "Pop",
+    "nameKa": "პოპი",
+    "descriptionEn": "Contemporary Georgian pop music featuring catchy melodies and modern production, popular across the Caucasus region.",
+    "descriptionKa": "თანამედროვე ქართული პოპ მუსიკა მიმზიდველი მელოდიებით და თანამედროვე პროდუქციით.",
+    "youtubeLinks": [],
+    "images": [],
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0003-000000000004",
+    "slug": "folk",
+    "nameEn": "Folk",
+    "nameKa": "ფოლკი",
+    "descriptionEn": "Traditional Georgian polyphonic singing, a UNESCO Intangible Cultural Heritage. Experience centuries-old vocal traditions unique to Georgia.",
+    "descriptionKa": "ტრადიციული ქართული მრავალხმიანი სიმღერა, იუნესკოს არამატერიალური კულტურული მემკვიდრეობა.",
+    "youtubeLinks": [],
+    "images": [],
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]

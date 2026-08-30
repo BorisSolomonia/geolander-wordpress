@@ -1,0 +1,880 @@
+[
+  {
+    "id": "00000000-0000-0000-0002-000000000001",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Sighnaghi (City of Love)",
+    "nameKa": "",
+    "descriptionEn": "A beautifully restored 18th-century town perched on a hilltop, offering stunning views of the Alazani Valley and the Caucasus Mountains.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Known as the City of Love, Sighnaghi has a wedding chapel that operates 24/7. The town is encircled by one of the longest defensive walls in Europe (4.5 km).",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "historical",
+      "romantic"
+    ],
+    "images": [
+      "/places/sighnaghi.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6206,45.9211",
+    "latitude": 41.6206,
+    "longitude": 45.9211,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000002",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Alazani Valley",
+    "nameKa": "",
+    "descriptionEn": "The Alazani Valley is the heart of Georgian winemaking, a vast, fertile plain stretching for over 100 kilometers along the Alazani River.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "This is the cradle of wine, with an 8,000-year-old history of viticulture.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "wine-related",
+      "natural",
+      "cultural"
+    ],
+    "images": [
+      "/places/alazani_valley.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.7500,45.8000",
+    "latitude": 41.75,
+    "longitude": 45.8,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000003",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "David Gareja Monastery Complex",
+    "nameKa": "",
+    "descriptionEn": "A vast, rock-hewn monastery complex founded in the 6th century by St. David Garejeli.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "The complex features hundreds of cells, churches, and chapels carved directly into the rock face, adorned with unique medieval frescoes.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "religious",
+      "historical",
+      "natural",
+      "adventure"
+    ],
+    "images": [
+      "/places/david_gareja.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.4442,45.3740",
+    "latitude": 41.4442,
+    "longitude": 45.374,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000004",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Tsinandali Estate",
+    "nameKa": "",
+    "descriptionEn": "Historic winery and former residence of 19th-century aristocratic poet Alexander Chavchavadze.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Considered birthplace of classic Georgian winemaking method. Estate cellar holds unique collection of 20,000 bottles.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "wine-related",
+      "historical",
+      "cultural"
+    ],
+    "images": [
+      "/places/tsinandali.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.8965,45.5731",
+    "latitude": 41.8965,
+    "longitude": 45.5731,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000005",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Gremi Fortress",
+    "nameKa": "",
+    "descriptionEn": "Former 16th-century capital of Kingdom of Kakheti. Royal citadel and Church of the Archangels are the only surviving parts.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Remarkable medieval Georgian architecture example with dramatic, picturesque scene with wine region backdrop.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "religious",
+      "cultural"
+    ],
+    "images": [
+      "/places/gremi_fortress.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.0011,45.6611",
+    "latitude": 42.0011,
+    "longitude": 45.6611,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000006",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Bodbe Monastery",
+    "nameKa": "",
+    "descriptionEn": "Georgian Orthodox monastic complex 2 km from Sighnaghi. Burial place of St. Nino, the 4th-century enlightener of Georgia.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Burial place of Saint Nino who converted Georgia to Christianity. Sacred spring believed to have healing properties.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "religious",
+      "historical",
+      "cultural"
+    ],
+    "images": [
+      "/places/bodbe_monastery.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6069,45.9331",
+    "latitude": 41.6069,
+    "longitude": 45.9331,
+    "sortOrder": 6,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000007",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Alaverdi Cathedral",
+    "nameKa": "",
+    "descriptionEn": "Georgian Orthodox monastery founded in 6th century. Current cathedral built in 11th century is second tallest religious building in Georgia.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Active wine-making tradition by monks for over 1,200 years combines religious and wine tourism uniquely.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "religious",
+      "historical",
+      "wine-related"
+    ],
+    "images": [
+      "/places/alaverdi_cathedral.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.0325,45.3772",
+    "latitude": 42.0325,
+    "longitude": 45.3772,
+    "sortOrder": 7,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000008",
+    "regionId": "00000000-0000-0000-0001-000000000001",
+    "nameEn": "Telavi",
+    "nameKa": "",
+    "descriptionEn": "Main city and administrative center of Kakheti province in heart of Alazani Valley.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Historical capital of wine region with royal fortress, ancient tree, and numerous surrounding wineries.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "historical",
+      "wine-related"
+    ],
+    "images": [
+      "/places/telavi.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.9167,45.4833",
+    "latitude": 41.9167,
+    "longitude": 45.4833,
+    "sortOrder": 8,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000009",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Ali and Nino Statue",
+    "nameKa": "",
+    "descriptionEn": "This 8-meter high moving sculpture depicts the figures of a man and a woman in a perpetual 10-minute cycle.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Unique example of kinetic art where the statues physically pass through each other daily.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "modern",
+      "romantic"
+    ],
+    "images": [
+      "/places/ali_nino.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.655558,41.643033",
+    "latitude": 41.655558,
+    "longitude": 41.643033,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000010",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Batumi Boulevard",
+    "nameKa": "",
+    "descriptionEn": "Stretching 7 kilometers along the Black Sea coast, this historic promenade dates back to 1881.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "A blend of century-old parks and modern art installations.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "coastal",
+      "natural",
+      "cultural",
+      "family-friendly"
+    ],
+    "images": [
+      "/places/batumi_boulevard.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6423,41.6339",
+    "latitude": 41.6423,
+    "longitude": 41.6339,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000011",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Alphabet Tower",
+    "nameKa": "",
+    "descriptionEn": "This 130-meter-tall tower celebrates the unique Georgian alphabet with its 33 letters spiraling upwards in a DNA helix design.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Rare architectural celebration of a national alphabet; the rotating restaurant provides unparalleled dining and viewing experiences.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "modern",
+      "architectural"
+    ],
+    "images": [
+      "/places/alphabet_tower.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.65594,41.64333",
+    "latitude": 41.65594,
+    "longitude": 41.64333,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000012",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Batumi Botanical Garden",
+    "nameKa": "",
+    "descriptionEn": "Located at Mtsvane Kontskhi (Green Cape), this vast 108-hectare garden showcases flora from nine different phytogeographic areas.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Dramatic cliffside location overlooking the sea with over 2,000 species.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "coastal",
+      "educational",
+      "family-friendly"
+    ],
+    "images": [
+      "/places/batumi_botanical.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6944,41.7075",
+    "latitude": 41.6944,
+    "longitude": 41.7075,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000013",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Gonio Fortress",
+    "nameKa": "",
+    "descriptionEn": "The oldest fortress in Georgia, this well-preserved Roman fortification dates to the 1st century AD.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Believed to be the burial site of Saint Matthias, one of the twelve apostles.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "cultural",
+      "religious",
+      "ancient"
+    ],
+    "images": [
+      "/places/gonio_fortress.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.5733,41.5734",
+    "latitude": 41.5733,
+    "longitude": 41.5734,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000014",
+    "regionId": "00000000-0000-0000-0001-000000000002",
+    "nameEn": "Makhuntseti Waterfall",
+    "nameKa": "",
+    "descriptionEn": "Located 30 km from Batumi, this beautiful waterfall cascades over 30 meters.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Combination of powerful waterfall and ancient stone bridge creates a historically rich natural site.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "historical",
+      "adventure"
+    ],
+    "images": [
+      "/places/makhuntseti_waterfall.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.5748,41.8582",
+    "latitude": 41.5748,
+    "longitude": 41.8582,
+    "sortOrder": 6,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000015",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Svetitskhoveli Cathedral",
+    "nameKa": "",
+    "descriptionEn": "Located in Mtskheta's heart, this masterpiece of medieval architecture was completed in the 11th century.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Believed burial site of Christ's mantle. Served as coronation and burial site for Georgian monarchs.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "unesco",
+      "religious",
+      "historical",
+      "cultural"
+    ],
+    "images": [
+      "/places/svetitskhoveli.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.8424,44.7211",
+    "latitude": 41.8424,
+    "longitude": 44.7211,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000016",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Jvari Monastery",
+    "nameKa": "",
+    "descriptionEn": "Perched on a rocky mountaintop overlooking Mtskheta, this 6th-century monastery is a stunning example of early Georgian Christian architecture.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Offers one of Georgia's most iconic views—the panoramic confluence of Mtkvari and Aragvi rivers. UNESCO World Heritage site.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "unesco",
+      "religious",
+      "historical",
+      "viewpoint"
+    ],
+    "images": [
+      "/places/jvari_monastery.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.8387,44.7341",
+    "latitude": 41.8387,
+    "longitude": 44.7341,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000017",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Ananuri Fortress",
+    "nameKa": "",
+    "descriptionEn": "This 17th-century castle complex sits on the Zhinvali Reservoir foreland.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Stunning location overlooking turquoise Zhinvali Reservoir waters. Perfect stop along the Georgian Military Highway.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "cultural",
+      "fortress"
+    ],
+    "images": [
+      "/places/ananuri_fortress.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.1645,44.7038",
+    "latitude": 42.1645,
+    "longitude": 44.7038,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000018",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Gergeti Trinity Church",
+    "nameKa": "",
+    "descriptionEn": "This iconic 14th-century church sits high on a hill near Stepantsminda, set against the majestic Mount Kazbek backdrop.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Remote, dramatic location at 2,170 meters elevation with towering Mount Kazbek. A symbol of Georgia.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "religious",
+      "mountain",
+      "adventure",
+      "hiking"
+    ],
+    "images": [
+      "/places/gergeti_trinity.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.6637,44.6203",
+    "latitude": 42.6637,
+    "longitude": 44.6203,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000019",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Gudauri Ski Resort",
+    "nameKa": "",
+    "descriptionEn": "Georgia's premier ski resort sits on a south-facing Greater Caucasus plateau at 2,200 meters elevation.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Known for reliable snow cover, modern ski lifts, and vast above-treeline slopes.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "ski-resort",
+      "winter-sports",
+      "adventure",
+      "mountain"
+    ],
+    "images": [
+      "/places/gudauri.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.4769,44.4856",
+    "latitude": 42.4769,
+    "longitude": 44.4856,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000020",
+    "regionId": "00000000-0000-0000-0001-000000000003",
+    "nameEn": "Georgian Military Highway",
+    "nameKa": "",
+    "descriptionEn": "One of the world's most spectacular mountain routes, stretching 212 kilometers from Tbilisi to Vladikavkaz.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "The journey itself is the destination—continuous spectacle of dramatic gorges, alpine meadows, and towering peaks.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "scenic-drive",
+      "historical",
+      "mountain",
+      "adventure"
+    ],
+    "images": [
+      "/places/military_highway.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.7579,44.7869",
+    "latitude": 41.7579,
+    "longitude": 44.7869,
+    "sortOrder": 6,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000021",
+    "regionId": "00000000-0000-0000-0001-000000000004",
+    "nameEn": "Mestia",
+    "nameKa": "",
+    "descriptionEn": "Central town of Svaneti region at 1,500 meters elevation, serving as primary hub for tourism.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Famous for dense concentration of Svan towers—medieval stone defensive houses creating a unique, timeless skyline.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "historical",
+      "mountain"
+    ],
+    "images": [
+      "/places/mestia.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=43.0451,42.7289",
+    "latitude": 43.0451,
+    "longitude": 42.7289,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000022",
+    "regionId": "00000000-0000-0000-0001-000000000004",
+    "nameEn": "Ushguli",
+    "nameKa": "",
+    "descriptionEn": "Community of four ancient villages, UNESCO World Heritage Site and one of Europe's highest continuously inhabited settlements.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Landscape feels frozen in time with extraordinary tower preservation. Mount Shkhara provides dramatic backdrop.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "unesco",
+      "historical",
+      "mountain",
+      "village"
+    ],
+    "images": [
+      "/places/ushguli.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.9158,43.0094",
+    "latitude": 42.9158,
+    "longitude": 43.0094,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000023",
+    "regionId": "00000000-0000-0000-0001-000000000004",
+    "nameEn": "Chalaadi Glacier",
+    "nameKa": "",
+    "descriptionEn": "One of Georgia's most accessible glaciers. The trail from Mestia follows the Mestiachala River through pine forests.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Relative accessibility allows tourists of moderate fitness to experience walking to a massive, active glacier.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "glacier",
+      "hiking",
+      "adventure"
+    ],
+    "images": [
+      "/places/chalaadi_glacier.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=43.1036,42.7011",
+    "latitude": 43.1036,
+    "longitude": 42.7011,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000024",
+    "regionId": "00000000-0000-0000-0001-000000000004",
+    "nameEn": "Hatsvali Ski Resort",
+    "nameKa": "",
+    "descriptionEn": "Modern ski resort located 8 kilometers from Mestia, featuring several ski lifts including a cable car.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Extraordinary experience of skiing with panoramic views of Mount Ushba's iconic twin peaks.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "ski-resort",
+      "winter-sports",
+      "mountain",
+      "viewpoint"
+    ],
+    "images": [
+      "/places/hatsvali.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=43.0225,42.7450",
+    "latitude": 43.0225,
+    "longitude": 42.745,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000025",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Narikala Fortress",
+    "nameKa": "",
+    "descriptionEn": "Ancient fortress dating to the 4th century, overlooking Tbilisi and the Mtkvari River.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Commanding hilltop presence provides quintessential Tbilisi experience with stunning city views.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "fortress",
+      "viewpoint"
+    ],
+    "images": [
+      "/places/narikala.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6877,44.8096",
+    "latitude": 41.6877,
+    "longitude": 44.8096,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000026",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Holy Trinity Cathedral",
+    "nameKa": "",
+    "descriptionEn": "Main cathedral of the Georgian Orthodox Church and one of the world's tallest Eastern Orthodox cathedrals.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Awe-inspiring scale; golden dome visible throughout the city creates powerful visual landmark.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "religious",
+      "architectural",
+      "modern"
+    ],
+    "images": [
+      "/places/sameba_cathedral.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6975,44.8167",
+    "latitude": 41.6975,
+    "longitude": 44.8167,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000027",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Old Tbilisi",
+    "nameKa": "",
+    "descriptionEn": "Historic city heart characterized by narrow, winding alleys, colorful wooden balconies, and charming courtyards.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Unique architecture with intricately carved wooden balconies creates picturesque, romantic atmosphere.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "cultural",
+      "romantic",
+      "architectural"
+    ],
+    "images": [
+      "/places/old_tbilisi.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6908,44.8090",
+    "latitude": 41.6908,
+    "longitude": 44.809,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000028",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Bridge of Peace",
+    "nameKa": "",
+    "descriptionEn": "Modern, bow-shaped pedestrian bridge made of glass and steel spanning the Mtkvari River.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Futuristic design provides stark, beautiful contrast to Old Tbilisi's historic architecture.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "modern",
+      "architectural",
+      "romantic"
+    ],
+    "images": [
+      "/places/bridge_peace.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6930,44.8083",
+    "latitude": 41.693,
+    "longitude": 44.8083,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000029",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Abanotubani (Sulfur Baths)",
+    "nameKa": "",
+    "descriptionEn": "Ancient district famous for public bathhouses using naturally hot, sulfurous waters from local springs.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "The city's founding legend centers on these springs. Domed bathhouses create unique, exotic landscape.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "wellness",
+      "cultural"
+    ],
+    "images": [
+      "/places/abanotubani.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6886,44.8107",
+    "latitude": 41.6886,
+    "longitude": 44.8107,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000030",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Mtatsminda Park",
+    "nameKa": "",
+    "descriptionEn": "Amusement park atop Mount Mtatsminda, accessible by funicular, offering stunning panoramic city views.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Combines amusement park fun with Tbilisi's best panoramic views. Historic funicular ride adds to the experience.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "amusement-park",
+      "viewpoint",
+      "family-friendly"
+    ],
+    "images": [
+      "/places/mtatsminda.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.6945,44.7840",
+    "latitude": 41.6945,
+    "longitude": 44.784,
+    "sortOrder": 6,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000031",
+    "regionId": "00000000-0000-0000-0001-000000000005",
+    "nameEn": "Rustaveli Avenue",
+    "nameKa": "",
+    "descriptionEn": "Tbilisi's central thoroughfare lined with governmental, cultural, and commercial buildings.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Where you feel the pulse of modern Tbilisi. Grand 19th-century architecture along this prestigious boulevard.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "cultural",
+      "historical",
+      "shopping"
+    ],
+    "images": [
+      "/places/rustaveli_avenue.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=41.7009,44.7928",
+    "latitude": 41.7009,
+    "longitude": 44.7928,
+    "sortOrder": 7,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000032",
+    "regionId": "00000000-0000-0000-0001-000000000006",
+    "nameEn": "Dadiani Palace",
+    "nameKa": "",
+    "descriptionEn": "The elegant 19th-century palace complex of the House of Dadiani, featuring a historical museum, botanical garden, and rare relics.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Holds one of Napoleon Bonaparte's death masks, and houses the robe of the Virgin Mary, brought to Georgia after the fall of Constantinople.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "cultural",
+      "museum"
+    ],
+    "images": [
+      "/places/dadiani_palace.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.5117,41.8739",
+    "latitude": 42.5117,
+    "longitude": 41.8739,
+    "sortOrder": 1,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000033",
+    "regionId": "00000000-0000-0000-0001-000000000006",
+    "nameEn": "Martvili Canyon",
+    "nameKa": "",
+    "descriptionEn": "A stunning natural canyon featuring emerald-green waters, dramatic waterfalls, and 70-million-year-old dinosaur footprints.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Offers an unforgettable boat trip along the canyon river surrounded by moss-covered rock walls.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "adventure",
+      "waterfall"
+    ],
+    "images": [
+      "/places/martvili_canyon.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.4578,42.3781",
+    "latitude": 42.4578,
+    "longitude": 42.3781,
+    "sortOrder": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000034",
+    "regionId": "00000000-0000-0000-0001-000000000006",
+    "nameEn": "Kolkheti National Park",
+    "nameKa": "",
+    "descriptionEn": "A unique protected wetland ecosystem on the Black Sea coast, encompassing Lake Paliastomi and pristine peat bogs.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "A paradise for birdwatchers, representing the remnants of the ancient tropical zone of Colchis.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "national-park",
+      "lake"
+    ],
+    "images": [
+      "/places/kolkheti_national_park.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.1228,41.7486",
+    "latitude": 42.1228,
+    "longitude": 41.7486,
+    "sortOrder": 3,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000035",
+    "regionId": "00000000-0000-0000-0001-000000000006",
+    "nameEn": "Nokalakevi (Archaeopolis)",
+    "nameKa": "",
+    "descriptionEn": "An archaeological site and fortress town that served as the capital of the ancient kingdom of Colchis (Lazica) in the 4th-6th centuries AD.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Known as the mythical city of Aea, where the Argonauts retrieved the Golden Fleece. Features natural hot sulfur springs nearby.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "historical",
+      "archaeological",
+      "cultural"
+    ],
+    "images": [
+      "/places/nokalakevi.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.3581,42.1906",
+    "latitude": 42.3581,
+    "longitude": 42.1906,
+    "sortOrder": 4,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000036",
+    "regionId": "00000000-0000-0000-0001-000000000006",
+    "nameEn": "Tobavarchkhili Lakes",
+    "nameKa": "",
+    "descriptionEn": "A series of stunning alpine lakes nestled deep in the Egrisi Mountains, accessible only by foot or horseback.",
+    "descriptionKa": "",
+    "whatMakesItSpecialEn": "Known as the Silver Lakes, these crystal-clear lakes are located at 2,650m altitude and surrounded by dramatic volcanic peaks.",
+    "whatMakesItSpecialKa": "",
+    "types": [
+      "natural",
+      "hiking",
+      "adventure",
+      "lake"
+    ],
+    "images": [
+      "/places/tobavarchkhili.jpg"
+    ],
+    "googleMapsUrl": "https://maps.google.com/?q=42.7014,42.3086",
+    "latitude": 42.7014,
+    "longitude": 42.3086,
+    "sortOrder": 5,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]

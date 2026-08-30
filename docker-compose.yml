@@ -1,0 +1,75 @@
+services:
+  wordpress:
+    build: .
+    image: geolander-wordpress:local
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: geolander
+      WORDPRESS_DB_PASSWORD: geolander_dev
+      WORDPRESS_DB_NAME: geolander
+      WORDPRESS_DEBUG: 1
+      GLC_SKIP_FILE_HARDENING: 1
+      GLC_SKIP_WORDPRESS_HARDENING: 1
+      GLC_CF_ACCESS_TEAM_DOMAIN: ${GLC_CF_ACCESS_TEAM_DOMAIN:-jolly-sound-4ff2.cloudflareaccess.com}
+      GLC_CF_ACCESS_AUD: ${GLC_CF_ACCESS_AUD:-c15457d8a5194a5ace5568d2fed63be5f66e9b5d6c58aaa501d386ce880374da}
+      GLC_WEB_BOT_AUTH_PRIVATE_KEY: ${GLC_WEB_BOT_AUTH_PRIVATE_KEY:-}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'http://localhost:8080');
+        define('WP_SITEURL', 'http://localhost:8080');
+        define('WP_ENVIRONMENT_TYPE', 'development');
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/themes/geolander:/var/www/html/wp-content/themes/geolander
+      - ./wp-content/plugins/geolander-core:/var/www/html/wp-content/plugins/geolander-core
+      - ./_migration:/migration
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: geolander
+      MARIADB_USER: geolander
+      MARIADB_PASSWORD: geolander_dev
+      MARIADB_ROOT_PASSWORD: root_dev
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  cli:
+    image: wordpress:cli-php8.3
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: geolander
+      WORDPRESS_DB_PASSWORD: geolander_dev
+      WORDPRESS_DB_NAME: geolander
+      GLC_CF_ACCESS_TEAM_DOMAIN: ${GLC_CF_ACCESS_TEAM_DOMAIN:-jolly-sound-4ff2.cloudflareaccess.com}
+      GLC_CF_ACCESS_AUD: ${GLC_CF_ACCESS_AUD:-c15457d8a5194a5ace5568d2fed63be5f66e9b5d6c58aaa501d386ce880374da}
+      GLC_WEB_BOT_AUTH_PRIVATE_KEY: ${GLC_WEB_BOT_AUTH_PRIVATE_KEY:-}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/themes/geolander:/var/www/html/wp-content/themes/geolander
+      - ./wp-content/plugins/geolander-core:/var/www/html/wp-content/plugins/geolander-core
+      - ./_migration:/migration
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: wp
+    command: "--info"
+
+volumes:
+  wp_data:
+  db_data:

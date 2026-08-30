@@ -1,0 +1,10 @@
+# Local screenshots and captured legacy HTML are heavy and not needed in the repo
+_migration/benchmark/
+_migration/html/
+docs/*.png
+
+# OS noise
+Thumbs.db
+.DS_Store
+docs/seo/_to_delete/
+_migration/fleet-import-raw/

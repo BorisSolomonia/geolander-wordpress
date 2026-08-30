@@ -1,0 +1,323 @@
+<?php
+/**
+ * Bulk car importer — one folder per car.
+ * Run: wp eval-file /migration/import-fleet.php
+ *
+ * ── How it works ──────────────────────────────────────────────────────────
+ * Put a folder for each car under  _migration/fleet-import/  (override with the
+ * GLC_FLEET_DIR env var). The FOLDER NAME becomes the car title, and the images
+ * inside become its photos:
+ *
+ *   _migration/fleet-import/
+ *     ├─ Toyota Land Cruiser 2021/
+ *     │    ├─ 01-front.jpg      ← first image (alphabetical) = MAIN / featured photo
+ *     │    ├─ 02-side.jpg       ← the rest fill the gallery
+ *     │    └─ 03-interior.jpg
+ *     └─ Jeep Wrangler 2019/
+ *          └─ ...
+ *
+ * Optional: drop a  car.json  inside a car's folder to set specs + seasonal
+ * pricing too (see the template printed by --help below). Without it the car is
+ * created with photos only — it still works with the WhatsApp button; add specs
+ * and Seasonal Pricing later in the admin (or via car.json) to enable dated quotes.
+ *
+ * Safe to re-run: cars are matched by name and updated in place, and images are
+ * de-duplicated by content hash, so nothing doubles up.
+ * ──────────────────────────────────────────────────────────────────────────
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit( "Run via: wp eval-file /migration/import-fleet.php\n" );
+}
+
+require_once ABSPATH . 'wp-admin/includes/media.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
+
+$base = getenv( 'GLC_FLEET_DIR' ) ?: ( dirname( __FILE__ ) . '/fleet-import' );
+
+if ( ! is_dir( $base ) ) {
+	WP_CLI::error( "Folder not found: {$base}\nCreate _migration/fleet-import/ with one sub-folder per car, then re-run." );
+}
+
+/**
+ * Sideload one image, de-duplicated by SOURCE content hash, after optimizing it.
+ *
+ * Photos are downscaled to max 1920px and re-encoded as JPEG q82 before upload.
+ * Car photos shipped as PNG are ~5-10x larger than they need to be, which fills
+ * the uploads volume and slows the site; this makes every import small and fast
+ * regardless of the source format. The optimization happens in the system temp
+ * dir (/tmp), so only the final small JPEG lands on the uploads volume.
+ *
+ * @return int Attachment ID, or 0 on failure.
+ */
+function glc_fleet_image( string $path, int $parent, string $alt ): int {
+	if ( ! is_file( $path ) ) {
+		return 0;
+	}
+	$hash     = md5_file( $path ); // hash of the ORIGINAL, so re-runs skip duplicates
+	$existing = get_posts( [
+		'post_type'      => 'attachment',
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+		'meta_key'       => 'glc_source_hash',
+		'meta_value'     => $hash,
+	] );
+	if ( $existing ) {
+		return (int) $existing[0];
+	}
+
+	// Optimize into /tmp; fall back to the original file if the editor can't.
+	$upload_name = basename( $path );
+	$tmp_name    = wp_tempnam( $upload_name );
+	copy( $path, $tmp_name );
+
+	$editor = wp_get_image_editor( $path );
+	if ( ! is_wp_error( $editor ) ) {
+		$editor->resize( 1920, 1920, false ); // shrink to fit 1920x1920; never upscales
+		$editor->set_quality( 82 );
+		$saved = $editor->save( wp_tempnam( 'glc-opt' ), 'image/jpeg' );
+		if ( ! is_wp_error( $saved ) && ! empty( $saved['path'] ) && filesize( $saved['path'] ) > 0 ) {
+			@unlink( $tmp_name );
+			$tmp_name    = $saved['path'];
+			$upload_name = pathinfo( basename( $path ), PATHINFO_FILENAME ) . '.jpg';
+		}
+	}
+
+	$att_id = media_handle_sideload( [ 'name' => $upload_name, 'tmp_name' => $tmp_name ], $parent );
+	if ( is_wp_error( $att_id ) ) {
+		@unlink( $tmp_name );
+		// Self-diagnosis: report free disk + inodes at the moment of failure, so
+		// the log itself shows whether it's a full disk, exhausted inodes, or
+		// something else entirely (permissions), instead of us guessing.
+		$dir  = wp_get_upload_dir()['basedir'];
+		$free = @disk_free_space( $dir );
+		$diag = $free !== false ? ' [free disk: ' . size_format( $free ) . ']' : '';
+		WP_CLI::warning( '  image failed ' . basename( $path ) . ': ' . $att_id->get_error_message() . $diag );
+		return 0;
+	}
+	update_post_meta( $att_id, 'glc_source_hash', $hash );
+	update_post_meta( $att_id, '_wp_attachment_image_alt', $alt );
+	return (int) $att_id;
+}
+
+/** Apply an optional car.json (specs, taxonomies, seasonal pricing). */
+function glc_fleet_apply_json( int $post_id, array $data ): void {
+	$meta = [
+		'glc_year'         => 'year',
+		'glc_seats'        => 'seats',
+		'glc_color'        => 'color',
+		'glc_transmission' => 'transmission',
+		'glc_drivetrain'   => 'drivetrain',
+		'glc_fuel_type'    => 'fuel',
+		'glc_fuel_economy_note' => 'fuel_economy_note',
+		'glc_registration' => 'registration',
+		'glc_price_from'   => 'price_from',
+	];
+	foreach ( $meta as $key => $src ) {
+		if ( isset( $data[ $src ] ) && '' !== $data[ $src ] ) {
+			update_post_meta( $post_id, $key, sanitize_text_field( (string) $data[ $src ] ) );
+		}
+	}
+	if ( isset( $data['available'] ) ) {
+		update_post_meta( $post_id, 'glc_available', (bool) $data['available'] );
+	}
+	if ( ! empty( $data['brand'] ) ) {
+		wp_set_object_terms( $post_id, sanitize_text_field( $data['brand'] ), 'car_brand' );
+	}
+	if ( ! empty( $data['body_type'] ) ) {
+		wp_set_object_terms( $post_id, sanitize_text_field( $data['body_type'] ), 'car_body_type' );
+	}
+	// Seasonal pricing: pass through as-is if it already matches the plugin shape
+	// [ { label, from(MM-DD), to(MM-DD), rates:{d1_2,…} }, … ].
+	if ( ! empty( $data['pricing'] ) && is_array( $data['pricing'] ) ) {
+		update_post_meta( $post_id, 'glc_pricing', $data['pricing'] );
+	}
+}
+
+/** Normalize a registration plate so punctuation cannot create a duplicate. */
+function glc_fleet_normalize_registration( string $registration ): string {
+	return strtoupper( preg_replace( '/[^A-Z0-9]/i', '', $registration ) ?? '' );
+}
+
+/** Find an existing physical car by plate, regardless of hyphen/spacing differences. */
+function glc_fleet_find_by_registration( string $registration ): int {
+	$needle = glc_fleet_normalize_registration( $registration );
+	if ( '' === $needle ) {
+		return 0;
+	}
+	$ids = get_posts( [
+		'post_type'      => 'car',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	] );
+	foreach ( $ids as $id ) {
+		$current = glc_fleet_normalize_registration( (string) get_post_meta( $id, 'glc_registration', true ) );
+		if ( $current === $needle ) {
+			return (int) $id;
+		}
+	}
+	return 0;
+}
+
+$dirs = array_values( array_filter( glob( $base . '/*', GLOB_ONLYDIR ) ?: [] ) );
+if ( ! $dirs ) {
+	WP_CLI::error( "No car sub-folders inside {$base}. Add one folder per car (folder name = car name)." );
+}
+
+WP_CLI::log( 'Importing ' . count( $dirs ) . ' cars from ' . $base );
+$created = 0;
+$updated = 0;
+
+foreach ( $dirs as $dir ) {
+	$title = trim( basename( $dir ) );
+	$slug  = sanitize_title( $title );
+	$json  = '';
+	$data  = [];
+
+	// Load facts before matching: a physical plate is a more reliable identity
+	// than a title or slug, both of which routinely change as copy improves.
+	foreach ( [ '/car.json', '/car.json.json', '/car.JSON' ] as $glc_candidate ) {
+		if ( is_file( $dir . $glc_candidate ) ) {
+			$json = $dir . $glc_candidate;
+			break;
+		}
+	}
+	if ( ! $json ) {
+		foreach ( glob( $dir . '/*.json*' ) ?: [] as $glc_candidate ) {
+			if ( false === stripos( basename( $glc_candidate ), '_EXAMPLE' ) ) {
+				$json = $glc_candidate;
+				break;
+			}
+		}
+	}
+	if ( $json ) {
+		$decoded = json_decode( (string) file_get_contents( $json ), true );
+		if ( is_array( $decoded ) ) {
+			$data = $decoded;
+		} else {
+			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON; skipped its specs.', basename( $json ), $title ) );
+		}
+	}
+	if ( ! empty( $data['skip_import'] ) ) {
+		WP_CLI::log( "  skipped {$title}: sidecar marks this as a duplicate source folder" );
+		continue;
+	}
+
+	// Idempotent: prefer the immutable physical plate, with slug as fallback.
+	$existing = get_posts( [ 'post_type' => 'car', 'name' => $slug, 'posts_per_page' => 1, 'post_status' => 'any' ] );
+	if ( ! $existing && ! empty( $data['registration'] ) ) {
+		$plate_match = glc_fleet_find_by_registration( (string) $data['registration'] );
+		if ( $plate_match ) {
+			$existing = [ get_post( $plate_match ) ];
+		}
+	}
+	$post_id  = wp_insert_post( [
+		'ID'          => $existing[0]->ID ?? 0,
+		'post_type'   => 'car',
+		'post_status' => 'publish',
+		'post_name'   => $slug,
+		'post_title'  => $title,
+	] );
+	if ( is_wp_error( $post_id ) ) {
+		WP_CLI::warning( "  ✗ {$title}: " . $post_id->get_error_message() );
+		continue;
+	}
+	$existing ? $updated++ : $created++;
+
+	// Default to available (bookable). Without this the meta is unset and the
+	// card renders the "unavailable / booked" veil. add_post_meta(unique) only
+	// sets it if absent, so it never overrides a later admin/car.json choice.
+	add_post_meta( $post_id, 'glc_available', true, true );
+
+	/*
+	 * Optional specs / pricing.
+	 *
+	 * THIS LOOKUP IS WHY EVERY IMPORTED CAR PUBLISHED "$0/day".
+	 *
+	 * Every sidecar file in _migration/fleet-import/ is actually named
+	 * "car.json.json" — the classic result of saving a file on Windows with
+	 * "hide extensions for known file types" enabled. This asked for "car.json",
+	 * found nothing, and silently carried on: no registration plate, no seasonal
+	 * pricing, no body type and no specs were ever applied to a single one of
+	 * those cars.
+	 *
+	 * Downstream, that produced the zero prices in Product schema and in
+	 * /pricing.md, the cars missing from the price list entirely, and the
+	 * "duplicate" records that could not be told apart because none of them had
+	 * a plate. One extra ".json".
+	 *
+	 * So: accept the obvious variants and — more importantly — WARN LOUDLY when a
+	 * folder has no sidecar at all, rather than failing silently.
+	 */
+	$has_pricing = false;
+
+	if ( $json ) {
+		if ( $data ) {
+			glc_fleet_apply_json( $post_id, $data );
+			$has_pricing = ! empty( $data['pricing'] );
+			if ( 'car.json' !== basename( $json ) ) {
+				WP_CLI::log( sprintf( '  ↪ used %s (expected car.json — rename it to avoid confusion)', basename( $json ) ) );
+			}
+		} else {
+			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON — skipped its specs.', basename( $json ), $title ) );
+		}
+	} else {
+		WP_CLI::warning( sprintf(
+			'  NO car.json in "%s" — this car gets no plate, no specs and NO PRICE. Do not publish it in that state.',
+			$title
+		) );
+	}
+
+	// Images: sorted so a NN- prefix controls order; first = featured.
+	// GLOB_BRACE is not available in the Alpine-based WP-CLI image used by
+	// docker-compose. Filter one portable glob instead, case-insensitively.
+	$files = array_values( array_filter(
+		glob( $dir . '/*' ) ?: [],
+		static fn( $file ) => is_file( $file ) && preg_match( '/\.(?:jpe?g|png|webp)$/i', $file )
+	) );
+	sort( $files, SORT_NATURAL | SORT_FLAG_CASE );
+
+	// Replace this car's previously-imported photos before re-importing. The
+	// folder is the source of truth for the car's images, so a re-run should
+	// mirror it — and deleting the old (possibly huge PNG) files FIRST reclaims
+	// disk space so the re-import fits without growing the volume. Only touches
+	// importer-created attachments (tagged glc_source_hash) attached to this car.
+	if ( $files ) {
+		$old = get_posts( [
+			'post_type'      => 'attachment',
+			'post_parent'    => $post_id,
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'meta_key'       => 'glc_source_hash',
+		] );
+		foreach ( $old as $oid ) {
+			wp_delete_attachment( (int) $oid, true );
+		}
+		delete_post_meta( $post_id, 'glc_gallery' );
+		if ( $old ) {
+			WP_CLI::log( '    (replaced ' . count( $old ) . ' old photo(s))' );
+		}
+	}
+
+	$gallery = [];
+	foreach ( $files as $file ) {
+		$att = glc_fleet_image( $file, $post_id, $title );
+		if ( $att ) {
+			$gallery[] = $att;
+		}
+	}
+	if ( $gallery ) {
+		set_post_thumbnail( $post_id, $gallery[0] );
+		update_post_meta( $post_id, 'glc_gallery', $gallery );
+	}
+
+	$note = $gallery ? count( $gallery ) . ' photo(s)' : 'NO photos';
+	$warn = $has_pricing ? '' : '  ⚠ no pricing (WhatsApp works; add pricing for dated quotes)';
+	WP_CLI::log( "  ✓ {$title} — {$note}{$warn}" );
+}
+
+WP_CLI::success( "Done. Created {$created}, updated {$updated}." );

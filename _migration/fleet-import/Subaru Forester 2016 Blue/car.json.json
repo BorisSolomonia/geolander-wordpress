@@ -1,0 +1,27 @@
+{
+  "year": 2016,
+  "brand": "Subaru",
+  "model": "Forester",
+  "seats": 5,
+  "color": "Blue",
+  "transmission": "automatic",
+  "fuel": "gasoline",
+  "registration": "UU-108-UL",
+  "body_type": "SUV",
+  "available": true,
+  "price_from": 90,
+  "pricing": [
+    {
+      "label": "Apr 01 - Oct 31",
+      "from": "04-01",
+      "to": "10-31",
+      "rates": { "d1_2": 90, "d3_4": 85, "d5_7": 80, "d8_12": 75, "d13_18": 70, "d19_30": 65, "d31p": 60 }
+    },
+    {
+      "label": "Nov 01 - Mar 31",
+      "from": "11-01",
+      "to": "03-31",
+      "rates": { "d1_2": 75, "d3_4": 70, "d5_7": 65, "d8_12": 60, "d13_18": 55, "d19_30": 50, "d31p": 45 }
+    }
+  ]
+}

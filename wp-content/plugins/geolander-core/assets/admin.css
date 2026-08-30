@@ -1,0 +1,17 @@
+.glc-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0 16px;
+}
+.glc-pricing-table input[type="number"] {
+	width: 70px;
+}
+.glc-pricing-table input[type="text"] {
+	width: 110px;
+}
+#glc-gallery-preview img {
+	width: 70px;
+	height: 70px;
+	object-fit: cover;
+	margin: 2px;
+}
