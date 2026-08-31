@@ -56,7 +56,8 @@ COPY docker/apache-production.conf /etc/apache2/conf-available/zz-geolander-prod
 COPY docker/memory-snapshot.sh /usr/local/bin/geolander-memory-snapshot
 COPY docker/wordpress-hardening.php /usr/local/etc/wordpress/wordpress-hardening.php
 COPY docker/hardened-apache-start.sh /usr/local/bin/apache2-geolander-foreground
-RUN chmod +x /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground \
+RUN sed -i 's/\r$//' /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground \
+	&& chmod +x /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground \
 	&& a2enmod status \
 	&& a2enconf zz-geolander-production
 

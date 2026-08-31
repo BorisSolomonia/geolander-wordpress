@@ -32,6 +32,7 @@ Assert-Contains $dockerfile 'auto_prepend_file = /usr/local/etc/wordpress/wordpr
 Assert-Contains $dockerfile 'COPY docker/healthz /usr/src/wordpress/healthz' 'Railway health must use a static file instead of a PHP worker.'
 Assert-Contains $dockerfile 'CMD ["apache2-geolander-foreground"]' 'The hardened Apache launcher must run after WordPress initialization.'
 Assert-Contains $dockerfile 'zz-geolander-production' 'Security overrides must load after Apache defaults.'
+Assert-Contains $dockerfile "sed -i 's/\r`$//' /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground" 'Container shell launchers must be normalized to Unix line endings for Linux hosts.'
 
 Assert-Contains $apache "MaxRequestWorkers 4" 'Apache PHP concurrency must remain capped at four workers.'
 Assert-Contains $apache '<Files "wp-cron.php">' 'Direct request-driven WordPress cron must be denied.'
