@@ -110,7 +110,8 @@ $travel .= glc_ul( [
 	'Main roads do not automatically require 4x4; vehicle choice depends on the exact route, surface, weather, closure status, and road damage',
 	'Fuel is widely available on main routes; fill up before remote mountain sections',
 ] );
-glc_upsert_page( 'travel-info', 'სამოგზაურო ინფორმაცია', $travel );
+$glc_travel_id = glc_upsert_page( 'travel-info', 'Travel Info', $travel ); // post_title is the ENGLISH original
+update_post_meta( $glc_travel_id, 'glc_title_ka', 'სამოგზაურო ინფორმაცია' );
 
 /* ---------------------------------------------------------------- Music */
 
@@ -120,11 +121,13 @@ foreach ( $genres as $genre ) {
 	$music .= glc_h( $genre['nameEn'] . ' — ' . $genre['nameKa'], 2 );
 	$music .= glc_p( $genre['descriptionEn'] );
 }
-glc_upsert_page( 'music', 'ქართული მუსიკა', $music );
+$glc_music_id = glc_upsert_page( 'music', 'Georgian Music', $music ); // post_title is the ENGLISH original
+update_post_meta( $glc_music_id, 'glc_title_ka', 'ქართული მუსიკა' );
 
 /* -------------------------------------------------------------- Contact */
 
-$contact_id = glc_upsert_page( 'contact', 'დაგვიკავშირდით', '', 'page-contact' );
+$contact_id = glc_upsert_page( 'contact', 'Contact', '', 'page-contact' ); // post_title is the ENGLISH original
+update_post_meta( $contact_id, 'glc_title_ka', 'დაგვიკავშირდით' );
 update_post_meta( $contact_id, 'glc_seo_title_en', 'Car Rental Office in Mtatsminda, Tbilisi' );
 update_post_meta(
 	$contact_id,
@@ -142,6 +145,7 @@ $blog_query = '<!-- wp:query {"query":{"perPage":12,"postType":"post","order":"d
 	. '<!-- /wp:post-template -->'
 	. '<!-- wp:query-no-results --><!-- wp:paragraph --><p>სტატიები მალე დაემატება.</p><!-- /wp:paragraph --><!-- /wp:query-no-results -->'
 	. '</div><!-- /wp:query -->';
-glc_upsert_page( 'blog', 'ბლოგი', $blog_query );
+$glc_blog_id = glc_upsert_page( 'blog', 'Blog', $blog_query ); // post_title is the ENGLISH original
+update_post_meta( $glc_blog_id, 'glc_title_ka', 'ბლოგი' );
 
 WP_CLI::success( 'Pages created.' );

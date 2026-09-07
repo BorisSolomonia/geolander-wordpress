@@ -21,6 +21,7 @@ $glc_nav_candidates = [
 	'/fleet/'               => glc_t( 'nav_fleet' ),
 	'/where-you-can-drive/' => glc_t( 'nav_where_drive' ),
 	'/car-rental/'          => glc_t( 'nav_locations' ),
+	'/long-term-car-rental-georgia/' => glc_t( 'nav_long_term' ),
 	'/guides/'              => glc_t( 'nav_guides' ),
 	'/trust/'               => glc_t( 'nav_trust' ),
 	'/places/'              => glc_t( 'nav_places' ),

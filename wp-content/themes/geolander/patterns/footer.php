@@ -17,6 +17,23 @@ $glc_about = get_page_by_path( 'about' );
 if ( $glc_about instanceof WP_Post && 'publish' === $glc_about->post_status ) {
 	$glc_nav[ home_url( '/about/' ) ] = glc_t( 'nav_about' );
 }
+$glc_long_term = get_page_by_path( 'long-term-car-rental-georgia' );
+if ( $glc_long_term instanceof WP_Post && 'publish' === $glc_long_term->post_status ) {
+	$glc_nav[ home_url( '/long-term-car-rental-georgia/' ) ] = glc_t( 'nav_long_term' );
+}
+/*
+ * Pages the 2026-09-07 crawl found ORPHANED — in the sitemap, linked from
+ * nowhere: the Kazbegi landing (the strategy's best URL), developers, privacy.
+ * A site-wide footer link is the weakest internal link there is, but an orphan
+ * gets crawled only when Google feels like it. Labels are each page's own
+ * localised title, so no catalogue key is needed.
+ */
+foreach ( [ 'car-rental-kazbegi', 'developers', 'privacy-policy' ] as $glc_slug ) {
+	$glc_orphan = get_page_by_path( $glc_slug );
+	if ( $glc_orphan instanceof WP_Post && 'publish' === $glc_orphan->post_status ) {
+		$glc_nav[ get_permalink( $glc_orphan ) ] = class_exists( 'GLC_Content' ) ? GLC_Content::title( $glc_orphan ) : get_the_title( $glc_orphan );
+	}
+}
 $glc_phone = GLC_Settings::get( 'phone' );
 // Verified deep-link format (keeps the "+", opens the app) — see
 // GLC_Gateway_WhatsApp::url(). The old bare-digit wa.me link was unreliable.

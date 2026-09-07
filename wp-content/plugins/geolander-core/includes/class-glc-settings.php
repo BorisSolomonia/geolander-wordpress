@@ -46,7 +46,14 @@ class GLC_Settings {
 		'ga4_id'              => '',      // G-XXXXXXX
 		'ads_id'              => '',      // AW-XXXXXXX
 		'ads_conversion_label'=> '',      // conversion label for booking_request
+		// Search engines — see GLC_IndexNow and GLC_Redirects. Empty = the seeded defaults.
+		'indexnow_key'        => '',      // 8–128 chars [A-Za-z0-9-]; generated automatically when empty
+		'redirects'           => '',      // one "/old/ -> /new/" per line; overrides GLC_Redirects::DEFAULT_REDIRECTS
+		'noindex_slugs'       => '',      // comma-separated page slugs kept out of the index and sitemap
 	];
+
+	/** Multi-line settings rendered as a textarea and sanitised line-safe. */
+	private const MULTILINE = [ 'redirects' ];
 
 	public static function init() {
 		add_action( 'admin_menu', [ __CLASS__, 'menu' ] );
@@ -104,7 +111,11 @@ class GLC_Settings {
 	public static function sanitize( $input ): array {
 		$clean = [];
 		foreach ( array_keys( self::DEFAULTS ) as $key ) {
-			$clean[ $key ] = isset( $input[ $key ] ) ? sanitize_text_field( (string) $input[ $key ] ) : self::DEFAULTS[ $key ];
+			$clean[ $key ] = isset( $input[ $key ] )
+				? ( in_array( $key, self::MULTILINE, true )
+					? sanitize_textarea_field( (string) $input[ $key ] )
+					: sanitize_text_field( (string) $input[ $key ] ) )
+				: self::DEFAULTS[ $key ];
 		}
 		return $clean;
 	}
@@ -132,6 +143,11 @@ class GLC_Settings {
 				'ga4_id'               => __( 'GA4 measurement ID (G-…)', 'geolander' ),
 				'ads_id'               => __( 'Google Ads tag ID (AW-…)', 'geolander' ),
 				'ads_conversion_label' => __( 'Ads conversion label (booking request)', 'geolander' ),
+			],
+			__( 'Search engines', 'geolander' ) => [
+				'indexnow_key'  => __( 'IndexNow key (leave empty to use the generated one shown below)', 'geolander' ),
+				'redirects'     => __( 'Permanent redirects — one "/old/ -> /new/" per line (empty = built-in defaults)', 'geolander' ),
+				'noindex_slugs' => __( 'Page slugs kept out of search and the sitemap, comma-separated (empty = built-in default)', 'geolander' ),
 			],
 			__( 'Social', 'geolander' ) => [
 				'instagram' => __( 'Instagram URL', 'geolander' ),
@@ -163,13 +179,38 @@ class GLC_Settings {
 							<tr>
 								<th scope="row"><label for="glc-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
 								<td>
-									<input
-										type="<?php echo 'bog_client_secret' === $key ? 'password' : 'text'; ?>"
-										class="regular-text"
-										id="glc-<?php echo esc_attr( $key ); ?>"
-										name="<?php echo esc_attr( self::OPTION . '[' . $key . ']' ); ?>"
-										value="<?php echo esc_attr( self::get( $key, '' ) ); ?>"
-									/>
+									<?php if ( in_array( $key, self::MULTILINE, true ) ) : ?>
+										<textarea
+											class="large-text code"
+											rows="4"
+											id="glc-<?php echo esc_attr( $key ); ?>"
+											name="<?php echo esc_attr( self::OPTION . '[' . $key . ']' ); ?>"
+										><?php echo esc_textarea( (string) self::get( $key, '' ) ); ?></textarea>
+									<?php else : ?>
+										<input
+											type="<?php echo 'bog_client_secret' === $key ? 'password' : 'text'; ?>"
+											class="regular-text"
+											id="glc-<?php echo esc_attr( $key ); ?>"
+											name="<?php echo esc_attr( self::OPTION . '[' . $key . ']' ); ?>"
+											value="<?php echo esc_attr( self::get( $key, '' ) ); ?>"
+										/>
+									<?php endif; ?>
+									<?php if ( 'indexnow_key' === $key && class_exists( 'GLC_IndexNow' ) ) : ?>
+										<p class="description">
+											<?php esc_html_e( 'Active key file:', 'geolander' ); ?>
+											<a href="<?php echo esc_url( GLC_IndexNow::key_url() ); ?>" target="_blank" rel="noopener"><?php echo esc_html( GLC_IndexNow::key_url() ); ?></a>
+											— <?php esc_html_e( 'paste the key into Bing Webmaster Tools if asked. Recent pings:', 'geolander' ); ?>
+											<?php $glc_log = GLC_IndexNow::recent(); ?>
+											<?php if ( ! $glc_log ) : ?><em><?php esc_html_e( 'none yet', 'geolander' ); ?></em><?php endif; ?>
+										</p>
+										<?php if ( $glc_log ) : ?>
+											<ul class="description" style="margin:0;font-family:monospace;">
+												<?php foreach ( array_slice( $glc_log, 0, 5 ) as $glc_row ) : ?>
+													<li><?php echo esc_html( sprintf( '%s · %s · %d URLs · HTTP %s', $glc_row['time'], $glc_row['reason'], $glc_row['count'], $glc_row['status'] ) ); ?></li>
+												<?php endforeach; ?>
+											</ul>
+										<?php endif; ?>
+									<?php endif; ?>
 								</td>
 							</tr>
 						<?php endforeach; ?>

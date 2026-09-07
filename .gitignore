@@ -12,3 +12,4 @@ _migration/fleet-import-raw/
 # Production host secrets and persistent runtime data
 .env.host
 data/
+.secrets

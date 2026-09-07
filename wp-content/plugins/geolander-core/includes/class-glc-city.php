@@ -153,12 +153,42 @@ class GLC_City {
 		] );
 	}
 
-	/** The bare city name (title minus the "Car Rental in " marketing prefix). */
+	/**
+	 * The bare city name in the current locale ("Tbilisi", "Тбилиси", "თბილისში").
+	 *
+	 * City titles are stored as marketing phrases per locale ("Car Rental in
+	 * Tbilisi", "Аренда автомобиля в Тбилиси", "მანქანის ქირაობა თბილისში"), so the
+	 * phrase is stripped per language. If no pattern matches — the strip left the
+	 * string unchanged — fall back to the English name rather than feed a whole
+	 * phrase into another phrase: that is how /ru/car-rental-tbilisi/ once
+	 * rendered "Аренда авто в Аренда автомобиля в Тбилиси".
+	 */
 	public static function city_name( int $id ): string {
-		$title = class_exists( 'GLC_Content' ) ? GLC_Content::title( $id ) : get_the_title( $id );
-		// Strip common EN prefixes; localized titles are stored whole, so this is
-		// a best-effort tidy for the schema areaServed only.
-		return trim( preg_replace( '/^(car rental in|car rental|rent a car in|rent a car)\s+/i', '', $title ) ) ?: $title;
+		$english = self::strip( get_post_field( 'post_title', $id ) );
+		if ( ! class_exists( 'GLC_Content' ) || ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale() ) {
+			return $english;
+		}
+		$local    = GLC_Content::title( $id );
+		$stripped = self::strip( $local );
+		return ( '' !== $stripped && $stripped !== $local ) ? $stripped : $english;
+	}
+
+	/** Remove the localized "car rental in/at" phrase around a city name. */
+	private static function strip( string $title ): string {
+		$patterns = [
+			'/^(car rental (in|at)|car rental|rent a car (in|at)|rent a car)\s+/iu',          // en
+			'/^(аренда|прокат) (авто|автомобиля|автомобилей|машины?) (в|на)\s+/iu',          // ru
+			'/^(оренда|прокат) (авто|автомобіля|автомобілів|машини) (в|у|на)\s+/iu',          // uk
+			'/^location de voitures? (à|a|au|en)\s+/iu',                                       // fr
+			'/^تأجير (سيارات|سيارة) في\s+/u',                                                  // ar
+			'/^(მანქანის|ავტომობილის) (ქირაობა|გაქირავება)\s+/u',                            // ka (leaves the locative "-ში" — natural in Georgian)
+			'/^([\x{4e00}-\x{9fff}]{2,})?(租车|汽车租赁)/u',                                    // zh: "第比利斯租车" → prefix city before 租车
+		];
+		$out = $title;
+		foreach ( $patterns as $p ) {
+			$out = (string) preg_replace( $p, '', $out );
+		}
+		return trim( $out ) ?: $title;
 	}
 
 	/* ----------------------------------------------------------- Admin UI */

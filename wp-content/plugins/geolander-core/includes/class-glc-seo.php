@@ -38,6 +38,9 @@ class GLC_SEO {
 			return $taxonomies;
 		} );
 		add_filter( 'wp_robots', [ __CLASS__, 'robots_archives' ] );
+		// Core sitemaps never list CPT archive pages, so /fleet/ and /places/ —
+		// two of the site's most-linked URLs — were absent (crawl, 2026-09-07).
+		add_action( 'init', [ __CLASS__, 'register_archive_sitemap' ] );
 		add_filter( 'robots_txt', [ __CLASS__, 'robots' ] );
 		add_action( 'wp_head', [ __CLASS__, 'gtag' ], 8 );
 	}
@@ -86,19 +89,71 @@ class GLC_SEO {
 			// is added or removed.
 			$places = (int) ( wp_count_posts( 'place' )->publish ?? 0 );
 			$parts['title'] = $en
-				? sprintf( 'Places to Visit in Georgia by Car — %d Destinations', $places )
+				? sprintf( '%d Places to Visit in Georgia by Car', $places ) // was 63 chars with the brand; now ≤ 60
 				: glc_ui( 'places_title' ) . ' — ' . glc_ui( 'places_subtitle' );
+		} elseif ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
+			/*
+			 * The homepage and /car-rental-tbilisi/ both carried "Car Rental in
+			 * Tbilisi" and competed for the same query (GSC, 2026-09-01). The city
+			 * page now owns "car rental {city}" with the country disambiguated and a
+			 * concrete promise; the homepage moves to the 4×4 + country intent.
+			 * Localised via the catalogue so every hreflang variant reads natively.
+			 */
+			$city_name      = GLC_City::city_name( get_the_ID() );
+			$parts['title'] = sprintf( glc_ui( 'city_seo_title' ), $city_name );
+			if ( $en && preg_match( '/airport/i', $city_name ) ) {
+				// "Car Rental at Kutaisi Airport", not "in".
+				$parts['title'] = preg_replace( '/^Car Rental in /', 'Car Rental at ', $parts['title'] );
+			}
 		} elseif ( is_front_page() ) {
 			// Front page has no separate 'site' part — brand goes inline.
 			$floor = (float) GLC_Format::range()[0];
 			$parts['title'] = $en
 				? ( $floor > 0
-					? sprintf( 'Car Rental in Tbilisi, Georgia — 4x4 from $%d/day | Geolander', $floor )
-					: 'Car Rental in Tbilisi, Georgia — 4x4 Rental | Geolander' )
-				: glc_ui( 'hero_title' ) . ' | Geolander';
+					? sprintf( '4x4 Car Rental in Georgia (Country) from $%d/day | Geolander', $floor )
+					: '4x4 Car Rental in Georgia (Country) — Tbilisi Based | Geolander' )
+				: glc_ui( 'home_seo_title' ) . ' | Geolander';
 			unset( $parts['tagline'] );
+		} elseif ( is_singular() && class_exists( 'GLC_Content' ) ) {
+			/*
+			 * Every other singular page: the localised title. On the English locale
+			 * this is post_title (unchanged behaviour); on /ka/, /ru/… it is the
+			 * glc_title_{locale} meta when one exists. Root cause of the Georgian
+			 * <title> on the English /blog/: the page's post_title WAS Georgian —
+			 * see _migration/fix-locale-titles.php, which moves it to glc_title_ka.
+			 */
+			$localised = GLC_Content::title( get_queried_object_id() );
+			if ( '' !== $localised ) {
+				$parts['title'] = $localised;
+			}
 		}
 		return $parts;
+	}
+
+	/** Sitemap provider for the post-type archive pages. */
+	public static function register_archive_sitemap(): void {
+		if ( ! class_exists( 'WP_Sitemaps_Provider' ) || ! function_exists( 'wp_register_sitemap_provider' ) ) {
+			return;
+		}
+		wp_register_sitemap_provider( 'archives', new class() extends WP_Sitemaps_Provider {
+			public function __construct() {
+				$this->name        = 'archives';
+				$this->object_type = 'archive';
+			}
+			public function get_url_list( $page_num, $object_subtype = '' ) {
+				$urls = [];
+				foreach ( [ 'car', 'place' ] as $type ) {
+					$link = get_post_type_archive_link( $type );
+					if ( $link ) {
+						$urls[] = [ 'loc' => $link ];
+					}
+				}
+				return $urls;
+			}
+			public function get_max_num_pages( $object_subtype = '' ) {
+				return 1;
+			}
+		} );
 	}
 
 	/**
@@ -108,9 +163,18 @@ class GLC_SEO {
 	 * on from search.
 	 */
 	public static function robots_archives( array $robots ): array {
+		/*
+		 * The 2026-09-07 crawl found 83 crawlable duplicates carrying ?glc_lang=
+		 * (the language switcher's explicit-English link) and 14 carrying ?region=
+		 * (the places filter). Each already canonicalises to the clean URL; this
+		 * plus the robots.txt Disallow below stops Google spending the crawl
+		 * budget of an 80-page site on 97 copies of it.
+		 */
 		$thin = is_tax( [ 'car_brand', 'car_body_type', 'place_region' ] )
 			|| is_search()
-			|| is_paged();
+			|| is_paged()
+			|| isset( $_GET['glc_lang'] )
+			|| isset( $_GET['region'] );
 
 		if ( $thin ) {
 			$robots['noindex'] = true;
@@ -146,7 +210,9 @@ class GLC_SEO {
 			$ai .= "\nUser-agent: {$bot}\nAllow: /\n";
 		}
 		$ai .= "\nAgentmap: " . home_url( '/.well-known/ai-catalog.json' ) . "\n";
-		return $output . $ai;
+		// Parameter views are duplicates of clean URLs (see robots_archives()).
+		$params = "\nUser-agent: *\nDisallow: /*?glc_lang=\nDisallow: /*&glc_lang=\nDisallow: /*?region=\n";
+		return $output . $params . $ai;
 	}
 
 	/** Google tag (GA4 + Ads) — renders only when IDs are configured. */
@@ -165,6 +231,8 @@ class GLC_SEO {
 		if ( $ads ) {
 			printf( "gtag('config','%s');", esc_js( $ads ) );
 		}
+		// The only conversion this site has is a tap on WhatsApp. Count it.
+		echo "document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href*=\"api.whatsapp.com\"],a[href*=\"wa.me\"]');if(a){gtag('event','whatsapp_click',{link_url:a.href,page_location:location.href});}},true);";
 		echo "</script>\n";
 	}
 
@@ -224,6 +292,9 @@ class GLC_SEO {
 						$text
 					);
 			}
+			if ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
+				$text = sprintf( glc_ui( 'city_seo_description' ), GLC_City::city_name( $post->ID ) );
+			}
 			if ( is_singular( 'place' ) ) {
 				$text = $en
 					? sprintf(
@@ -282,9 +353,20 @@ class GLC_SEO {
 		printf( '<meta name="twitter:card" content="summary_large_image" />' . "\n" );
 
 		if ( ! is_singular() ) {
-			// Core only emits rel=canonical for singular content.
-			$canonical = is_post_type_archive() ? get_post_type_archive_link( get_post_type() ) : home_url( '/' );
-			if ( $canonical ) {
+			/*
+			 * Core only emits rel=canonical for singular content. This used to fall
+			 * back to the homepage for EVERYTHING else, so every 404, search page
+			 * and taxonomy archive told Google "the canonical version of me is /"
+			 * (observed live 2026-09-07). A 404 has no canonical; a noindex archive
+			 * needs none. Only the front page and the two CPT archives get one.
+			 */
+			$canonical = '';
+			if ( is_front_page() ) {
+				$canonical = home_url( '/' );
+			} elseif ( is_post_type_archive() && ! is_paged() ) {
+				$canonical = (string) get_post_type_archive_link( get_post_type() );
+			}
+			if ( $canonical && ! is_404() && ! is_search() ) {
 				printf( '<link rel="canonical" href="%s" />' . "\n", esc_url( $canonical ) );
 			}
 		}

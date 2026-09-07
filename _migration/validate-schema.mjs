@@ -711,6 +711,128 @@ for (const locale of LOCALES) {
 	}
 }
 
+/* ---------------------------------------------- 2026-09-07 guards ------- */
+
+/* x-default <title> must be English. /blog/ and /music/ shipped Georgian
+ * titles to Google because their post_title was Georgian; this catches the
+ * whole class on every crawled page, not the two instances. */
+console.log('\nx-default titles are English');
+const TITLE_PAGES = [...PAGES.map(([, url]) => url), `${BASE}/blog/`, `${BASE}/music/`, `${BASE}/guides/`, `${BASE}/terms/`, `${BASE}/travel-info/`];
+for (const url of TITLE_PAGES) {
+	try {
+		const res = await fetch(url, { headers: { Accept: 'text/html' }, redirect: 'follow' });
+		if (!res.ok) { warn(new URL(url).pathname, `HTTP ${res.status} — skipped title check`); continue; }
+		const title = (await res.text()).match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
+		if (!title) { err(new URL(url).pathname, 'no <title>'); continue; }
+		if (/[Ⴀ-ჿЀ-ӿ؀-ۿ一-鿿]/.test(title) || !/[A-Za-z]/.test(title)) {
+			err(new URL(url).pathname, `x-default title is not English: "${title}"`);
+		} else ok();
+	} catch (e) {
+		err(new URL(url).pathname, `fetch failed: ${e.message}`);
+	}
+}
+
+/* Retired URLs answer 301 to their survivor and never 404 or 200. */
+console.log('\nretired URLs → 301');
+const RETIRED = {
+	'/hello-world/': '/guides/', '/sample-page/': '/about/', '/contact-1/': '/contact/',
+	'/car-rental-kutaisi-airport/': '/car-rental-kutaisi/', '/car-rental-at-tbilisi-airport/': '/car-rental-tbilisi/',
+	'/car-rental/tbilisi/': '/car-rental-tbilisi/', '/blog-1/': '/blog/', '/author/admin/': '/about/',
+	'/blog/geolander-vs-local-rent-vs-premium-auto-rent/': '/about/', '/he/fleet/': '/fleet/', '/he': '/',
+};
+for (const [from, to] of Object.entries(RETIRED)) {
+	try {
+		const res = await fetch(`${BASE}${from}`, { redirect: 'manual' });
+		const loc = res.headers.get('location') || '';
+		if (res.status !== 301) err(from, `expected 301, got ${res.status}`);
+		else if (!loc.endsWith(to)) err(from, `301 points at ${loc}, expected …${to}`);
+		else ok();
+	} catch (e) {
+		err(from, `fetch failed: ${e.message}`);
+	}
+}
+
+/* A 404 must not claim the homepage as its canonical (observed live 2026-09-07). */
+console.log('\n404 has no canonical');
+try {
+	const res = await fetch(`${BASE}/validator-missing-page-${Date.now()}/`, { headers: { Accept: 'text/html' } });
+	const html = await res.text();
+	if (res.status !== 404) err('404-canonical', `expected 404, got ${res.status}`);
+	else if (/<link rel="canonical"/.test(html)) err('404-canonical', '404 page emits a rel=canonical');
+	else ok();
+	const tax = await fetch(`${BASE}/brand/toyota/`, { headers: { Accept: 'text/html' } });
+	if (tax.ok && /<link rel="canonical" href="[^"]*\/"\s*\/>/.test((await tax.text()).match(/<link rel="canonical"[^>]*>/)?.[0] ?? '') ) err('taxonomy-canonical', '/brand/toyota/ canonicalises to the homepage'); else ok();
+} catch (e) {
+	err('404-canonical', `fetch failed: ${e.message}`);
+}
+
+/* noindex pages carry the header and stay out of the sitemap; retired slugs
+ * are out of the sitemap too. */
+console.log('\nsitemap hygiene');
+try {
+	const idx = await (await fetch(`${BASE}/wp-sitemap.xml`)).text();
+	const children = [...idx.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+	let all = '';
+	for (const child of children) all += await (await fetch(child)).text();
+	for (const path of [...Object.keys(RETIRED), '/music/', '/blog/']) {
+		if (all.includes(`${BASE}${path}</loc>`)) err(path, 'still listed in wp-sitemap'); else ok();
+	}
+	for (const path of ['/fleet/', '/places/']) {
+		if (!all.includes(`${BASE}${path}</loc>`)) err(path, 'archive page missing from wp-sitemap (archives provider)'); else ok();
+	}
+	const robotsTxt = await (await fetch(`${BASE}/robots.txt`)).text();
+	for (const rule of ['Disallow: /*?glc_lang=', 'Disallow: /*?region=']) {
+		if (!robotsTxt.includes(rule)) err('robots', `missing "${rule}" — parameter duplicates crawlable`); else ok();
+	}
+	const dup = await fetch(`${BASE}/fleet/?glc_lang=en`, { headers: { Accept: 'text/html' } });
+	if (!/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(await dup.text())) err('/fleet/?glc_lang=en', 'parameter view is indexable'); else ok();
+	const music = await fetch(`${BASE}/music/`, { headers: { Accept: 'text/html' } });
+	const musicHtml = await music.text();
+	if (!/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(musicHtml)) err('/music/', 'missing noindex meta'); else ok();
+} catch (e) {
+	err('sitemap', `fetch failed: ${e.message}`);
+}
+
+/* UI catalogue key parity: a key missing from a locale silently renders
+ * English on that locale. Checked from the theme files on disk. */
+console.log('\nlocale catalogue key parity');
+try {
+	const { readFileSync } = await import('node:fs');
+	const { dirname, join } = await import('node:path');
+	const { fileURLToPath } = await import('node:url');
+	const inc = join(dirname(fileURLToPath(import.meta.url)), '..', 'wp-content', 'themes', 'geolander', 'inc');
+	const keys = (locale) => new Set([...readFileSync(join(inc, `strings-${locale}.php`), 'utf8').matchAll(/^\s*'([a-z0-9_]+)'\s*=>/gm)].map((m) => m[1]));
+	const en = keys('en');
+	for (const locale of LOCALES) {
+		const set = keys(locale);
+		const missing = [...en].filter((k) => !set.has(k));
+		const extra = [...set].filter((k) => !en.has(k));
+		if (missing.length) err(`strings-${locale}`, `missing ${missing.length} key(s): ${missing.slice(0, 8).join(', ')}${missing.length > 8 ? '…' : ''}`);
+		else ok();
+		if (extra.length) warn(`strings-${locale}`, `has ${extra.length} key(s) not in en: ${extra.slice(0, 5).join(', ')}`);
+	}
+} catch (e) {
+	err('catalogues', `could not read theme catalogues: ${e.message}`);
+}
+
+/* IndexNow key file is served (the key itself is read from the REST-free
+ * settings page; here we only check that a hex .txt at the root answers). */
+console.log('\nlong-term rental hub');
+try {
+	const res = await fetch(`${BASE}/long-term-car-rental-georgia/`, { headers: { Accept: 'text/html' } });
+	if (res.status === 404) warn('long-term', 'hub not created yet — run _migration/setup-long-term-pages.php');
+	else if (!res.ok) err('long-term', `HTTP ${res.status}`);
+	else {
+		const html = await res.text();
+		if (!html.includes('glc-long-term-table')) err('long-term', 'rates table did not render');
+		else if (/\$0(?![.\d])/.test(html)) err('long-term', 'page prints a zero price');
+		else ok();
+		if (!/"@type":\s*"Service"/.test(html)) err('long-term', 'missing Service schema'); else ok();
+	}
+} catch (e) {
+	err('long-term', `fetch failed: ${e.message}`);
+}
+
 console.log(`\n===== ${checks} checks, ${errors} errors, ${warnings} warnings =====`);
 if (errors) {
 	console.log('FAILED — do not deploy. Zero prices and locale loops both reach Google and AI crawlers directly.');

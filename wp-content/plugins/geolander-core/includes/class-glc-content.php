@@ -29,6 +29,11 @@ class GLC_Content {
 		'place' => [ 'title', 'body' ],
 		'faq'   => [ 'title', 'body' ],
 		'city'  => [ 'title', 'body' ],
+		// Pages were missing: /blog/ and /music/ stored a Georgian post_title as
+		// the English original, so the x-default <title> leaked Georgian. With
+		// pages translatable, the English title is the post_title and each
+		// locale carries its own via glc_title_{locale}.
+		'page'  => [ 'title', 'body' ],
 	];
 
 	public static function init() {

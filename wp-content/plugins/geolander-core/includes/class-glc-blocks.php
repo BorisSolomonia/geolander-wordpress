@@ -48,6 +48,7 @@ class GLC_Blocks {
 			'car-specs'      => [ 'render_callback' => [ __CLASS__, 'car_specs' ] ],
 			'rental-facts'   => [ 'render_callback' => [ __CLASS__, 'rental_facts' ] ],
 			'price-table'    => [ 'render_callback' => [ __CLASS__, 'price_table' ] ],
+			'long-term-rates'=> [ 'render_callback' => [ __CLASS__, 'long_term_rates' ] ],
 			'faq-list'       => [ 'render_callback' => [ __CLASS__, 'faq_list' ] ],
 			'testimonials'   => [ 'render_callback' => [ __CLASS__, 'testimonials' ] ],
 			'places-grid'    => [ 'render_callback' => [ __CLASS__, 'places_grid' ] ],
@@ -401,6 +402,85 @@ class GLC_Blocks {
 			$out .= '</tr>';
 		}
 		return $out . '</tbody></table>';
+	}
+
+	/* --------------------------------------------------- Long-term rates */
+
+	/**
+	 * Fleet-wide table of the short (1–2 day), 19–30 day and 31+ day rates per
+	 * season, with the saving a month-long rental earns — every number read
+	 * live from each car's season table. Long rentals are the business's most
+	 * profitable segment and the site said nothing about them (F-3, 2026-09-01).
+	 *
+	 * Honesty rules inherited from the rest of the plugin: an unpriced car is
+	 * listed under "price on request", never as $0; a season missing a tier is
+	 * shown as "—"; nothing is typed in by hand.
+	 */
+	public static function long_term_rates(): string {
+		$tiers  = [ 'd1_2', 'd19_30', 'd31p' ];
+		$rows   = [];
+		$unpriced = [];
+		$floor  = 0.0;
+		$best   = 0.0;
+		foreach ( glc_fleet_query()->posts as $car ) {
+			$seasons = GLC_Pricing::tier_rates( $car->ID, $tiers );
+			if ( ! $seasons ) {
+				$unpriced[] = $car;
+				continue;
+			}
+			foreach ( $seasons as $label => $rates ) {
+				$short  = $rates['d1_2'] ?? 0.0;
+				$month  = $rates['d31p'] ?? 0.0;
+				$saving = ( $short > 0 && $month > 0 && $month < $short ) ? ( 1 - $month / $short ) : 0.0;
+				$rows[] = [ $car, $label, $rates, $saving ];
+				if ( $month > 0 && ( 0.0 === $floor || $month < $floor ) ) {
+					$floor = $month;
+				}
+				$best = max( $best, $saving );
+			}
+		}
+		if ( ! $rows ) {
+			return '';
+		}
+
+		$out = '<div class="glc-long-term">';
+		if ( $floor > 0 ) {
+			$out .= sprintf(
+				'<p class="glc-long-term-lead"><strong>%s %s%s</strong>%s</p>',
+				esc_html( glc_ui( 'from' ) ),
+				esc_html( GLC_Format::money( $floor ) ),
+				esc_html( glc_ui( 'per_day' ) ),
+				$best > 0 ? ' · ' . esc_html( sprintf( '%s: %d%%', glc_ui( 'longterm_saving' ), round( $best * 100 ) ) ) : ''
+			);
+		}
+		$out .= '<table class="glc-price-table glc-long-term-table"><thead><tr>'
+			. '<th>' . esc_html( glc_ui( 'longterm_vehicle' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_season' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_short' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_19_30' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_31' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_saving' ) ) . '</th>'
+			. '</tr></thead><tbody>';
+		foreach ( $rows as [ $car, $label, $rates, $saving ] ) {
+			$cell = fn( string $tier ) => isset( $rates[ $tier ] ) ? esc_html( GLC_Format::money( $rates[ $tier ] ) ) : '—';
+			$out .= sprintf(
+				'<tr><td><a href="%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td><td class="glc-active-cell">%s</td><td>%s</td></tr>',
+				esc_url( get_permalink( $car ) ),
+				esc_html( $car->post_title ),
+				esc_html( $label ),
+				$cell( 'd1_2' ),
+				$cell( 'd19_30' ),
+				$cell( 'd31p' ),
+				$saving > 0 ? esc_html( '−' . round( $saving * 100 ) . '%' ) : '—'
+			);
+		}
+		$out .= '</tbody></table>';
+		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_note' ) ) . '</p>';
+		if ( $unpriced ) {
+			$names = implode( ', ', array_map( fn( $c ) => esc_html( $c->post_title ), $unpriced ) );
+			$out  .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_unpriced' ) ) . ': ' . $names . '</p>';
+		}
+		return $out . '</div>';
 	}
 
 	/* ---------------------------------------------------------------- FAQ */

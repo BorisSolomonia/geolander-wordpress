@@ -22,7 +22,7 @@ return [
 	'nav_about'       => 'About Geolander',
 	'book_now'        => 'Book Now',
 
-	'hero_title'      => 'Explore Georgia Your Way',
+	'hero_title'      => '4×4 car rental in Tbilisi, Georgia — the exact car you book is the one you get',
 	'hero_subtitle'   => 'Premium 4x4 car rental in Tbilisi, built for Caucasus mountain roads — full insurance included and free Tbilisi Airport delivery',
 	'hero_cta'        => 'Browse Our Fleet',
 	'hero_cta2'       => 'View Destinations',
@@ -200,4 +200,22 @@ return [
 	'nf_or'            => 'or',
 	'nf_fleet'         => 'browse our fleet',
 	'nf_agent_recovery'=> 'Agent recovery',
+
+	// City landing pages — SEO title/description templates (%s = city name).
+	'city_seo_title'       => 'Car Rental in %s, Georgia (Country) — No Deposit, Full Insurance',
+	'city_seo_description' => 'Rent an exact 4x4 or AWD car delivered in %s, Georgia. No security deposit, full insurance included, real photos of the car you get, 24/7 WhatsApp support.',
+
+	// Long-term rental rates block (/long-term-car-rental-georgia/).
+	'longterm_table_title' => 'Long-term rates by rental length (USD per day)',
+	'longterm_vehicle'     => 'Vehicle',
+	'longterm_season'      => 'Season',
+	'longterm_tier_short'  => '1–2 days',
+	'longterm_tier_19_30'  => '19–30 days',
+	'longterm_tier_31'     => '31+ days',
+	'longterm_saving'      => 'Saving at 31+ days vs. a short rental',
+	'longterm_note'        => 'Rates are read live from each car’s seasonal price table. A rental that spans two seasons is priced day by day at each season’s rate.',
+	'longterm_cta'         => 'Ask for a monthly quote on WhatsApp',
+	'longterm_unpriced'    => 'Price on request',
+	'nav_long_term'        => 'Long-term rental',
+	'home_seo_title'       => '4x4 car rental in Georgia (country) — Tbilisi',
 ];

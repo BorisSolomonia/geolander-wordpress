@@ -49,6 +49,9 @@ class GLC_Schema {
 		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
 			$graph[] = self::guide( get_the_ID() );
 			$graph[] = self::breadcrumbs( self::current_trail() );
+		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_service_type', true ) ) {
+			$graph[] = self::service( get_the_ID() );
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$graph[] = self::fleet_list();
 		} elseif ( is_front_page() ) {
@@ -226,6 +229,31 @@ class GLC_Schema {
 		$year  = get_post_meta( $post_id, 'glc_year', true );
 
 		/*
+		 * Product.description is a recommended field and 13 of the imported cars
+		 * have no body text, so the validator warned on each. Fall back to a
+		 * sentence assembled ONLY from the stored specs — year, transmission,
+		 * drivetrain, fuel, seats — never from anything the owner has not entered.
+		 * Empty specs are simply left out; nothing is guessed.
+		 */
+		$description = GLC_Content::excerpt( $post_id, 40 );
+		if ( '' === trim( $description ) ) {
+			$specs = array_filter( [
+				$year ? (string) $year : '',
+				(string) get_post_meta( $post_id, 'glc_transmission', true ),
+				(string) get_post_meta( $post_id, 'glc_drivetrain', true ),
+				(string) get_post_meta( $post_id, 'glc_fuel_type', true ),
+				( $seats = (int) get_post_meta( $post_id, 'glc_seats', true ) ) ? $seats . ' ' . glc_ui( 'seats' ) : '',
+			] );
+			$description = trim( sprintf(
+				'%s%s — %s, %s.',
+				get_the_title( $post_id ),
+				$specs ? ' (' . implode( ', ', $specs ) . ')' : '',
+				glc_ui( 'booking_title' ),
+				glc_ui( 'fleet_subtitle' )
+			) );
+		}
+
+		/*
 		 * A Product offer advertising lowPrice 0 is not a missing price — it is a
 		 * false price, and it was being published to Google's structured-data
 		 * pipeline and to every AI crawler robots.txt invites. When the car has no
@@ -263,7 +291,7 @@ class GLC_Schema {
 			'name'                => get_the_title( $post_id ),
 			// Localized description: schema declares inLanguage per locale, so the
 			// description must match it rather than always being English.
-			'description'         => GLC_Content::excerpt( $post_id, 40 ),
+			'description'         => $description,
 			'image'               => array_values( array_unique( $images ) ),
 			'url'                 => get_permalink( $post_id ),
 			'brand'               => $brand ? [ '@type' => 'Brand', 'name' => $brand[0] ] : null,
@@ -321,6 +349,40 @@ class GLC_Schema {
 			'about'            => [
 				'@type' => 'TouristDestination',
 				'name'  => get_post_meta( $post_id, 'glc_guide_route', true ),
+			],
+		];
+	}
+
+	/**
+	 * Service node for a curated service page (long-term rental, …). The
+	 * service type is a page meta so a new service page needs no code. No
+	 * `offers`: the per-day rate is read live by the rates block on the page,
+	 * and a single price here would freeze one number Google may quote for a
+	 * year. areaServed mirrors the business node's four cities.
+	 */
+	private static function service( int $post_id ): array {
+		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
+		if ( class_exists( 'GLC_City' ) ) {
+			foreach ( GLC_City::all() as $city ) {
+				$name = GLC_City::city_name( $city->ID );
+				if ( $name ) {
+					$area[] = [ '@type' => 'City', 'name' => $name ];
+				}
+			}
+		}
+		return [
+			'@type'       => 'Service',
+			'@id'         => get_permalink( $post_id ) . '#service',
+			'serviceType' => (string) get_post_meta( $post_id, 'glc_service_type', true ),
+			'name'        => GLC_Content::title( $post_id ),
+			'description' => get_post_meta( $post_id, 'glc_seo_description_en', true ) ?: GLC_Content::excerpt( $post_id, 40 ),
+			'url'         => get_permalink( $post_id ),
+			'provider'    => [ '@id' => home_url( '/#business' ) ],
+			'areaServed'  => $area,
+			'availableChannel' => [
+				'@type'        => 'ServiceChannel',
+				'serviceUrl'   => get_permalink( $post_id ),
+				'servicePhone' => GLC_Settings::get( 'phone' ),
 			],
 		];
 	}
@@ -393,8 +455,8 @@ class GLC_Schema {
 				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
 			];
 		}
-		if ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
-			return [ [ get_permalink(), get_the_title() ] ];
+		if ( is_singular( 'page' ) && ( get_post_meta( get_the_ID(), 'glc_guide_route', true ) || get_post_meta( get_the_ID(), 'glc_service_type', true ) ) ) {
+			return [ [ get_permalink(), GLC_Content::title( get_the_ID() ) ] ];
 		}
 		return [];
 	}

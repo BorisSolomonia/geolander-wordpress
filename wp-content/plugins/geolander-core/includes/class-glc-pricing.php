@@ -265,6 +265,39 @@ class GLC_Pricing {
 		return $floor;
 	}
 
+	/**
+	 * Per-tier rates for one car: [ season label => [ tier => rate ] ], only
+	 * seasons that carry a positive rate for the requested tiers. Used by the
+	 * long-term rates block; zero and missing rates are dropped, never printed.
+	 */
+	public static function tier_rates( int $car_id, array $tiers ): array {
+		$out = [];
+		foreach ( self::seasons( $car_id ) as $season ) {
+			$row = [];
+			foreach ( $tiers as $tier ) {
+				$rate = (float) ( $season['rates'][ $tier ] ?? 0 );
+				if ( $rate > 0 ) {
+					$row[ $tier ] = $rate;
+				}
+			}
+			if ( $row ) {
+				$out[ (string) ( $season['label'] ?: ( $season['from'] . ' – ' . $season['to'] ) ) ] = $row;
+			}
+		}
+		return $out;
+	}
+
+	/** Cheapest positive day-rate across the fleet for ONE duration tier (e.g. 'd31p'). 0.0 when none. */
+	public static function tier_floor( string $tier ): float {
+		$lows = [];
+		foreach ( get_posts( [ 'post_type' => 'car', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ] ) as $car_id ) {
+			foreach ( self::tier_rates( (int) $car_id, [ $tier ] ) as $row ) {
+				$lows[] = $row[ $tier ];
+			}
+		}
+		return $lows ? min( $lows ) : 0.0;
+	}
+
 	/** Highest real day-rate across published, priced vehicles. */
 	public static function fleet_ceiling(): float {
 		static $ceiling = null;
