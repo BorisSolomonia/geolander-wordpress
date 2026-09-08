@@ -9,6 +9,22 @@ UPLOADS="$WEB_ROOT/wp-content/uploads"
 # code root-owned and writable only through a new build. Keep media writable.
 # Local bind-mount development opts out to avoid changing host ownership.
 if [ "${GLC_SKIP_FILE_HARDENING:-0}" != '1' ]; then
+	# The official image declares /var/www/html as a VOLUME, so the web root
+	# survives every rebuild and the stock entrypoint seeds it only when empty.
+	# Observed 2026-09-08: a rebuild shipped plugin 1.5.0 into /usr/src/wordpress
+	# while the served web root stayed at 1.4.0. This deployment is image-driven:
+	# the image is the source of truth for project code, so re-sync it on every
+	# start. Uploads and wp-config are never touched.
+	for glc_path in plugins/geolander-core themes/geolander; do
+		if [ -d "/usr/src/wordpress/wp-content/$glc_path" ]; then
+			rm -rf "$WEB_ROOT/wp-content/$glc_path"
+			mkdir -p "$(dirname "$WEB_ROOT/wp-content/$glc_path")"
+			cp -a "/usr/src/wordpress/wp-content/$glc_path" "$WEB_ROOT/wp-content/$glc_path"
+		fi
+	done
+	for glc_file in healthz _internal-apache-status googlecaf9dc315ab07aac.html; do
+		[ -f "/usr/src/wordpress/$glc_file" ] && cp -a "/usr/src/wordpress/$glc_file" "$WEB_ROOT/$glc_file"
+	done
 	mkdir -p "$UPLOADS"
 	# The stock entrypoint can restore bundled plugins after image build layers
 	# have removed them. Remove the known inactive packages after initialization.

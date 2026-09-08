@@ -272,6 +272,26 @@ git checkout --detach origin/main
 docker compose --env-file .env.host -f compose.host.yml up -d --build
 docker compose --env-file .env.host -f compose.host.yml ps
 curl --fail http://127.0.0.1:8080/healthz
+docker compose --env-file .env.host -f compose.host.yml exec wordpress \
+  wp plugin list --allow-root --fields=name,version | grep geolander-core   # must show the new version
+```
+
+The web root `/var/www/html` is a Docker volume, so a rebuild alone does not replace
+served code: `docker/hardened-apache-start.sh` re-syncs `geolander-core` and the
+theme from the image on every container start (added 2026-09-08 after a rebuild left
+the web root on the previous plugin version). If the version check above still shows
+the old number, the running container predates that script — restart it once.
+
+If `/opt/geolander` is not a git checkout (the first deployment was made from an
+exported tree), replace the `git` lines with a stream from a workstation:
+`git archive --format=tar HEAD | ssh ubuntu@VM 'cd /opt/geolander && tar xf -'`
+and never extract over `data/` or `.env.host` (the archive contains neither).
+
+After a release that adds migrations, run them explicitly, for example:
+
+```bash
+docker compose --env-file .env.host -f compose.host.yml exec wordpress sh -c \
+  'wp eval-file /migration/<script>.php --allow-root && wp rewrite flush --allow-root'
 ```
 
 Never run `git clean -fdx` in `/opt/geolander`; it can remove persistent deployment
