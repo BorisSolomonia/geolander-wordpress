@@ -1,5 +1,9 @@
 # Geolander host migration
 
+For a complete operator-ready procedure, including Oracle instance creation,
+Cloudflare Tunnel setup, secret generation, cutover, backups, and rollback, use
+[`docs/ORACLE-DEPLOYMENT-RUNBOOK.md`](ORACLE-DEPLOYMENT-RUNBOOK.md).
+
 This deployment replaces Railway with one Linux VM while preserving the existing
 containerized WordPress architecture. WordPress and MariaDB remain private. The
 only public path is an outbound-only Cloudflare Tunnel to `wordpress:80`.
