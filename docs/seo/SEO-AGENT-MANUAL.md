@@ -9,6 +9,8 @@ importantly — **the claims that were tested and found false**, so you do not r
 
 **Version:** 1.0 · **Research date:** 2026-08-14 · **Re-verify anything time-sensitive before acting.**
 
+**9 September 2026 supplement:** Read [the evidence-led growth audit](SEO-EVIDENCE-LED-GROWTH-2026-09-09.md) and [its implementation/release checklist](SEO-IMPLEMENTATION-2026-09-09.md) before further SEO work. They document current fleet evidence, changed competitor/tourism findings, repaired URL/booking defects, and a dated owner plan. The prime directives below still apply. Work on `seo/evidence-led-growth-2026-09` is not yet deployed; do not confuse local verification with live deployment or Google security clearance.
+
 ---
 
 # 0 · PRIME DIRECTIVES

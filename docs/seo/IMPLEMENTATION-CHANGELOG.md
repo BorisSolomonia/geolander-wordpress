@@ -168,3 +168,13 @@ node _migration/validate-schema.mjs http://localhost:8080
 `[UNVERIFIED]` **None of this has been run against a live WordPress instance.** The container has no
 database and the device has no PHP runtime, so every change is verified by lint, by the standalone
 pricing harness, and by reading — not by a rendered page. Run step 5 before deploying.
+
+---
+
+## 9 September 2026 — evidence-led growth supplement
+
+The section above records the historical P0/P1 handoff, not the current deployment or test status. See [current research and owner plan](SEO-EVIDENCE-LED-GROWTH-2026-09-09.md) and [implementation/release results](SEO-IMPLEMENTATION-2026-09-09.md).
+
+Branch `seo/evidence-led-growth-2026-09` adds stable language URLs, same-origin redirects, corrected duplicate/canonical rules, localized visible headings, IndexNow protocol guards, booking/privacy fixes, omitted missing prices, an airport-cost decision resource and dated vehicle-evidence infrastructure. It does not invent vehicle records, merge to production, deploy, or perform outreach.
+
+The unchanged production baseline passed the old schema guard (1,117 checks; one warning). New targeted local HTTP checks pass 21/21; regression assertions and the 17 existing contract suites pass. The complete updated guard remains non-green on the intentionally incomplete local fixtures (missing production pages and signing credentials); production validation is required after an approved release. Owner deadlines and remaining access/data dependencies are documented in the linked plan.
