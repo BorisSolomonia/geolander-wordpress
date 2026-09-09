@@ -9,7 +9,7 @@
  *
  * Protocol: https://www.indexnow.org/documentation — the site proves key
  * ownership by serving the key at https://host/{key}.txt, then POSTs
- * {host, key, keyUrlLocation, urlList} to api.indexnow.org.
+ * {host, key, keyLocation, urlList} to api.indexnow.org.
  *
  * The key is generated once and stored in the options table; the owner may
  * override it in Settings → Geolander → Search engines (paste the same key into
@@ -123,11 +123,19 @@ class GLC_IndexNow {
 	 * mismatch · 429 too many requests.
 	 */
 	public static function ping( array $urls, string $reason = 'manual' ): array {
+		// Local imports and staging edits must never announce test URLs publicly.
+		if ( 'production' !== wp_get_environment_type() ) {
+			return [ 'status' => null, 'count' => 0 ];
+		}
+		$host = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
 		$urls = array_values( array_unique( array_filter( array_map( 'strval', $urls ) ) ) );
+		$urls = array_values( array_filter( $urls, static function ( $url ) use ( $host ) {
+			return wp_parse_url( $url, PHP_URL_HOST ) === $host
+				&& in_array( wp_parse_url( $url, PHP_URL_SCHEME ), [ 'http', 'https' ], true );
+		} ) );
 		if ( ! $urls ) {
 			return [ 'status' => null, 'count' => 0 ];
 		}
-		$host   = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
 		$status = null;
 		foreach ( array_chunk( $urls, self::BATCH ) as $chunk ) {
 			$response = wp_remote_post( self::ENDPOINT, [
@@ -136,7 +144,7 @@ class GLC_IndexNow {
 				'body'    => wp_json_encode( [
 					'host'           => $host,
 					'key'            => self::key(),
-					'keyUrlLocation' => self::key_url(),
+					'keyLocation'    => self::key_url(),
 					'urlList'        => $chunk,
 				] ),
 			] );

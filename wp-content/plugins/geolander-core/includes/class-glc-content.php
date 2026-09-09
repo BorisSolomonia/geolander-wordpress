@@ -40,6 +40,17 @@ class GLC_Content {
 		add_action( 'init', [ __CLASS__, 'register_meta' ] );
 		add_action( 'add_meta_boxes', [ __CLASS__, 'meta_boxes' ] );
 		add_action( 'save_post', [ __CLASS__, 'save' ], 10, 2 );
+		add_filter( 'the_title', [ __CLASS__, 'localized_title' ], 10, 2 );
+	}
+
+	/** Core post-title blocks must use the same translation as the document title. */
+	public static function localized_title( string $title, $post_id = 0 ): string {
+		if ( is_admin() || 'en' === self::current_locale() || ! $post_id ) { return $title; }
+		$post = get_post( $post_id );
+		if ( ! $post || ! in_array( 'title', self::TRANSLATABLE[ $post->post_type ] ?? [], true ) ) { return $title; }
+		$translated = self::title( $post );
+		// Preserve other filters and the original title when no translation exists.
+		return $translated !== $post->post_title ? $translated : $title;
 	}
 
 	/** Locales that need a translation (every locale except the English source). */

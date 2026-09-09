@@ -14,6 +14,7 @@
 
 	var current = null;
 	var busy = false; // guards BOTH the submit button and the sticky-bar CTA
+	var quoteVersion = 0, quoteController = null;
 
 	function fmtMoney(value) {
 		var rules = cfg.fmt || {};
@@ -22,10 +23,6 @@
 		if (rules.decimal && rules.decimal !== '.') amount = amount.replace('.', rules.decimal);
 		return rules.symBefore === false ? amount + ' ' + (rules.symbol || '$') : (rules.symbol || '$') + amount;
 	}
-
-	// (No money formatter here: car pages show no prices, so nothing client-side
-	// renders an amount. GLC_Format::money() still handles every server-rendered
-	// price elsewhere, e.g. the front-page range.)
 
 	// ISO date → the active locale's pattern (mirrors GLC_Format::date).
 	function fmtDate(iso) {
@@ -46,22 +43,27 @@
 		errEl.textContent = msg || '';
 		errEl.hidden = !msg;
 		if (msg) lines.hidden = true;
-		submit.disabled = !!msg;
+		submit.disabled = busy || !current || !!msg;
 	}
 
 	function refresh() {
 		var from = fromEl.value, to = toEl.value;
+		var version = ++quoteVersion;
+		if (quoteController) quoteController.abort();
+		quoteController = new AbortController();
 		current = null;
+		lines.hidden = true;
+		setError('');
+		if (barDates) barDates.textContent = '';
+		if ($('glc-bar-total')) $('glc-bar-total').textContent = '';
 		if (!from || !to || to <= from) { setError(''); submit.disabled = true; return; }
 		submit.disabled = true;
-		fetch(cfg.restQuote + '?car=' + cfg.carId + '&from=' + from + '&to=' + to + '&pickup=' + encodeURIComponent(pickupEl.value) + '&return=' + encodeURIComponent(returnEl.value))
+		fetch(cfg.restQuote + '?car=' + cfg.carId + '&from=' + from + '&to=' + to + '&pickup=' + encodeURIComponent(pickupEl.value) + '&return=' + encodeURIComponent(returnEl.value), { signal: quoteController.signal })
 			.then(function (r) { return r.ok ? r.json() : Promise.reject(); })
 			.then(function (q) {
+				if (version !== quoteVersion) return;
 				current = q;
-				// Price elements are intentionally absent (no prices on car pages),
-				// so every write is guarded — the quote is still fetched to validate
-				// the dates and unlock the button, and the total reaches staff via
-				// the WhatsApp message the server builds.
+				// Reflect only the most recently requested server-priced quote.
 				var days = $('glc-b-days');
 				if (days) days.textContent = q.days;
 				$('glc-b-rental').textContent = fmtMoney(q.rental_total);
@@ -74,7 +76,7 @@
 				$('glc-b-return-row').hidden = !(q.return_fee > 0);
 				lines.hidden = false;
 				setError('');
-				submit.disabled = false;
+				submit.disabled = busy;
 				if (barDates) barDates.textContent = fmtDate(from) + ' → ' + fmtDate(to);
 				var barTotal = $('glc-bar-total');
 				if (barTotal) barTotal.textContent = fmtMoney(q.total);
@@ -84,7 +86,9 @@
 				url.searchParams.set('to', to);
 				history.replaceState(null, '', url);
 			})
-			.catch(function () { setError(cfg.i18n.quoteError); });
+			.catch(function () {
+				if (version === quoteVersion) setError(cfg.i18n.quoteError);
+			});
 	}
 
 	function checkout() {
@@ -95,6 +99,7 @@
 			return;
 		}
 		busy = true;
+		var submittedQuote = current;
 		submit.disabled = true;
 		// Open the destination tab synchronously, inside the click gesture, so
 		// Safari/Firefox don't treat the later window.open() as an unsolicited
@@ -119,7 +124,7 @@
 			.then(function (r) { return r.ok ? r.json() : Promise.reject(); })
 			.then(function (res) {
 				busy = false;
-				submit.disabled = false;
+				submit.disabled = !current;
 				$('glc-b-next-title').textContent = '✓ ' + res.reference + ' — ' + cfg.i18n.nextTitle;
 				$('glc-b-next-text').textContent = res.emailSent ? cfg.i18n.receiptSent : cfg.i18n.receiptNotSent;
 				$('glc-b-next').hidden = false;
@@ -127,15 +132,14 @@
 				if (typeof window.gtag === 'function') {
 					window.gtag('event', 'booking_request', {
 						currency: 'USD',
-						value: current ? current.total : 0,
-						car: cfg.carId,
-						reference: res.reference
+						value: submittedQuote.total,
+						car: cfg.carId
 					});
 					if (cfg.adsSendTo) {
 						window.gtag('event', 'conversion', {
 							send_to: cfg.adsSendTo,
 							currency: 'USD',
-							value: current ? current.total : 0,
+							value: submittedQuote.total,
 							transaction_id: res.reference
 						});
 					}
@@ -158,7 +162,8 @@
 	function customerChanged() {
 		if (current && nameEl && nameEl.value.trim() && emailEl && emailEl.checkValidity()) {
 			setError('');
-			submit.disabled = false;
+			lines.hidden = false;
+			submit.disabled = busy;
 		}
 	}
 	if (nameEl) nameEl.addEventListener('input', customerChanged);

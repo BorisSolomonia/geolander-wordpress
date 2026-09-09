@@ -43,6 +43,22 @@ class GLC_SEO {
 		add_action( 'init', [ __CLASS__, 'register_archive_sitemap' ] );
 		add_filter( 'robots_txt', [ __CLASS__, 'robots' ] );
 		add_action( 'wp_head', [ __CLASS__, 'gtag' ], 8 );
+		add_action( 'template_redirect', [ __CLASS__, 'redirect_full_archives' ], 1 );
+	}
+
+	/** These two custom grids render ALL items, not a slice of the WP main query. */
+	public static function full_archive_redirect(): string {
+		if ( is_404() || ! is_paged() || ! is_post_type_archive( [ 'car', 'place' ] ) ) { return ''; }
+		$query = wp_unslash( $_GET );
+		unset( $query['paged'] );
+		return add_query_arg( $query, get_post_type_archive_link( get_post_type() ) );
+	}
+	public static function redirect_full_archives(): void {
+		$url = self::full_archive_redirect();
+		if ( $url && in_array( $_SERVER['REQUEST_METHOD'] ?? 'GET', [ 'GET', 'HEAD' ], true ) ) {
+			wp_safe_redirect( $url, 301, 'Geolander full archive' );
+			exit;
+		}
 	}
 
 	/**
@@ -157,23 +173,12 @@ class GLC_SEO {
 	}
 
 	/**
-	 * noindex, follow on the thin taxonomy archives and on paginated / search
-	 * results — "follow" so the cars they list stay reachable and internal equity
-	 * keeps flowing, "noindex" because none of them is a page anyone should land
-	 * on from search.
+	 * Thin taxonomies, search and faceted results remain crawlable but noindex.
+	 * Pagination has its own canonical; language parameters use a clean canonical.
 	 */
 	public static function robots_archives( array $robots ): array {
-		/*
-		 * The 2026-09-07 crawl found 83 crawlable duplicates carrying ?glc_lang=
-		 * (the language switcher's explicit-English link) and 14 carrying ?region=
-		 * (the places filter). Each already canonicalises to the clean URL; this
-		 * plus the robots.txt Disallow below stops Google spending the crawl
-		 * budget of an 80-page site on 97 copies of it.
-		 */
 		$thin = is_tax( [ 'car_brand', 'car_body_type', 'place_region' ] )
 			|| is_search()
-			|| is_paged()
-			|| isset( $_GET['glc_lang'] )
 			|| isset( $_GET['region'] );
 
 		if ( $thin ) {
@@ -190,6 +195,8 @@ class GLC_SEO {
 	 * grounding — AI answer visibility is a business channel here.
 	 */
 	public static function robots( string $output ): string {
+		// Never override WordPress's site-wide crawl exclusion on a private site.
+		if ( preg_match( '#^Disallow:\s*/\s*$#mi', $output ) ) { return $output; }
 		// Permit search and answer-time use while reserving model-training rights.
 		$ai = "\nContent-Signal: search=yes, ai-input=yes, ai-train=no\n";
 		foreach ( [
@@ -207,12 +214,12 @@ class GLC_SEO {
 			'ora-agent',
 			'CCBot',
 		] as $bot ) {
-			$ai .= "\nUser-agent: {$bot}\nAllow: /\n";
+			// A specific user-agent group does not inherit wildcard exclusions.
+			$ai .= "\nUser-agent: {$bot}\nAllow: /\nDisallow: /wp-admin/\nAllow: /wp-admin/admin-ajax.php\n";
 		}
 		$ai .= "\nAgentmap: " . home_url( '/.well-known/ai-catalog.json' ) . "\n";
-		// Parameter views are duplicates of clean URLs (see robots_archives()).
-		$params = "\nUser-agent: *\nDisallow: /*?glc_lang=\nDisallow: /*&glc_lang=\nDisallow: /*?region=\n";
-		return $output . $params . $ai;
+		// Crawlers must fetch parameter pages to see canonical/noindex directives.
+		return $output . $ai;
 	}
 
 	/** Google tag (GA4 + Ads) — renders only when IDs are configured. */
@@ -224,16 +231,9 @@ class GLC_SEO {
 		}
 		$primary = $ga4 ?: $ads;
 		printf( "<script async src=\"https://www.googletagmanager.com/gtag/js?id=%s\"></script>\n", esc_attr( $primary ) );
-		echo "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());";
-		if ( $ga4 ) {
-			printf( "gtag('config','%s');", esc_js( $ga4 ) );
-		}
-		if ( $ads ) {
-			printf( "gtag('config','%s');", esc_js( $ads ) );
-		}
-		// The only conversion this site has is a tap on WhatsApp. Count it.
-		echo "document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href*=\"api.whatsapp.com\"],a[href*=\"wa.me\"]');if(a){gtag('event','whatsapp_click',{link_url:a.href,page_location:location.href});}},true);";
-		echo "</script>\n";
+		// Keep our measurements free of booking messages, customer details and URL queries.
+		printf( '<script>window.glcAnalytics=%s;</script>' . "\n", wp_json_encode( [ 'ids' => array_values( array_filter( [ $ga4, $ads ] ) ) ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) );
+		wp_enqueue_script( 'glc-analytics', GLC_URL . 'assets/analytics.js', [], GLC_VERSION, false );
 	}
 
 	private static function description(): string {
@@ -245,6 +245,9 @@ class GLC_SEO {
 				: '';
 			if ( $custom_description ) {
 				return wp_html_excerpt( $custom_description, 158, '…' );
+			}
+			if ( has_block( 'geolander/arrival-costs', $post ) ) {
+				return wp_html_excerpt( glc_ui( 'arrival_intro' ), 158, '…' );
 			}
 			// Localized body/excerpt so the description matches the page's hreflang.
 			$text = class_exists( 'GLC_Content' )
@@ -328,6 +331,9 @@ class GLC_SEO {
 		$url         = is_singular()
 			? get_permalink()
 			: ( is_post_type_archive() ? get_post_type_archive_link( get_post_type() ) : home_url( '/' ) );
+		if ( is_post_type_archive() && is_paged() ) {
+			$url = strtok( get_pagenum_link( (int) get_query_var( 'paged' ), false ), '?' );
+		}
 
 		$image = '';
 		if ( is_singular() && has_post_thumbnail() ) {
@@ -363,8 +369,8 @@ class GLC_SEO {
 			$canonical = '';
 			if ( is_front_page() ) {
 				$canonical = home_url( '/' );
-			} elseif ( is_post_type_archive() && ! is_paged() ) {
-				$canonical = (string) get_post_type_archive_link( get_post_type() );
+			} elseif ( is_post_type_archive() ) {
+				$canonical = (string) $url;
 			}
 			if ( $canonical && ! is_404() && ! is_search() ) {
 				printf( '<link rel="canonical" href="%s" />' . "\n", esc_url( $canonical ) );
