@@ -53,6 +53,8 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 				<p style="margin:0;font-size:0.95rem;line-height:1.7;"><?php echo esc_html( glc_t( 'terrain_text' ) ); ?></p>
 			</section>
 
+			<?php echo do_blocks( '<!-- wp:geolander/vehicle-evidence /-->' ); ?>
+
 			<?php if ( trim( GLC_Content::body( $glc_id ) ) ) : ?>
 			<section style="max-width:64ch;line-height:1.75;color:color-mix(in srgb, var(--glc-glacier) 85%, transparent);">
 				<?php echo wp_kses_post( wpautop( GLC_Content::body( $glc_id ) ) ); ?>

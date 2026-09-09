@@ -50,6 +50,7 @@ const PAGES = [
 	['guide-driver', `${BASE}/rent-a-car-or-hire-a-driver/`],
 	['guide-driving', `${BASE}/driving-in-georgia/`],
 	['guide-winter', `${BASE}/driving-in-georgia-in-winter/`],
+	['airport-costs', `${BASE}/georgia-airport-rental-costs/`],
 ];
 
 let errors = 0, warnings = 0, checks = 0;
@@ -781,11 +782,18 @@ try {
 		if (!all.includes(`${BASE}${path}</loc>`)) err(path, 'archive page missing from wp-sitemap (archives provider)'); else ok();
 	}
 	const robotsTxt = await (await fetch(`${BASE}/robots.txt`)).text();
-	for (const rule of ['Disallow: /*?glc_lang=', 'Disallow: /*?region=']) {
-		if (!robotsTxt.includes(rule)) err('robots', `missing "${rule}" — parameter duplicates crawlable`); else ok();
+	// Crawlers must see the canonical/noindex; robots blocking is not canonicalization.
+	for (const rule of ['Disallow: /*?glc_lang=', 'Disallow: /*&glc_lang=', 'Disallow: /*?region=']) {
+		if (robotsTxt.includes(rule)) err('robots', `"${rule}" prevents discovery of canonical/noindex directives`); else ok();
 	}
 	const dup = await fetch(`${BASE}/fleet/?glc_lang=en`, { headers: { Accept: 'text/html' } });
-	if (!/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(await dup.text())) err('/fleet/?glc_lang=en', 'parameter view is indexable'); else ok();
+	const dupHtml = await dup.text();
+	if (!dup.ok) err('/fleet/?glc_lang=en', `HTTP ${dup.status}`); else ok();
+	if (/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(dupHtml)) err('/fleet/?glc_lang=en', 'language parameter has conflicting noindex'); else ok();
+	const dupCanonical = dupHtml.match(/<link\b(?=[^>]*\brel=['"]canonical['"])[^>]*\bhref=['"]([^'"]+)/i)?.[1];
+	if (dupCanonical !== `${BASE}/fleet/`) err('/fleet/?glc_lang=en', `wrong canonical: ${dupCanonical}`); else ok();
+	const facet = await fetch(`${BASE}/places/?region=kazbegi`, { headers: { Accept: 'text/html' } });
+	if (!facet.ok || !/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(await facet.text())) err('place-filter', 'filtered results must stay crawlable with noindex'); else ok();
 	const music = await fetch(`${BASE}/music/`, { headers: { Accept: 'text/html' } });
 	const musicHtml = await music.text();
 	if (!/<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(musicHtml)) err('/music/', 'missing noindex meta'); else ok();

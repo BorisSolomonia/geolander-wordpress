@@ -362,6 +362,7 @@ class GLC_Blocks {
 		}
 		$out .= '</dl>';
 		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'rental_insurance_exclusions' ) ) . '</p>';
+		$out .= GLC_Trip_Tools::link();
 		return $out;
 	}
 
@@ -373,6 +374,10 @@ class GLC_Blocks {
 		if ( ! is_array( $pricing ) || ! $pricing ) {
 			return '';
 		}
+		$pricing = array_filter( $pricing, static fn( $season ) => is_array( $season ) && array_filter(
+			(array) ( $season['rates'] ?? [] ), static fn( $rate ) => is_numeric( $rate ) && (float) $rate > 0
+		) );
+		if ( ! $pricing ) { return ''; }
 		[ $from, $to ] = self::requested_dates();
 		$active_tier   = '';
 		$active_labels = [];
@@ -393,10 +398,11 @@ class GLC_Blocks {
 			$out .= '<tr><td>' . esc_html( $season['label'] ?? '' ) . '</td>';
 			foreach ( GLC_Pricing::TIERS as $tier ) {
 				$is_active = $tier === $active_tier && in_array( $season['label'] ?? '', $active_labels, true );
+				$rate = $season['rates'][ $tier ] ?? null;
 				$out      .= sprintf(
 					'<td%s>%s</td>',
 					$is_active ? ' class="glc-active-cell"' : '',
-					esc_html( GLC_Format::money( (float) ( $season['rates'][ $tier ] ?? 0 ) ) )
+					is_numeric( $rate ) && (float) $rate > 0 ? esc_html( GLC_Format::money( (float) $rate ) ) : ''
 				);
 			}
 			$out .= '</tr>';
