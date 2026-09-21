@@ -1,0 +1,52 @@
+/* A roadbook within the existing Kazbegi Dusk palette: route tabs and a handover matrix. */
+.glc-roadbook { padding: clamp(2rem, 3vw, 3rem) 1.25rem; }
+.glc-roadbook > *, .glc-roadbook .wp-block-post-content > * { max-width: 960px; }
+.glc-trip-planner { display: grid; gap: 2rem; }
+.glc-trip-planner > p { margin-block: 0; }
+.glc-trip-planner [hidden] { display: none !important; }
+.glc-trip-planner h2, .glc-trip-teaser h2 { font-family: var(--wp--preset--font-family--display); font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.2; text-wrap: balance; }
+.glc-trip-lead { font-size: 1.2rem; max-width: 66ch; }
+.glc-trip-review { color: var(--glc-stone); font-size: .875rem; display: flex; flex-wrap: wrap; gap: .4rem 1rem; }
+.glc-trip-form, .glc-trip-result { padding: clamp(1.25rem, 4vw, 2.5rem); background: var(--wp--preset--color--surface); border-radius: 16px; border: 1px solid color-mix(in srgb, var(--glc-stone) 35%, transparent); }
+.glc-trip-form h2, .glc-trip-result h2 { margin-block-start: 0; }
+.glc-trip-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-block: 1.5rem; }
+.glc-trip-fields label { display: grid; gap: .5rem; min-width: 0; font-size: .95rem; }
+.glc-trip-fields label:first-child { grid-column: 1 / -1; }
+.glc-trip-fields select, .glc-trip-result textarea { width: 100%; min-height: 48px; font: inherit; color: var(--wp--preset--color--glacier); background: var(--wp--preset--color--ink); border: 1px solid var(--glc-stone); border-radius: 6px; padding: .7rem; }
+.glc-trip-result { border-inline-start: 4px solid var(--glc-accent); scroll-margin-block-start: 6rem; }
+.glc-trip-result strong { display: block; font-size: 2.5rem; font-family: var(--wp--preset--font-family--display); }
+.glc-trip-copy { min-height: 48px; padding: .65rem 1rem; border: 1px solid var(--glc-stone); background: transparent; color: inherit; font: inherit; border-radius: 6px; cursor: pointer; }
+.glc-trip-result textarea { margin-block-start: .75rem; resize: vertical; }
+.glc-trip-nav { display: flex; flex-wrap: wrap; gap: .6rem; }
+.glc-trip-nav a { padding: .7rem 1rem; min-height: 44px; border: 1px solid color-mix(in srgb, var(--glc-stone) 50%, transparent); border-radius: 4px; text-decoration: none; font-size: .95rem; }
+.glc-trip-nav a:hover { border-color: var(--glc-accent); }
+.glc-trip-decisions { display: grid; gap: 0; }
+.glc-trip-decision { padding-block: 2rem; border-block-end: 1px solid color-mix(in srgb, var(--glc-stone) 25%, transparent); scroll-margin-block-start: 6rem; }
+.glc-trip-decision:target { border-inline-start: 3px solid var(--glc-accent); padding-inline-start: 1.25rem; }
+.glc-trip-decision h2 { margin-block: .6rem 1rem; }
+.glc-trip-decision p { max-width: 70ch; }
+.glc-trip-table { overflow-x: auto; }
+.glc-trip-table table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.glc-trip-table caption { text-align: start; padding-block: .5rem 1rem; font-size: .9rem; color: var(--glc-stone); }
+.glc-trip-table th, .glc-trip-table td { padding: 1rem .65rem; text-align: start; border-block-end: 1px solid color-mix(in srgb, var(--glc-stone) 35%, transparent); }
+.glc-trip-table thead { background: var(--wp--preset--color--surface); }
+.glc-trip-table th:first-child { max-width: 10rem; }
+.glc-trip-table abbr { text-decoration: none; }
+.glc-trip-checklist { border-inline-start: 3px solid var(--glc-accent); padding-inline-start: 1.5rem; }
+.glc-trip-checklist li, .glc-trip-sources li { margin-block: .8rem; }
+.glc-trip-sources { font-size: .95rem; }
+.glc-trip-planner :is(a, button, select, textarea):focus-visible, .glc-trip-result:focus { outline: 2px solid var(--glc-accent); outline-offset: 4px; }
+.glc-trip-teaser { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid var(--glc-stone); border-inline-start: 5px solid var(--glc-accent); border-radius: 12px; background: var(--wp--preset--color--surface); }
+.glc-trip-teaser p { max-width: 60ch; }
+.glc-trip-teaser h2 { margin-block: .5rem 1rem; }
+.glc-trip-teaser > a { flex-shrink: 0; }
+@media (max-width: 600px) {
+  .glc-trip-fields { grid-template-columns: 1fr; }
+  .glc-trip-teaser { flex-direction: column; align-items: start; }
+  .glc-trip-table th, .glc-trip-table td { padding: .85rem .4rem; font-size: .85rem; overflow-wrap: anywhere; }
+  .glc-trip-table th:first-child { max-width: 6rem; }
+}
+@media print {
+  .glc-trip-form, .glc-trip-copy, .glc-trip-nav { display: none; }
+  .glc-trip-decision { break-inside: avoid; }
+}

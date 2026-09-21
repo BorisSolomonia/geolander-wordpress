@@ -288,6 +288,9 @@ class GLC_AI {
 		}
 		if ( is_singular() ) {
 			$post = get_queried_object();
+			if ( $post instanceof WP_Post && has_block( 'geolander/trip-planner', $post ) ) {
+				return GLC_Trip_Planner::markdown();
+			}
 			$body = $post instanceof WP_Post ? self::html_to_markdown( GLC_Content::body( $post ) ) : '';
 			return sprintf(
 				"# %s\n\n%s%s\n\nCanonical URL: %s\n",
@@ -630,8 +633,7 @@ class GLC_AI {
 					],
 					'status'       => [
 						[
-							'href' => home_url( '/health.php' ),
-							'type' => 'text/plain',
+							'href' => home_url( '/healthz' ),
 						],
 					],
 				];
@@ -925,6 +927,9 @@ class GLC_AI {
 		}
 
 		$out .= "\n## Key pages\n\n";
+		if ( $planner_url = GLC_Trip_Planner::published_url( GLC_Trip_Planner::SLUG ) ) {
+			$out .= "- [Georgia road trip planner — rental timing, late arrivals, mountain routes and airport delivery costs]({$planner_url})\n";
+		}
 		$out .= "- [Fleet & live prices]({$home}fleet/)\n";
 		$out .= "- [Machine-readable price list]({$home}pricing.md)\n";
 		$out .= "- [Places to visit in Georgia by car]({$home}places/)\n";

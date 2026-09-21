@@ -46,6 +46,9 @@ class GLC_Schema {
 		} elseif ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
 			$graph[] = GLC_City::schema( get_the_ID() );
 			$graph[] = self::breadcrumbs( self::current_trail() );
+		} elseif ( is_singular( 'page' ) && has_block( 'geolander/trip-planner', get_the_ID() ) ) {
+			$graph[] = GLC_Trip_Planner::schema();
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
 			$graph[] = self::guide( get_the_ID() );
 			$graph[] = self::breadcrumbs( self::current_trail() );

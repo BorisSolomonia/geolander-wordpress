@@ -249,6 +249,9 @@ class GLC_SEO {
 			if ( has_block( 'geolander/arrival-costs', $post ) ) {
 				return wp_html_excerpt( glc_ui( 'arrival_intro' ), 158, '…' );
 			}
+			if ( has_block( 'geolander/trip-planner', $post ) ) {
+				return wp_html_excerpt( glc_ui( 'planner_description' ), 158, '…' );
+			}
 			// Localized body/excerpt so the description matches the page's hreflang.
 			$text = class_exists( 'GLC_Content' )
 				? GLC_Content::excerpt( $post, 40 )

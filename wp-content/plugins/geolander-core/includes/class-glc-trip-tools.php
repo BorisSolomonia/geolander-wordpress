@@ -26,7 +26,7 @@ class GLC_Trip_Tools {
 		}
 		$out .= '</ul><p><a href="' . esc_url( home_url( '/fleet/' ) ) . '">' . esc_html( glc_ui( 'arrival_quote' ) ) . '</a> · <a href="'
 			. esc_url( home_url( '/terms/' ) ) . '">' . esc_html( glc_ui( 'nav_terms' ) ) . '</a></p>';
-		return $out;
+		return $out . ( class_exists( 'GLC_Trip_Planner' ) ? GLC_Trip_Planner::link() : '' );
 	}
 	public static function link(): string {
 		$page = get_page_by_path( 'georgia-airport-rental-costs' );

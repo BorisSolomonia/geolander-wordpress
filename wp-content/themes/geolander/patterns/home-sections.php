@@ -22,6 +22,8 @@
 		</p>
 	</section>
 
+	<?php echo GLC_Trip_Planner::teaser(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+
 	<section class="glc-reveal">
 		<div class="glc-section-head">
 			<div class="glc-kicker"><?php echo glc_sign( 'process_title', '3 STEPS · 10% PREPAYMENT' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
