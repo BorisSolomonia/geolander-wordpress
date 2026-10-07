@@ -61,6 +61,14 @@ class GLC_Blocks {
 	public static function assets() {
 		if ( is_singular( 'car' ) ) {
 			wp_enqueue_script( 'glc-booking', GLC_URL . 'assets/booking.js', [], GLC_VERSION, [ 'strategy' => 'defer' ] );
+			wp_enqueue_script( 'glc-lightbox', GLC_URL . 'assets/lightbox.js', [], GLC_VERSION, [ 'strategy' => 'defer' ] );
+			wp_localize_script( 'glc-lightbox', 'glcLightbox', [
+				'prev'    => glc_ui( 'photo_prev' ),
+				'next'    => glc_ui( 'photo_next' ),
+				'close'   => glc_ui( 'photo_close' ),
+				'counter' => glc_ui( 'photo_counter' ),
+				'rtl'     => is_rtl(),
+			] );
 			$ads_id    = GLC_Settings::get( 'ads_id' );
 			$ads_label = GLC_Settings::get( 'ads_conversion_label' );
 			wp_localize_script( 'glc-booking', 'glcBooking', [
@@ -296,14 +304,54 @@ class GLC_Blocks {
 		if ( ! $gallery ) {
 			return '<div class="glc-gallery"><div class="glc-no-photo" style="grid-column:1/-1;aspect-ratio:21/9;border-radius:var(--glc-radius);">' . esc_html( glc_ui( 'photos_soon' ) ) . '</div></div>';
 		}
-		$gallery = array_slice( $gallery, 0, 5 );
-		$out     = '<div class="glc-gallery">';
-		foreach ( $gallery as $i => $att ) {
-			$full = wp_get_attachment_image_url( $att, 'full' );
+		/*
+		 * The grid still shows five tiles, because that is the layout. But the
+		 * gallery now carries EVERY photo for the lightbox: 12 of the 27 published
+		 * cars have more than five (up to 13), so until now a third of the fleet's
+		 * photographs were uploaded and then invisible to visitors. The overflow
+		 * count is shown on the last tile so people know there is more to see.
+		 *
+		 * The <a href> stays a real link to the full image. That is deliberate: with
+		 * JavaScript off, or for a crawler, clicking still reaches the photograph.
+		 * assets/lightbox.js intercepts the click and opens the dialog instead.
+		 * 'full' rather than a named size because glc-hero and glc-card are both
+		 * HARD CROPS — fine for tiles, wrong for looking at the car.
+		 */
+		$items = [];
+		foreach ( $gallery as $att ) {
+			$src = wp_get_attachment_image_src( $att, 'full' );
+			if ( ! $src || empty( $src[0] ) ) { continue; }
+			$items[] = [
+				'src' => $src[0],
+				'w'   => (int) ( $src[1] ?? 0 ),
+				'h'   => (int) ( $src[2] ?? 0 ),
+				'alt' => (string) get_post_meta( $att, '_wp_attachment_image_alt', true ),
+			];
+		}
+		if ( ! $items ) {
+			return '<div class="glc-gallery"><div class="glc-no-photo" style="grid-column:1/-1;aspect-ratio:21/9;border-radius:var(--glc-radius);">' . esc_html( glc_ui( 'photos_soon' ) ) . '</div></div>';
+		}
+
+		$visible  = array_slice( $gallery, 0, 5 );
+		$overflow = count( $items ) - count( $visible );
+		$out      = sprintf(
+			'<div class="glc-gallery" data-glc-lightbox="%s">',
+			esc_attr( wp_json_encode( $items, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) )
+		);
+		foreach ( $visible as $i => $att ) {
+			$full  = wp_get_attachment_image_url( $att, 'full' );
+			$last  = ( count( $visible ) - 1 ) === $i;
+			$badge = ( $last && $overflow > 0 )
+				/* translators: %d: how many further photographs there are */
+				? '<span class="glc-gallery-more" aria-hidden="true">+' . (int) $overflow . '</span>'
+				: '';
 			$out .= sprintf(
-				'<a href="%s" target="_blank" rel="noopener">%s</a>',
-				esc_url( $full ),
-				wp_get_attachment_image( $att, 0 === $i ? 'glc-hero' : 'glc-card', false, [ 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ] )
+				'<a href="%s" data-glc-index="%d" aria-label="%s">%s%s</a>',
+				esc_url( (string) $full ),
+				$i,
+				esc_attr( sprintf( glc_ui( 'photo_open' ), $i + 1, count( $items ) ) ),
+				wp_get_attachment_image( $att, 0 === $i ? 'glc-hero' : 'glc-card', false, [ 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ] ),
+				$badge
 			);
 		}
 		return $out . '</div>';

@@ -52,7 +52,10 @@ class GLC_Redirects {
 	 * Pages that stay live for visitors (linked from the footer) but should not
 	 * spend crawl budget or compete in search: noindex,follow and out of the sitemap.
 	 */
-	public const DEFAULT_NOINDEX = [ 'music', 'blog' ]; // blog: zero real posts as of 2026-09-07 — remove when the first article ships
+	// 'blog' was here while /blog/ was an empty placeholder page. It is now the
+	// news archive, and GLC_News::robots() noindexes it from the article count
+	// instead — a rule that maintains itself rather than a note asking a human to.
+	public const DEFAULT_NOINDEX = [ 'music' ];
 
 	public static function init(): void {
 		add_action( 'template_redirect', [ __CLASS__, 'redirect' ], 0 );

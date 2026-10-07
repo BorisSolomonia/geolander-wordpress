@@ -193,6 +193,7 @@ wp eval-file /migration/setup-seo-pages.php --allow-root
 wp eval-file /migration/setup-seo-p2-p3.php --allow-root
 wp eval-file /migration/setup-agent-readiness.php --allow-root
 wp eval-file /migration/setup-reputation-trust.php --allow-root
+wp eval-file /migration/setup-evidence-seo.php --allow-root
 wp rewrite flush --allow-root
 wp eval-file /migration/audit-fleet.php --allow-root
 exit
@@ -257,9 +258,11 @@ From a checkout containing Node.js, run the full schema guard:
 
 ```bash
 node _migration/validate-schema.mjs https://geo-lander.com
+node _migration/audit-seo-http.mjs https://geo-lander.com --strict --tools
 ```
 
-It must report zero errors. Warnings require review before announcing the deployment.
+The schema guard must report zero errors, and the strict HTTP audit must pass every
+check. Warnings require review before announcing the deployment.
 
 ## 10. Operations and updates
 
@@ -283,9 +286,13 @@ the web root on the previous plugin version). If the version check above still s
 the old number, the running container predates that script — restart it once.
 
 If `/opt/geolander` is not a git checkout (the first deployment was made from an
-exported tree), replace the `git` lines with a stream from a workstation:
-`git archive --format=tar HEAD | ssh ubuntu@VM 'cd /opt/geolander && tar xf -'`
-and never extract over `data/` or `.env.host` (the archive contains neither).
+exported tree), transfer a binary archive from the workstation. **Do not pipe a tar
+archive through Windows PowerShell**: PowerShell can reinterpret the binary stream
+and produce malformed tar headers. Create the archive with `git archive -o`, verify
+its SHA-256 hash, copy it with `scp`, verify the hash again on the VM, and only then
+extract it. The exact procedure is in
+[`docs/ORACLE-DEPLOYMENT-HANDOFF.md`](ORACLE-DEPLOYMENT-HANDOFF.md). Never include or
+overwrite `data/` or `.env.host`.
 
 After a release that adds migrations, run them explicitly, for example:
 

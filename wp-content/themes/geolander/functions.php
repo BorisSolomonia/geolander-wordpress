@@ -46,11 +46,68 @@ add_action( 'wp_head', function () {
 	echo '<style>@view-transition { navigation: auto; }</style>' . "\n";
 }, 3 );
 
-/** Image sizes tuned for the fleet grid and galleries. */
+/**
+ * Image sizes tuned for the fleet grid and galleries.
+ *
+ * WHY THERE ARE SMALL SIBLINGS FOR EACH CROP. WordPress builds a srcset only
+ * from candidates that share the requested size's ASPECT RATIO. The originals
+ * are 4:3, so WordPress's own medium/large/1536 sizes are 4:3 too; glc-card is
+ * 3:2 and glc-hero is 16:9, and neither had a single same-ratio sibling. The
+ * result, measured on 2026-10-01: wp_get_attachment_image_srcset() returned
+ * false for both, the page shipped NO srcset at all, and a 360px phone was sent
+ * the 1920x1080 hero — 353KB to paint about 12KB worth of pixels.
+ *
+ * Each crop below therefore comes as a ladder at one fixed ratio. Add a width
+ * here and run _migration/regenerate-sizes.php; nothing else needs touching.
+ */
+const GLC_IMAGE_SIZES = [
+	// name            w     h   crop   ratio
+	'glc-hero'    => [ 1920, 1080 ], // 16:9
+	'glc-hero-md' => [ 1280,  720 ],
+	'glc-hero-sm' => [  960,  540 ],
+	'glc-hero-xs' => [  640,  360 ],
+	'glc-card'    => [  720,  480 ], // 3:2
+	'glc-card-sm' => [  480,  320 ],
+	'glc-card-xs' => [  360,  240 ],
+];
+
 add_action( 'after_setup_theme', function () {
-	add_image_size( 'glc-card', 720, 480, true );
-	add_image_size( 'glc-hero', 1920, 1080, true );
+	foreach ( GLC_IMAGE_SIZES as $glc_name => [ $glc_w, $glc_h ] ) {
+		add_image_size( $glc_name, $glc_w, $glc_h, true );
+	}
 } );
+
+/*
+ * Tell the browser how wide the image will actually be, or it assumes 100vw and
+ * picks the largest candidate anyway — a correct srcset with a wrong sizes
+ * attribute saves nothing. The gallery's first tile spans two thirds of a
+ * 1240px shell on desktop and the full width on a phone; the small tiles are a
+ * third of it.
+ */
+add_filter( 'wp_calculate_image_sizes', function ( $sizes, $size ) {
+	/*
+	 * $size arrives as [width, height], NOT the size name — verified by logging it
+	 * on 2026-10-01, after a first version keyed on the name silently did nothing
+	 * and left WordPress's default "100vw up to 1920px" in place. That default is
+	 * what makes a phone fetch a 960px image to fill 360 CSS pixels.
+	 *
+	 * So match on the aspect ratio, which is what actually distinguishes the two
+	 * crops: the hero ladder is 16:9, the card ladder is 3:2.
+	 */
+	if ( ! is_array( $size ) || empty( $size[0] ) || empty( $size[1] ) ) {
+		return $sizes;
+	}
+	$ratio = $size[0] / $size[1];
+	if ( abs( $ratio - 16 / 9 ) < 0.02 ) {
+		// Hero: full width on a phone, else two thirds of the 1240px shell.
+		return '(max-width: 781px) 100vw, 820px';
+	}
+	if ( abs( $ratio - 3 / 2 ) < 0.02 ) {
+		// Card: a snapped carousel item on a phone, a third of the grid on desktop.
+		return '(max-width: 781px) 86vw, 400px';
+	}
+	return $sizes;
+}, 10, 2 );
 
 /**
  * Front-end UI strings for templates and blocks, resolved per visitor

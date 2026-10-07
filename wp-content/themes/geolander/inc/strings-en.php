@@ -242,6 +242,12 @@ return [
 	'evidence_tyres' => 'Tyre observation',
 	'evidence_luggage' => 'Luggage-space observation',
 	'evidence_note' => 'These are owner-recorded observations as of the date shown, not a live inspection or a roadworthiness guarantee. Ask for updated photos before booking.',
+	'nav_news' => 'News & Events',
+	'news_index_title' => 'Georgia events and travel news',
+	'news_index_intro' => 'What is happening in Georgia, when and where it is, how you get there, and whether a car is worth it. Written by people who drive these roads.',
+	'news_published' => 'Published %s',
+	'rates_title' => 'Rates by season and rental length (USD per day)',
+	// Trip-first roadbook. Editorial guidance is separate from live road status.
 	'planner_title' => 'Georgia road trip planner',
 	'planner_description' => 'Plan when to rent a car in Georgia, handle late airport arrivals, compare delivery fees and choose between Kazbegi, Svaneti and Tusheti routes.',
 	'planner_kicker' => 'START WITH THE TRIP',
@@ -297,4 +303,9 @@ return [
 	'planner_source_kutaisi' => 'Kutaisi Airport: bus transfer operators',
 	'planner_source_passes' => 'Georgia Travel: mountain passes and seasons',
 	'planner_source_roads' => 'Roads Department of Georgia: current notices',
+	'photo_prev' => 'Previous photo',
+	'photo_next' => 'Next photo',
+	'photo_close' => 'Close photos',
+	'photo_counter' => '%1$s of %2$s',
+	'photo_open' => 'Open photo %1$s of %2$s',
 ];

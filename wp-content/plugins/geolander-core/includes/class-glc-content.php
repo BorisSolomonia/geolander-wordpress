@@ -34,6 +34,7 @@ class GLC_Content {
 		// pages translatable, the English title is the post_title and each
 		// locale carries its own via glc_title_{locale}.
 		'page'  => [ 'title', 'body' ],
+		'glc_news' => [ 'title', 'body' ],
 	];
 
 	public static function init() {

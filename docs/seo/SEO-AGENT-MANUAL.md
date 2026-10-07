@@ -619,6 +619,29 @@ City pages for cities you don't genuinely serve · pickup×destination combinati
 pages · head-term landing pages · Arabic/Chinese/French content · Georgian-language rental content ·
 a weekly blog · bare-brand optimisation · FAQ schema expansion · `aggregateRating` on your own business.
 
+### Amended 2026-09-16 — two of these were revisited, and one was narrowed
+
+**"A weekly blog" still stands. An event-driven news section does not fall under it.** BOR-111 built
+`/blog/` as a section that publishes only when a verified, dated event gives it something to say — no
+cadence, no filler, and every article carries the event's sources and the date they were checked. The
+thing this line was written to prevent is a content treadmill; that is still forbidden. Boris ratified
+the distinction on 2026-09-16.
+
+**"Price/comparison pages" is under review, not overturned.** The evidence moved: the retired
+`/blog/geolander-vs-local-rent-vs-premium-auto-rent` still drew **84 impressions at position 8.8** in
+the 28 days to 2026-09-13 — the site's second-strongest page by impressions, months after being 301'd
+to `/about/`. Google ranks a comparison page this site no longer has. That is an argument for building
+an honest one, not for the blanket ban. It remains **not built**, gated on Boris's decisions of
+2026-09-16: a from-price band only (never per-car prices, which preserves the no-prices rule), and
+competitor figures entered by hand with a source URL and an observation date, never scraped.
+
+**B-8 is no longer unknown.** §1.3 calls it "the single most valuable unknown". The booking analysis of
+2026-09-14/16 resolved margin by vehicle, utilisation, rental-duration mix and booking volume across
+733 bookings. The headline: per capacity-day, 13–18 day rentals return **$38.60** against **$17.11** for
+1–2 day rentals, and the fleet earns **$32.07** per available day in peak against **$11.89** in
+Nov–Mar. The long-rental and low-season clusters this manual could not prioritise are now evidenced.
+See `SEO/data/bookings-findings-2026-09-15.md` and `SEO/data/bookings-findings-cars-2026-09-16.md`.
+
 ---
 
 # 8 · TECHNICAL SPECIFICATION

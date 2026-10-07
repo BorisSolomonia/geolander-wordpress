@@ -43,6 +43,7 @@ class GLC_Meta_Boxes {
 			'glc_drivetrain'       => [ __( 'Drivetrain (for example AWD or 4WD)', 'geolander' ), 'text' ],
 			'glc_fuel_economy_note'=> [ __( 'Fuel-economy note (only when owner verified)', 'geolander' ), 'text' ],
 			'glc_price_from'       => [ __( 'Headline "from" price ($/day)', 'geolander' ), 'number' ],
+			'glc_whatsapp_number'  => [ __( 'WhatsApp number for THIS car (leave empty to use the site number)', 'geolander' ), 'text' ],
 		];
 		echo '<div class="glc-grid">';
 		foreach ( $fields as $key => [ $label, $type ] ) {
@@ -129,6 +130,10 @@ class GLC_Meta_Boxes {
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
+
+		// Phone keeps its leading '+': GLC_Gateway_WhatsApp::url() needs it, and
+		// stripping it here is what broke the deep link the first time.
+		update_post_meta( $post_id, 'glc_whatsapp_number', preg_replace( '/[^0-9+]/', '', (string) wp_unslash( $_POST['glc_whatsapp_number'] ?? '' ) ) );
 
 		foreach ( [ 'glc_registration', 'glc_color', 'glc_license_category', 'glc_transmission', 'glc_drivetrain', 'glc_fuel_type', 'glc_fuel_economy_note' ] as $key ) {
 			update_post_meta( $post_id, $key, sanitize_text_field( wp_unslash( $_POST[ $key ] ?? '' ) ) );

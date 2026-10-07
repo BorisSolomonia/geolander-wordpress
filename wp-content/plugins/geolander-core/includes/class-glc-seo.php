@@ -158,7 +158,7 @@ class GLC_SEO {
 			}
 			public function get_url_list( $page_num, $object_subtype = '' ) {
 				$urls = [];
-				foreach ( [ 'car', 'place' ] as $type ) {
+				foreach ( [ 'car', 'place', 'glc_news' ] as $type ) {
 					$link = get_post_type_archive_link( $type );
 					if ( $link ) {
 						$urls[] = [ 'loc' => $link ];
@@ -349,7 +349,7 @@ class GLC_SEO {
 		printf( '<meta name="description" content="%s" />' . "\n", esc_attr( $description ) );
 		$og_type = is_singular( 'car' )
 			? 'product'
-			: ( is_singular() && get_post_meta( get_queried_object_id(), 'glc_guide_route', true ) ? 'article' : 'website' );
+			: ( is_singular( 'glc_news' ) || ( is_singular() && get_post_meta( get_queried_object_id(), 'glc_guide_route', true ) ) ? 'article' : 'website' );
 		printf( '<meta property="og:type" content="%s" />' . "\n", esc_attr( $og_type ) );
 		printf( '<meta property="og:title" content="%s" />' . "\n", esc_attr( $title ) );
 		printf( '<meta property="og:description" content="%s" />' . "\n", esc_attr( $description ) );

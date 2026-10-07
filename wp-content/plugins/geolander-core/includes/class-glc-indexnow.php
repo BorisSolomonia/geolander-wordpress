@@ -28,7 +28,24 @@ class GLC_IndexNow {
 	/** IndexNow accepts at most 10,000 URLs per POST; keep batches well under that. */
 	private const BATCH        = 500;
 	/** Public post types whose URLs are worth announcing. */
-	private const PUBLIC_TYPES = [ 'page', 'post', 'car', 'place', 'city' ];
+	/**
+	 * Every public post type, derived rather than listed.
+	 *
+	 * This was a hardcoded array written before the news section existed, so when
+	 * the first article was published on 2026-10-07 nothing was announced to Bing,
+	 * Yandex or Seznam — and Bing's index is what ChatGPT search reads, which is
+	 * precisely the audience a news article is written for. A list like that fails
+	 * silently and only on the thing you just added, which is the worst shape a
+	 * bug can have. Asking WordPress which types are public means the next content
+	 * type is covered the day it is registered.
+	 *
+	 * Attachments are excluded: media URLs are not pages worth announcing.
+	 */
+	private static function public_types(): array {
+		$types = get_post_types( [ 'public' => true ], 'names' );
+		unset( $types['attachment'] );
+		return array_values( $types );
+	}
 
 	public static function init(): void {
 		add_action( 'init', [ __CLASS__, 'serve_key' ], 1 );
@@ -99,7 +116,7 @@ class GLC_IndexNow {
 
 	/** Publish, update, or unpublish of a public post → announce all its locale URLs. */
 	public static function on_transition( string $new, string $old, WP_Post $post ): void {
-		if ( ! in_array( $post->post_type, self::PUBLIC_TYPES, true ) || ! empty( $post->post_password ) ) {
+		if ( ! in_array( $post->post_type, self::public_types(), true ) || ! empty( $post->post_password ) ) {
 			return;
 		}
 		if ( 'publish' !== $new && 'publish' !== $old ) {
@@ -185,7 +202,7 @@ class GLC_IndexNow {
 		$retired = class_exists( 'GLC_Redirects' ) ? array_map( fn( $p ) => trim( $p, '/' ), array_keys( GLC_Redirects::map() ) ) : [];
 		$noindex = class_exists( 'GLC_Redirects' ) ? GLC_Redirects::noindex_slugs() : [];
 		foreach ( get_posts( [
-			'post_type'      => self::PUBLIC_TYPES,
+			'post_type'      => self::public_types(),
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 			'no_found_rows'  => true,

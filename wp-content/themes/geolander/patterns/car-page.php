@@ -8,6 +8,16 @@ $glc_id    = get_the_ID();
 $glc_year  = get_post_meta( $glc_id, 'glc_year', true );
 $glc_title = preg_replace( '/\s\d{4}$/', '', get_the_title() );
 $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
+/*
+ * The page's own rate range, from the SAME call that feeds the <title>, the meta
+ * description and the Product/AggregateOffer lowPrice/highPrice
+ * (GLC_Pricing::rate_range). Before this, the snippet promised "from $39/day"
+ * and the schema claimed lowPrice 39 while the page body showed no per-day rate
+ * at all — only a 5-day quote that worked out to $86. Google's structured-data
+ * guidance requires markup to match visible text, so the number a searcher is
+ * shown has to exist on the page they land on.
+ */
+[ $glc_rate_low, $glc_rate_high ] = GLC_Pricing::rate_range( $glc_id );
 ?>
 <main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--40) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
 
@@ -31,6 +41,14 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 						<span style="font-family:var(--glc-mono);font-size:0.72rem;letter-spacing:0.1em;color:var(--glc-success);">● <?php echo esc_html( strtoupper( glc_t( 'available' ) ) ); ?></span>
 					<?php endif; ?>
 				</div>
+				<?php if ( $glc_rate_low > 0 ) : ?>
+					<p class="glc-card-price" style="margin:0;">
+						<span class="glc-price"><?php echo esc_html( glc_t( 'from' ) ); ?> <?php echo esc_html( GLC_Format::money( $glc_rate_low ) ); ?><span class="glc-price-unit"><?php echo esc_html( glc_t( 'per_day' ) ); ?></span></span>
+						<?php if ( $glc_rate_high > $glc_rate_low ) : ?>
+							<span style="color:var(--glc-stone);font-size:0.85rem;">· <?php echo esc_html( sprintf( glc_t( 'price_range_sentence' ), GLC_Format::money( $glc_rate_low ), GLC_Format::money( $glc_rate_high ) ) ); ?></span>
+						<?php endif; ?>
+					</p>
+				<?php endif; ?>
 				<div class="glc-chips">
 					<?php if ( $glc_drive ) : ?><span class="glc-chip glc-chip--4x4"><?php echo esc_html( $glc_drive ); ?></span><?php endif; ?>
 					<span class="glc-chip"><?php echo esc_html( glc_t( get_post_meta( $glc_id, 'glc_transmission', true ) ?: 'automatic' ) ); ?></span>
@@ -47,6 +65,13 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'rental_facts_title' ) ); ?></h2>
 				<?php echo do_blocks( '<!-- wp:geolander/rental-facts /-->' ); ?>
 			</section>
+
+			<?php if ( $glc_rate_low > 0 ) : ?>
+			<section>
+				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'rates_title' ) ); ?></h2>
+				<?php echo do_blocks( '<!-- wp:geolander/price-table /-->' ); ?>
+			</section>
+			<?php endif; ?>
 
 			<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.4rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">
 				<h2 class="glc-label" style="margin:0 0 0.6rem;"><?php echo esc_html( glc_t( 'terrain_title' ) ); ?></h2>

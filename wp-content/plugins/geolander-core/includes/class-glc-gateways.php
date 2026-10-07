@@ -77,8 +77,23 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 	 * @param string $text Prefilled message; English by design (staff read these).
 	 * @return string Empty string when no number is configured.
 	 */
-	public static function url( string $text = '' ): string {
-		$digits = preg_replace( '/[^0-9]/', '', (string) GLC_Settings::get( 'whatsapp_number' ) );
+	/**
+	 * Which WhatsApp number answers for a given car.
+	 *
+	 * Not every vehicle on the site is answered by the same phone: some are run
+	 * with a partner who takes their own bookings. That is a property of the car,
+	 * so it lives on the car as editable meta, never as a list of plates in code.
+	 * A car with no number of its own falls back to the site number, which is why
+	 * adding a car needs no configuration at all.
+	 */
+	public static function number_for( ?int $car_id = null ): string {
+		$own = $car_id ? (string) get_post_meta( $car_id, 'glc_whatsapp_number', true ) : '';
+		$raw = trim( $own ) !== '' ? $own : (string) GLC_Settings::get( 'whatsapp_number' );
+		return (string) preg_replace( '/[^0-9]/', '', $raw );
+	}
+
+	public static function url( string $text = '', ?int $car_id = null ): string {
+		$digits = self::number_for( $car_id );
 		if ( ! $digits ) {
 			return '';
 		}
@@ -96,7 +111,7 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 	}
 
 	public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error {
-		$number = preg_replace( '/[^0-9]/', '', (string) GLC_Settings::get( 'whatsapp_number' ) );
+		$number = self::number_for( $car_id );
 		if ( ! $number ) {
 			return new WP_Error( 'glc_no_whatsapp', __( 'Booking channel is not configured.', 'geolander' ), [ 'status' => 500 ] );
 		}

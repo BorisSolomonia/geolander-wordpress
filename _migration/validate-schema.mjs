@@ -19,6 +19,12 @@
  * Usage: node _migration/validate-schema.mjs [baseUrl]
  */
 
+// Web Crypto is a global only from Node 19. On Node 18 every check touching
+// crypto.subtle died as "crypto is not defined" and was counted as a SITE error,
+// masking whether agent-discovery, a2a-discovery and web-bot-auth actually work.
+// Importing webcrypto explicitly is portable across both.
+import { webcrypto as crypto } from 'node:crypto';
+
 const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 
 /* Locales that must return 200 at their bare root. `en` is the unprefixed
@@ -769,13 +775,69 @@ try {
 
 /* noindex pages carry the header and stay out of the sitemap; retired slugs
  * are out of the sitemap too. */
+console.log('\nnews archive indexability tracks the article count');
+try {
+	const blog = await fetch(`${BASE}/blog/`);
+	const html = await blog.text();
+	const noindexed = /<meta name=['"]robots['"] content=['"][^'"]*noindex/i.test(html);
+	const empty = /glc-news-empty/.test(html);
+	// Only meaningful where the news archive actually exists. On a build without
+	// it, /blog/ is the old placeholder page and neither marker is present — the
+	// first version of this check read that as "populated" and reported two false
+	// errors against production.
+	const hasArchive = empty || /glc-news-list/.test(html);
+	if (!hasArchive) { ok(); ok(); }
+	else {
+	// The two must agree: an empty archive is noindexed, a populated one is not.
+	if (empty !== noindexed) err('/blog/', `archive is ${empty ? 'empty' : 'populated'} but ${noindexed ? 'noindexed' : 'indexable'}`); else ok();
+	if (!empty && !/<loc>[^<]*\/blog\//.test(await (await fetch(`${BASE}/wp-sitemap-archives-1.xml`)).text())) err('/blog/', 'populated archive missing from the sitemap'); else ok();
+	}
+} catch (e) {
+	err('/blog/', `fetch failed: ${e.message}`);
+}
+
+/* Google's structured-data guidance: markup must match the text a visitor sees.
+ * This regressed silently in production (2026-09-16): every car page claimed a
+ * Product/AggregateOffer lowPrice while the body showed no per-day rate at all,
+ * so the snippet promised "from $39/day" and the landing page never said it.
+ * The fix was to render the seasonal rate table; this check is what stops it
+ * coming back. */
+console.log('\nmarked-up prices are visible on the page');
+for (const [label, url] of PAGES.filter(([n]) => n.startsWith('car-'))) {
+	try {
+		const html = await (await fetch(url)).text();
+		const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+		let low = null, high = null;
+		for (const b of blocks) {
+			let parsed; try { parsed = JSON.parse(b); } catch { continue; }
+			const nodes = Array.isArray(parsed) ? parsed : (parsed['@graph'] ?? [parsed]);
+			for (const n of nodes) {
+				if (!String(n['@type'] ?? '').includes('Product')) continue;
+				const o = n.offers ?? {};
+				if (o.lowPrice != null) low = o.lowPrice;
+				if (o.highPrice != null) high = o.highPrice;
+			}
+		}
+		if (low == null) { ok(); continue; } // no offers node is fine; a mismatched one is not
+		const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ');
+		const seen = new Set([...text.matchAll(/\$\s?(\d[\d,]*)/g)].map((m) => m[1].replace(/,/g, '')));
+		for (const [name, value] of [['lowPrice', low], ['highPrice', high]]) {
+			if (value == null) { ok(); continue; }
+			if (seen.has(String(Math.round(value)))) ok();
+			else err(label, `${name} ${value} is in the markup but nowhere in the visible text`);
+		}
+	} catch (e) {
+		err(label, `fetch failed: ${e.message}`);
+	}
+}
+
 console.log('\nsitemap hygiene');
 try {
 	const idx = await (await fetch(`${BASE}/wp-sitemap.xml`)).text();
 	const children = [...idx.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 	let all = '';
 	for (const child of children) all += await (await fetch(child)).text();
-	for (const path of [...Object.keys(RETIRED), '/music/', '/blog/']) {
+	for (const path of [...Object.keys(RETIRED), '/music/']) {
 		if (all.includes(`${BASE}${path}</loc>`)) err(path, 'still listed in wp-sitemap'); else ok();
 	}
 	for (const path of ['/fleet/', '/places/']) {

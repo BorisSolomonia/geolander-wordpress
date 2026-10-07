@@ -1219,3 +1219,148 @@ body.single-car .glc-wa-bubble { display: none; }
 .glc-breadcrumbs a:hover,.glc-breadcrumbs a:focus-visible{text-decoration:underline;}
 .glc-breadcrumbs [aria-current="page"]{color:var(--glc-ink,#14140f);font-weight:600;}
 .glc-breadcrumb-sep{opacity:.45;}
+
+/* --------------------------------------------------- Car photo lightbox */
+/* Opened by assets/lightbox.js on the native <dialog>. The "+N" badge sits on
+   the last tile because the grid shows five photos while the viewer carries
+   every one, and without it nobody would know the rest exist. */
+.glc-gallery a { position: relative; }
+.glc-gallery-more {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: rgba(20, 36, 32, 0.62);
+	color: #fff;
+	font-family: var(--glc-mono);
+	font-size: clamp(1.1rem, 3vw, 1.7rem);
+	letter-spacing: 0.02em;
+	pointer-events: none;
+}
+.glc-gallery a:hover .glc-gallery-more,
+.glc-gallery a:focus-visible .glc-gallery-more { background: rgba(20, 36, 32, 0.48); }
+
+.glc-lb {
+	border: 0;
+	padding: 0;
+	max-width: 100vw;
+	max-height: 100vh;
+	width: 100%;
+	height: 100%;
+	background: rgba(12, 20, 18, 0.94);
+	color: var(--glc-glacier, #eef4f2);
+	display: none;
+}
+.glc-lb[open] {
+	display: grid;
+	grid-template-rows: 1fr auto;
+	place-items: center;
+}
+.glc-lb::backdrop { background: rgba(12, 20, 18, 0.9); }
+
+.glc-lb-figure {
+	margin: 0;
+	padding: clamp(0.8rem, 3vw, 2rem);
+	display: grid;
+	gap: 0.7rem;
+	place-items: center;
+	max-width: 100%;
+	min-height: 0;
+}
+.glc-lb-img {
+	max-width: 100%;
+	/* Leaves room for the caption and the control bar at any viewport height. */
+	max-height: calc(100vh - 8.5rem);
+	height: auto;
+	width: auto;
+	object-fit: contain;
+	border-radius: var(--glc-radius, 6px);
+	background: rgba(255, 255, 255, 0.04);
+}
+.glc-lb-caption {
+	margin: 0;
+	font-size: 0.82rem;
+	text-align: center;
+	color: color-mix(in srgb, var(--glc-glacier, #eef4f2) 74%, transparent);
+	max-width: 62ch;
+}
+
+.glc-lb-bar {
+	display: flex;
+	align-items: center;
+	gap: 1.1rem;
+	padding: 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+.glc-lb-counter {
+	margin: 0;
+	font-family: var(--glc-mono);
+	font-size: 0.8rem;
+	letter-spacing: 0.08em;
+	min-width: 5.5ch;
+	text-align: center;
+}
+.glc-lb button {
+	appearance: none;
+	background: rgba(255, 255, 255, 0.09);
+	color: inherit;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 999px;
+	cursor: pointer;
+	/* 44px minimum: these are the main touch targets on a phone. */
+	min-width: 44px;
+	min-height: 44px;
+	font-size: 1.35rem;
+	line-height: 1;
+	display: grid;
+	place-items: center;
+}
+.glc-lb button:hover { background: rgba(255, 255, 255, 0.16); }
+.glc-lb button:focus-visible { outline: 2px solid var(--glc-glacier, #eef4f2); outline-offset: 2px; }
+.glc-lb-close {
+	position: fixed;
+	top: calc(0.7rem + env(safe-area-inset-top, 0px));
+	inset-inline-end: 0.7rem;
+	font-size: 1.05rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.glc-lb[open] { animation: glc-lb-in 140ms ease-out; }
+	@keyframes glc-lb-in { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* ------------------------------------------------- Touch-device fixes
+ *
+ * Two bugs Boris reported from an iPhone on 2026-10-06, both caused by content
+ * moving under his finger. Scoped to (pointer: coarse) so the desktop design is
+ * unchanged; these override the rules above by coming later in the file.
+ *
+ * 1 · THE PAGE ZOOMED ITSELF IN AND OUT.
+ *     iOS Safari zooms the whole page in whenever a focused form control has a
+ *     font-size below 16px, and zooms back out on blur. The booking widget's
+ *     inputs were 0.95rem (15.2px) and its date fields 0.88rem (14.08px), so
+ *     every tap on a date zoomed in and every tap away zoomed out. 16px is the
+ *     threshold, not a preference, and no viewport setting suppresses it
+ *     (iOS has ignored user-scalable=no since iOS 10, and disabling zoom would
+ *     be an accessibility regression anyway). So the controls grow instead.
+ *
+ * 2 · "VIEW ALL" OPENED ONE CAR INSTEAD OF THE FLEET.
+ *     The fleet section is .glc-reveal, which animates `translate: 0 26px -> 0`
+ *     over 0.7s, and the grid's cards stagger by another 22px. Hit testing
+ *     follows that transform, so a tap placed while the section is still
+ *     settling lands on whatever occupied that point mid-animation. Directly
+ *     above the "View all" button sits the last card's "Check details" link —
+ *     which is why it opened a car profile, and always the same one.
+ *     On touch the reveal therefore fades without moving: nothing travels under
+ *     a finger, so a tap cannot land on the element that used to be there.
+ */
+@media (pointer: coarse) {
+	.glc-field input,
+	.glc-field select,
+	.glc-field input[type="date"] {
+		font-size: 16px;
+	}
+
+	.glc-reveal,
+	.glc-stagger > * {
+		translate: none;
+	}
+}
