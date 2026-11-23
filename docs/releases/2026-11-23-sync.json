@@ -1,0 +1,23 @@
+{
+  "release": "2026-11-23-repository-reconciliation",
+  "repository": "https://github.com/BorisSolomonia/geolander-wordpress",
+  "github_main_before": "f5251576185831bce0f3785b8c8a07df30b5f49a",
+  "audited_local_snapshot": "3d957bfec5f0ca24804ebf852ff00acb4b1e8015",
+  "theme_version": "1.20.1",
+  "plugin_version": "1.21.1",
+  "scope": "Reconcile both Git histories and publish the audited source tree, preserving later SEO and owner changes.",
+  "production_deployment_performed": false,
+  "required_content_migrations": [],
+  "database_changes": "None. Keep the existing production WordPress database and options.",
+  "media_changes": "None on the production uploads volume. Keep all existing attachments and files.",
+  "preserve": [
+    "Published post IDs, slugs, content and locale metadata",
+    "glc_seo_title_* and glc_seo_description_* metadata",
+    "glc_settings including google_rating, google_maps_url, analytics IDs and redirect overrides",
+    "Existing testimonials, review metadata and booking records",
+    "Canonical, hreflang, sitemap, schema, IndexNow and legacy URL redirect implementations",
+    "Google Search Console verification file"
+  ],
+  "ordinary_update_procedure": "Use Procedure A in docs/ORACLE-DEPLOYMENT-HANDOFF.md if deployment is separately requested. Do not run import.php, import-fleet.php, setup-reputation-trust.php or bulk setup scripts during this source-only update.",
+  "history_policy": "Keep both prior histories as merge ancestors. Push main by fast-forward; do not force-push."
+}
