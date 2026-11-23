@@ -3,8 +3,10 @@
  * Immutable-container WordPress defaults.
  *
  * Loaded through PHP auto_prepend_file, before wp-config.php. Content editors
- * can still edit posts and upload media; executable code changes require a
- * reviewed image rebuild. Request-driven cron is disabled so arbitrary web
+ * can still edit posts and upload media. WordPress and Geolander Core require
+ * an image rebuild; GLC_Plugin_Management can open only third-party plugin
+ * operations for explicitly authorized accounts on an opted-in host.
+ * Request-driven cron is disabled so arbitrary web
  * traffic cannot start background update/network work inside PHP workers.
  */
 

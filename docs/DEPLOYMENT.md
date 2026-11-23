@@ -3,8 +3,14 @@
 ## 0. Railway (chosen path — git-driven)
 
 Repo ships `Dockerfile` + `railway.json`; Railway builds the image directly from the connected GitHub repository.
-Code (theme + plugin) is baked into the image; **plugins installed via wp-admin do NOT survive
-redeploys** — add plugins to the repo instead. Media uploads persist on a volume.
+The Geolander theme and Core plugin are baked into the image. On the active Oracle
+host, third-party plugins use the persistent `data/plugins` mount. With
+`GLC_ALLOW_PLUGIN_MANAGEMENT=1`, an owner may grant an individual account the
+`glc_manage_plugins` capability to install, activate, update and remove third-party
+plugins from wp-admin. This does not grant account administration or access to the
+Geolander pricing/settings screens. WordPress and Geolander Core remain image-managed.
+The legacy Railway configuration has no such mount; plugins installed there would
+not survive replacement of its container. Media uploads persist separately.
 
 1. Export this working tree to a clean directory **without the existing `.git` directory**, initialize a new repository there, commit, create the new GitHub repository, and push. The old local object store is oversized and must not become the new project's history.
 2. Railway dashboard → New Project:

@@ -73,3 +73,9 @@ and a published page. It snapshots and restores its local database between
 suites and creates its own partner/photo fixtures. It refuses production.
 The schema guard additionally needs the relevant content migrations and
 agent signing/authentication configuration. A bare installation is incomplete.
+
+The Oracle production Compose configuration persists third-party plugins in
+`data/plugins`. Plugin management is enabled per account with `glc_manage_plugins`;
+the content-editor role stays restricted unless that account is explicitly opted in.
+Run `tests/tools/plugin-storage.test.ps1` to verify persistence with production file
+permissions. WordPress and Geolander Core are updated through deployment.

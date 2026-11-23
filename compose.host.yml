@@ -32,8 +32,10 @@ services:
       GLC_SMTP_PASSWORD: ${GLC_SMTP_PASSWORD:-}
       GLC_SMTP_ENCRYPTION: ${GLC_SMTP_ENCRYPTION:-tls}
       GLC_SMTP_FROM: ${GLC_SMTP_FROM:-}
+      GLC_ALLOW_PLUGIN_MANAGEMENT: 1
     volumes:
       - ./data/uploads:/var/www/html/wp-content/uploads
+      - ./data/plugins:/var/www/html/wp-content/plugins
     ports:
       # Administrative smoke tests are available only from the VM itself.
       # Public traffic enters through the outbound-only Cloudflare Tunnel.

@@ -1,0 +1,22 @@
+{
+  "release": "2026-11-23-plugin-management",
+  "repository": "https://github.com/BorisSolomonia/geolander-wordpress",
+  "base_commit": "218c14edcc693841a63481833ca7803ac42a90df",
+  "plugin_version": "1.22.0",
+  "theme_version": "1.20.1",
+  "required_content_migrations": [],
+  "account_change": "Add glc_manage_plugins to the existing SEO manager account confirmed by the owner; do not change its role or other capabilities.",
+  "host_changes": [
+    "Mount data/plugins at /var/www/html/wp-content/plugins, retaining any existing third-party plugins before replacing the container.",
+    "Set GLC_ALLOW_PLUGIN_MANAGEMENT=1 for the WordPress service.",
+    "Keep installer staging writable and inaccessible over HTTP; keep WordPress and Geolander Core files root-owned."
+  ],
+  "preserve": [
+    "Existing production database and uploads volume",
+    "Published URLs, SEO and locale metadata, rating settings and reviews",
+    "All existing accounts, bookings and partner assignments",
+    "Existing third-party plugin files and activation state"
+  ],
+  "backup_id": "20261123T125156Z",
+  "rollback": "Restore the backed-up compose/code files and start the retained rollback image. Do not restore the database to roll back code. Remove only the newly granted glc_manage_plugins capability if reverting the permission change."
+}

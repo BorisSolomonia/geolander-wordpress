@@ -3,6 +3,9 @@ set -eu
 
 WEB_ROOT=/var/www/html
 UPLOADS="$WEB_ROOT/wp-content/uploads"
+PLUGINS="$WEB_ROOT/wp-content/plugins"
+UPGRADE="$WEB_ROOT/wp-content/upgrade"
+UPGRADE_BACKUP="$WEB_ROOT/wp-content/upgrade-temp-backup"
 
 # The official entrypoint initializes the web root as www-data so WordPress can
 # self-update. This deployment is image-driven instead: make all executable
@@ -28,11 +31,27 @@ if [ "${GLC_SKIP_FILE_HARDENING:-0}" != '1' ]; then
 	mkdir -p "$UPLOADS"
 	# The stock entrypoint can restore bundled plugins after image build layers
 	# have removed them. Remove the known inactive packages after initialization.
-	rm -rf "$WEB_ROOT/wp-content/plugins/akismet" "$WEB_ROOT/wp-content/plugins/hello.php"
-	find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type d -exec chown root:root {} +
-	find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type f -exec chown root:root {} +
-	find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type d -exec chmod 0755 {} +
-	find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type f -exec chmod 0644 {} +
+	if [ "${GLC_ALLOW_PLUGIN_MANAGEMENT:-0}" = '1' ]; then
+		# Third-party plugins persist on a dedicated volume. The image-owned
+		# Geolander plugin is still replaced above and remains root-owned below.
+		mkdir -p "$PLUGINS" "$UPGRADE" "$UPGRADE_BACKUP"
+		find "$WEB_ROOT" \( -path "$UPLOADS" -o -path "$PLUGINS" -o -path "$UPGRADE" -o -path "$UPGRADE_BACKUP" \) -prune -o -type d -exec chown root:root {} +
+		find "$WEB_ROOT" \( -path "$UPLOADS" -o -path "$PLUGINS" -o -path "$UPGRADE" -o -path "$UPGRADE_BACKUP" \) -prune -o -type f -exec chown root:root {} +
+		find "$WEB_ROOT" \( -path "$UPLOADS" -o -path "$PLUGINS" -o -path "$UPGRADE" -o -path "$UPGRADE_BACKUP" \) -prune -o -type d -exec chmod 0755 {} +
+		find "$WEB_ROOT" \( -path "$UPLOADS" -o -path "$PLUGINS" -o -path "$UPGRADE" -o -path "$UPGRADE_BACKUP" \) -prune -o -type f -exec chmod 0644 {} +
+		find "$PLUGINS" -path "$PLUGINS/geolander-core" -prune -o -exec chown www-data:www-data {} +
+		find "$PLUGINS" -path "$PLUGINS/geolander-core" -prune -o -type d -exec chmod 0755 {} +
+		find "$PLUGINS" -path "$PLUGINS/geolander-core" -prune -o -type f -exec chmod 0644 {} +
+		chown -R www-data:www-data "$UPGRADE" "$UPGRADE_BACKUP"
+		find "$PLUGINS/geolander-core" -type d -exec chown root:root {} + -exec chmod 0755 {} +
+		find "$PLUGINS/geolander-core" -type f -exec chown root:root {} + -exec chmod 0644 {} +
+	else
+		rm -rf "$WEB_ROOT/wp-content/plugins/akismet" "$WEB_ROOT/wp-content/plugins/hello.php"
+		find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type d -exec chown root:root {} +
+		find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type f -exec chown root:root {} +
+		find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type d -exec chmod 0755 {} +
+		find "$WEB_ROOT" -path "$UPLOADS" -prune -o -type f -exec chmod 0644 {} +
+	fi
 	chown -R www-data:www-data "$UPLOADS"
 	chmod 0755 "$UPLOADS"
 	if [ -f "$WEB_ROOT/wp-config.php" ]; then

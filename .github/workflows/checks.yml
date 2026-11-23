@@ -60,6 +60,9 @@ jobs:
         run: ./tests/checkout-concurrency.test.ps1
       - name: Landing path precedence in every locale
         run: node --test tests/landing-routing.test.mjs
+      - name: Persistent third-party plugin storage
+        shell: pwsh
+        run: ./tests/tools/plugin-storage.test.ps1
       - name: Stop isolated runtime
         if: always()
         run: docker compose down

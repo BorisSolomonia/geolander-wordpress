@@ -22,7 +22,9 @@
  *  - `install_plugins`, `activate_plugins`, `switch_themes`, `edit_themes`,
  *    `edit_plugins`, `edit_files`, `update_core` — code. The live site runs from
  *    a built image; anything installed through wp-admin disappears at the next
- *    deploy anyway, so being able to try is only a way to break things.
+ *    deploy anyway unless the host explicitly enables persistent plugin
+ *    management. That separate opt-in uses the per-account glc_manage_plugins
+ *    capability (GLC_Plugin_Management); it is never granted to this whole role.
  *  - `edit_theme_options` — the site's own templates and global styles. Off by
  *    default, and a single setting turns it on (see below) for whoever is
  *    trusted to make layouts.
