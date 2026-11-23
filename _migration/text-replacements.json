@@ -1,0 +1,408 @@
+{
+	"name": "delivery-fees-2026-10",
+	"reason": "Owner instruction 2026-10-11: Tbilisi city $10, Tbilisi Airport $20, Kutaisi $80, Batumi $100, per direction. Stored text that called delivery free or quoted $68/$98 now reads the fee settings.",
+	"settings": {
+		"tbilisi_city_each_way": "10",
+		"tbilisi_airport_each_way": "20",
+		"kutaisi_each_way": "80",
+		"batumi_each_way": "100"
+	},
+	"items": [
+		{
+			"group": "A car summaries",
+			"post": 4,
+			"slug": "jeep-renegade-2017-nn-545-kn",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 4,
+			"slug": "jeep-renegade-2017-nn-545-kn",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 7,
+			"slug": "subaru-forester-2020-ll802ml",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 7,
+			"slug": "subaru-forester-2020-ll802ml",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 15,
+			"slug": "subaru-forester-2014-ee346el",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 15,
+			"slug": "subaru-forester-2014-ee346el",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 25,
+			"slug": "toyota-highlander-2017-lc-785-ll",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 25,
+			"slug": "toyota-highlander-2017-lc-785-ll",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 31,
+			"slug": "subaru-crosstrek-2021-dy-089-dy",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 31,
+			"slug": "subaru-crosstrek-2021-dy-089-dy",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 37,
+			"slug": "subaru-crosstrek-2017-rz117zr",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 37,
+			"slug": "subaru-crosstrek-2017-rz117zr",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 43,
+			"slug": "jeep-wrangler-2017-ys-105-sy",
+			"field": "post_excerpt",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "A car summaries",
+			"post": 43,
+			"slug": "jeep-wrangler-2017-ys-105-sy",
+			"field": "post_content",
+			"find": "Free Tbilisi Airport delivery and 24/7 support.",
+			"replace": "No security deposit and 24/7 WhatsApp support.",
+			"count": 1
+		},
+		{
+			"group": "B FAQ",
+			"post": 120,
+			"slug": "what-is-geolander",
+			"field": "post_content",
+			"find": "and offers free Tbilisi Airport delivery, included insurance, and direct WhatsApp support.",
+			"replace": "with included insurance, no security deposit, and direct WhatsApp support. Delivery to Tbilisi Airport or a city address is available at a fixed fee per direction.",
+			"count": 1
+		},
+		{
+			"group": "B FAQ",
+			"post": 124,
+			"slug": "can-i-pick-up-the-car-at-tbilisi-airport",
+			"field": "post_content",
+			"find": "Yes. Geolander offers free delivery at Tbilisi International Airport (TBS). Contact Geolander to arrange delivery for your booking.",
+			"replace": "Yes. Geolander delivers to and collects from Tbilisi International Airport (TBS) for [geolander_fee place=\"tbilisi_airport\"] per direction. The fee is shown in the booking quote before you send the request.",
+			"count": 1
+		},
+		{
+			"group": "C Tbilisi city page",
+			"post": 280,
+			"slug": "tbilisi",
+			"field": "post_excerpt",
+			"find": "Rent a 4x4 in Tbilisi with free delivery to Tbilisi International Airport (TBS). Full insurance, no security deposit, 10% booking prepayment.",
+			"replace": "Rent a 4x4 in Tbilisi — collection at our Mtatsminda office is free; delivery to Tbilisi Airport (TBS) or your address has a fee per direction, shown before you book. Full insurance, no security deposit.",
+			"count": 1
+		},
+		{
+			"group": "C Tbilisi city page",
+			"post": 280,
+			"slug": "tbilisi",
+			"field": "post_content",
+			"find": "We deliver your car free of charge to Tbilisi International Airport (TBS) or to hotels and addresses in the city once your dates are confirmed on WhatsApp.",
+			"replace": "Collect the car at our office, or we deliver it to Tbilisi International Airport (TBS) for [geolander_fee place=\"tbilisi_airport\"] or to a hotel or address in the city for [geolander_fee place=\"tbilisi_city\"], each way, once your dates are confirmed on WhatsApp.",
+			"count": 1
+		},
+		{
+			"group": "C Tbilisi city page",
+			"post": 280,
+			"slug": "tbilisi",
+			"field": "meta:glc_delivery_note",
+			"find": "Free delivery to Tbilisi Airport & city hotels",
+			"replace": "Airport [geolander_fee place=\"tbilisi_airport\"] · city address [geolander_fee place=\"tbilisi_city\"] — each way",
+			"count": 1
+		},
+		{
+			"group": "C Tbilisi city page",
+			"post": 280,
+			"slug": "tbilisi",
+			"field": "meta:glc_body_ka",
+			"find": "მანქანას უფასოდ მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS), სასტუმროში ან ქალაქის მისამართზე, როდესაც თარიღებს WhatsApp-ით დაადასტურებთ.",
+			"replace": "მანქანა შეგიძლიათ ოფისში აიღოთ, ან მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS) — [geolander_fee place=\"tbilisi_airport\"] ერთი მიმართულებით, ან სასტუმროში თუ ქალაქის მისამართზე — [geolander_fee place=\"tbilisi_city\"] ერთი მიმართულებით, როდესაც თარიღებს WhatsApp-ით დაადასტურებთ.",
+			"count": 1
+		},
+		{
+			"group": "C Tbilisi city page",
+			"post": 280,
+			"slug": "tbilisi",
+			"field": "meta:glc_body_ru",
+			"find": "Мы бесплатно доставим автомобиль в Тбилисский международный аэропорт (TBS), к отелю или адресу в городе после подтверждения дат в WhatsApp.",
+			"replace": "Автомобиль можно забрать в нашем офисе, или мы доставим его в Тбилисский международный аэропорт (TBS) за [geolander_fee place=\"tbilisi_airport\"] в одну сторону либо к отелю или адресу в городе за [geolander_fee place=\"tbilisi_city\"] в одну сторону — после подтверждения дат в WhatsApp.",
+			"count": 1
+		},
+		{
+			"group": "D Batumi city page",
+			"post": 281,
+			"slug": "batumi",
+			"field": "post_excerpt",
+			"find": "Rent a 4x4 in Batumi with clear $98 pickup and $98 return charges. Full insurance, no deposit, and no hidden delivery fee.",
+			"replace": "Rent a 4x4 in Batumi — airport (BUS) or city delivery at one fee per direction, shown before you book. Full insurance, no deposit.",
+			"count": 1
+		},
+		{
+			"group": "D Batumi city page",
+			"post": 281,
+			"slug": "batumi",
+			"field": "post_content",
+			"find": "Batumi pickup costs $98 and return costs $98; both charges are shown separately in the quote before you send a booking request.",
+			"replace": "Delivery to Batumi Airport (BUS) or to an address in Batumi costs [geolander_fee place=\"batumi_airport\"] per direction; pickup and return are shown separately in the quote before you send a booking request.",
+			"count": 1
+		},
+		{
+			"group": "D Batumi city page",
+			"post": 281,
+			"slug": "batumi",
+			"field": "meta:glc_delivery_note",
+			"find": "$98 pickup and $98 return in Batumi",
+			"replace": "[geolander_fee place=\"batumi_airport\"] each way · airport or city",
+			"count": 1
+		},
+		{
+			"group": "D Batumi city page",
+			"post": 281,
+			"slug": "batumi",
+			"field": "meta:glc_body_ka",
+			"find": "მანქანას უფასოდ მოგაწვდით ბათუმის საერთაშორისო აეროპორტში (BUS) ან თქვენს ზღვისპირა სასტუმროში, რომ ჩამოხვიდეთ, მოეწყოთ და მანქანა მაშინ აიღოთ, როცა მართლა დაგჭირდებათ.",
+			"replace": "მანქანას მოგაწვდით ბათუმის საერთაშორისო აეროპორტში (BUS) ან თქვენს ზღვისპირა სასტუმროში — [geolander_fee place=\"batumi_airport\"] ერთი მიმართულებით; მიღებისა და დაბრუნების საფასური შეთავაზებაში ცალ-ცალკე ჩანს.",
+			"count": 1
+		},
+		{
+			"group": "D Batumi city page",
+			"post": 281,
+			"slug": "batumi",
+			"field": "meta:glc_body_ru",
+			"find": "Мы бесплатно доставим машину в Батумский международный аэропорт (BUS) или к вашему отелю у моря — прилетайте, устраивайтесь и берите автомобиль тогда, когда действительно захотите ехать.",
+			"replace": "Мы доставим машину в Батумский международный аэропорт (BUS) или к вашему отелю у моря за [geolander_fee place=\"batumi_airport\"] в одну сторону; сборы за получение и возврат показаны в расчёте отдельно.",
+			"count": 1
+		},
+		{
+			"group": "E Kutaisi city page",
+			"post": 282,
+			"slug": "kutaisi",
+			"field": "post_excerpt",
+			"find": "Pick up a 4x4 at Kutaisi Airport (KUT) with a clear $68 pickup and $68 return charge. Full insurance and no deposit.",
+			"replace": "Pick up a 4x4 at Kutaisi Airport (KUT) or in the city — one clear fee per direction, shown before you book. Full insurance and no deposit.",
+			"count": 1
+		},
+		{
+			"group": "E Kutaisi city page",
+			"post": 282,
+			"slug": "kutaisi",
+			"field": "meta:glc_delivery_note",
+			"find": "$68 pickup and $68 return at Kutaisi Airport",
+			"replace": "[geolander_fee place=\"kutaisi_airport\"] each way · airport or city",
+			"count": 1
+		},
+		{
+			"group": "F Kobuleti city page",
+			"post": 283,
+			"slug": "kobuleti",
+			"field": "post_excerpt",
+			"find": "Rent a 4x4 in Kobuleti with free delivery to your hotel. Quieter Black Sea base near Batumi. Full insurance, no deposit.",
+			"replace": "Rent a 4x4 in Kobuleti, delivered to your hotel or guesthouse (fee on request). Quieter Black Sea base near Batumi. Full insurance, no deposit.",
+			"count": 1
+		},
+		{
+			"group": "F Kobuleti city page",
+			"post": 283,
+			"slug": "kobuleti",
+			"field": "post_content",
+			"find": "We deliver free to your hotel or guesthouse.",
+			"replace": "Delivery to your hotel or guesthouse is arranged on WhatsApp — ask for the fee for your dates.",
+			"count": 1
+		},
+		{
+			"group": "F Kobuleti city page",
+			"post": 283,
+			"slug": "kobuleti",
+			"field": "meta:glc_delivery_note",
+			"find": "Free delivery to Kobuleti hotels & guesthouses",
+			"replace": "Hotel & guesthouse delivery — fee on request",
+			"count": 1
+		},
+		{
+			"group": "F Kobuleti city page",
+			"post": 283,
+			"slug": "kobuleti",
+			"field": "meta:glc_body_ka",
+			"find": "მიწოდება უფასოა თქვენს სასტუმროში ან სასტუმრო სახლში.",
+			"replace": "მიწოდებას თქვენს სასტუმროში ან სასტუმრო სახლში WhatsApp-ით შევათანხმებთ — საფასური თქვენი თარიღებისთვის გვკითხეთ.",
+			"count": 1
+		},
+		{
+			"group": "F Kobuleti city page",
+			"post": 283,
+			"slug": "kobuleti",
+			"field": "meta:glc_body_ru",
+			"find": "Доставка бесплатна к вашему отелю или гостевому дому.",
+			"replace": "Доставку к вашему отелю или гостевому дому согласуем в WhatsApp — уточните стоимость для ваших дат.",
+			"count": 1
+		},
+		{
+			"group": "G route guides",
+			"post": 284,
+			"slug": "driving-to-kazbegi-in-winter",
+			"field": "post_content",
+			"find": "Insurance is included, Tbilisi airport delivery is free, and our local team can help you match the car to the forecast and group size.",
+			"replace": "Insurance is included, there is no security deposit, and our local team can help you match the car to the forecast and group size.",
+			"count": 1
+		},
+		{
+			"group": "G route guides",
+			"post": 285,
+			"slug": "svaneti-4x4-road-trip-guide",
+			"field": "post_content",
+			"find": "Insurance is included and Tbilisi airport delivery is free; current weather, closures, and road damage still control whether a route is safe to use.",
+			"replace": "Insurance is included and there is no security deposit; current weather, closures, and road damage still control whether a route is safe to use.",
+			"count": 1
+		},
+		{
+			"group": "H car-rental hub",
+			"post": 287,
+			"slug": "car-rental",
+			"field": "post_content",
+			"find": "Choose your arrival point below. Tbilisi office and Tbilisi Airport handovers are free. Kutaisi Airport costs $68 each way and Batumi costs $98 each way; the booking quote shows pickup and return separately.",
+			"replace": "Choose your arrival point below. Handover at our Tbilisi office is free. Delivery or collection is charged per direction: a Tbilisi city address [geolander_fee place=\"tbilisi_city\"], Tbilisi Airport (TBS) [geolander_fee place=\"tbilisi_airport\"], Kutaisi airport or city [geolander_fee place=\"kutaisi_airport\"], Batumi airport or city [geolander_fee place=\"batumi_airport\"]. The booking quote shows pickup and return separately.",
+			"count": 1
+		},
+		{
+			"group": "I inclusion lists",
+			"post": 292,
+			"slug": "car-rental-kazbegi",
+			"field": "post_content",
+			"find": "<li>Free delivery at Tbilisi International Airport (TBS).</li>",
+			"replace": "<li>Unlimited mileage within Georgia.</li>",
+			"count": 1
+		},
+		{
+			"group": "I inclusion lists",
+			"post": 293,
+			"slug": "4x4-suv",
+			"field": "post_content",
+			"find": "<li>Free Tbilisi Airport delivery.</li>",
+			"replace": "<li>Unlimited mileage within Georgia.</li>",
+			"count": 1
+		},
+		{
+			"group": "J about",
+			"post": 300,
+			"slug": "about",
+			"field": "post_content",
+			"find": "Tbilisi office and Tbilisi International Airport handovers are free. Kutaisi Airport costs $68 for pickup and $68 for return. Batumi Airport costs $98 for pickup and $98 for return. The live quote displays pickup and return charges separately.",
+			"replace": "Handover at the Tbilisi office is free. Delivery or collection is charged per direction: a Tbilisi city address [geolander_fee place=\"tbilisi_city\"], Tbilisi International Airport (TBS) [geolander_fee place=\"tbilisi_airport\"], Kutaisi (KUT airport or city) [geolander_fee place=\"kutaisi_airport\"], Batumi (BUS airport or city) [geolander_fee place=\"batumi_airport\"]. The live quote displays pickup and return charges separately.",
+			"count": 1
+		},
+		{
+			"group": "K long-term page",
+			"post": 307,
+			"slug": "long-term-car-rental-georgia",
+			"field": "post_content",
+			"find": "Pickup at our office in Mtatsminda, central Tbilisi, or free delivery to Tbilisi International Airport (TBS). Handover at Kutaisi Airport (KUT) or Batumi Airport (BUS) carries a fixed each-way charge that is shown in your quote before you confirm.",
+			"replace": "Pickup at our office in Mtatsminda, central Tbilisi, is free. Delivery is charged each way — a Tbilisi address [geolander_fee place=\"tbilisi_city\"], Tbilisi International Airport (TBS) [geolander_fee place=\"tbilisi_airport\"], Kutaisi [geolander_fee place=\"kutaisi_airport\"], Batumi [geolander_fee place=\"batumi_airport\"] — and the charge is shown in your quote before you confirm.",
+			"count": 1
+		},
+		{
+			"group": "L draft monthly page",
+			"post": 308,
+			"slug": "monthly-car-rental-tbilisi",
+			"field": "post_excerpt",
+			"find": "free handover at our Mtatsminda office or Tbilisi Airport.",
+			"replace": "free handover at our Mtatsminda office; Tbilisi Airport delivery at a fixed fee per direction.",
+			"count": 1
+		},
+		{
+			"group": "L draft monthly page",
+			"post": 308,
+			"slug": "monthly-car-rental-tbilisi",
+			"field": "meta:glc_seo_description_en",
+			"find": "free handover at our Mtatsminda office or Tbilisi Airport.",
+			"replace": "free handover at our Mtatsminda office; Tbilisi Airport delivery at a fixed fee per direction.",
+			"count": 1
+		},
+		{
+			"group": "L draft monthly page",
+			"post": 308,
+			"slug": "monthly-car-rental-tbilisi",
+			"field": "post_content",
+			"find": "from our office in Mtatsminda or with free handover at Tbilisi International Airport.",
+			"replace": "collected from our office in Mtatsminda or delivered to Tbilisi International Airport for [geolander_fee place=\"tbilisi_airport\"] each way.",
+			"count": 1
+		},
+		{
+			"group": "L draft monthly page",
+			"post": 308,
+			"slug": "monthly-car-rental-tbilisi",
+			"field": "post_content",
+			"find": "Handover is free at the Mtatsminda office and at Tbilisi Airport (TBS) — no delivery charge on a month-long rental here.",
+			"replace": "Handover is free at the Mtatsminda office; delivery to Tbilisi Airport (TBS) costs [geolander_fee place=\"tbilisi_airport\"] each way.",
+			"count": 1
+		}
+	]
+}

@@ -35,32 +35,26 @@ class GLC_Schema {
 		$graph[] = self::business();
 		$graph[] = self::website();
 
+		// The trail is built once by current_trail() and reused by the visible
+		// breadcrumb bar, so markup and page can never drift apart.
 		if ( is_singular( 'car' ) ) {
 			$graph[] = self::car( get_the_ID() );
-			// Car titles are model names — never translated. Only the crumb label is.
-			$graph[] = self::breadcrumbs( [
-				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
-				[ get_permalink(), get_the_title() ],
-			] );
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_singular( 'place' ) ) {
 			$graph[] = self::place( get_the_ID() );
-			// glc_ui(), not __(): the plugin ships no .mo files, so __() would emit
-			// English on every locale. Place titles come from the content resolver.
-			$graph[] = self::breadcrumbs( [
-				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
-				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
-			] );
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
 			$graph[] = GLC_City::schema( get_the_ID() );
-			$graph[] = self::breadcrumbs( [
-				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
-				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
-			] );
+			$graph[] = self::breadcrumbs( self::current_trail() );
+		} elseif ( is_singular( 'page' ) && has_block( 'geolander/trip-planner', get_the_ID() ) ) {
+			$graph[] = GLC_Trip_Planner::schema();
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_guide_route', true ) ) {
 			$graph[] = self::guide( get_the_ID() );
-			$graph[] = self::breadcrumbs( [
-				[ get_permalink(), get_the_title() ],
-			] );
+			$graph[] = self::breadcrumbs( self::current_trail() );
+		} elseif ( is_singular( 'page' ) && get_post_meta( get_the_ID(), 'glc_service_type', true ) ) {
+			$graph[] = self::service( get_the_ID() );
+			$graph[] = self::breadcrumbs( self::current_trail() );
 		} elseif ( is_post_type_archive( 'car' ) ) {
 			$graph[] = self::fleet_list();
 		} elseif ( is_front_page() ) {
@@ -73,27 +67,96 @@ class GLC_Schema {
 		printf(
 			"<script type=\"application/ld+json\">%s</script>\n",
 			wp_json_encode(
-				[ '@context' => 'https://schema.org', '@graph' => array_values( array_filter( $graph ) ) ],
-				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+				[
+					'@context' => 'https://schema.org',
+					'@graph'   => array_values( array_filter( array_map( [ __CLASS__, 'prune' ], $graph ) ) ),
+				],
+				// HEX_TAG writes < and > as \u003C and \u003E, so no value can close this <script> early. A parser reads the same text either way.
+				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG
 			)
 		);
 	}
 
+	/**
+	 * Drop null/empty properties recursively.
+	 *
+	 * Several nodes build optional properties with `?: null` and the offers node
+	 * is now null for unpriced cars. Emitting `"offers": null` or `"color": null`
+	 * is noise at best and, for offers specifically, ambiguous — pruning means an
+	 * absent price is genuinely absent rather than declared empty.
+	 */
+	private static function prune( $value ) {
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+		$is_list = array_is_list( $value );
+		$out     = [];
+		foreach ( $value as $key => $item ) {
+			$item = self::prune( $item );
+			if ( null === $item || '' === $item || [] === $item ) {
+				continue;
+			}
+			$out[ $key ] = $item;
+		}
+		// Re-index lists so a pruned element can't turn a JSON array into an object.
+		return $is_list ? array_values( $out ) : $out;
+	}
+
 	private static function business(): array {
 		$logo = get_theme_file_uri( 'assets/img/logo.png' );
-		return [
-			'@type'      => 'AutoRental',
+
+		/*
+		 * `image` was the logo. For a local business entity a real photograph of
+		 * the premises or the fleet is a stronger corroborating signal than a
+		 * wordmark — and it is what the Google Business Profile should show too.
+		 * `logo` stays the logo, which is what that property is for.
+		 */
+		$image = get_theme_file_uri( 'assets/img/hero.jpg' );
+
+		/*
+		 * areaServed was Country:Georgia alone, while the business explicitly
+		 * delivers to four named cities and publishes a page for each. Declaring
+		 * the actual service footprint costs one loop and makes the entity legible
+		 * to both local search and AI grounding.
+		 */
+		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
+		if ( class_exists( 'GLC_City' ) ) {
+			foreach ( GLC_City::all() as $city ) {
+				$name = GLC_City::city_label( $city->ID );
+				if ( $name ) {
+					$area[] = [ '@type' => 'City', 'name' => $name ];
+				}
+			}
+		}
+
+		$business = [
+			// AutoRental is already an Organization subtype, but the explicit
+			// Organization token helps simpler agent parsers recognize identity
+			// without requiring them to traverse the Schema.org hierarchy.
+			'@type'      => [ 'Organization', 'LocalBusiness', 'AutoRental' ],
 			'@id'        => home_url( '/#business' ),
 			// Must match the Google Business Profile name exactly so search
 			// engines reconcile the site and the Maps listing as one entity.
 			'name'       => GLC_Settings::get( 'business_name', get_bloginfo( 'name' ) ),
 			'alternateName' => 'Geolander',
-			'description'=> get_bloginfo( 'description' ),
+			'description'=> sprintf(
+				'Geolander car rental is based in the heart of Tbilisi, in %s at %s.',
+				GLC_Settings::get( 'office_district' ),
+				GLC_Settings::get( 'address' )
+			),
 			'url'        => home_url( '/' ),
 			'logo'       => $logo,
-			'image'      => $logo,
+			'image'      => $image,
 			'telephone'  => GLC_Settings::get( 'phone' ),
 			'email'      => GLC_Settings::get( 'email' ),
+			'contactPoint' => [
+				'@type'             => 'ContactPoint',
+				'contactType'       => 'customer service and reservations',
+				'telephone'         => GLC_Settings::get( 'phone' ),
+				'email'             => GLC_Settings::get( 'email' ),
+				'availableLanguage' => [ 'English', 'Georgian', 'Russian', 'Ukrainian', 'Arabic', 'Chinese', 'French' ],
+				'areaServed'        => 'GE',
+			],
 			// Reads the settings range, so schema can't drift from the site copy.
 			'priceRange' => GLC_Format::range_display( 'en' ),
 			'hasMap'     => GLC_Settings::get( 'google_maps_url' ),
@@ -102,6 +165,7 @@ class GLC_Schema {
 				'@type'           => 'PostalAddress',
 				'streetAddress'   => GLC_Settings::get( 'address' ),
 				'addressLocality' => GLC_Settings::get( 'address_locality', 'Tbilisi' ),
+				'addressRegion'   => GLC_Settings::get( 'office_district' ),
 				'postalCode'      => GLC_Settings::get( 'postal_code' ),
 				'addressCountry'  => 'GE',
 			],
@@ -117,11 +181,27 @@ class GLC_Schema {
 				'closes'    => '23:59',
 			],
 			'sameAs'     => array_values( array_filter( [
+				GLC_Settings::get( 'google_maps_url' ),
 				GLC_Settings::get( 'instagram' ),
 				GLC_Settings::get( 'facebook' ),
 			] ) ),
-			'areaServed' => [ '@type' => 'Country', 'name' => 'Georgia' ],
+			'areaServed' => $area,
 		];
+
+		$legal_name = trim( (string) GLC_Settings::get( 'legal_name', '' ) );
+		$georgian_id = trim( (string) GLC_Settings::get( 'georgian_id', '' ) );
+		if ( '' !== $legal_name ) {
+			$business['legalName'] = $legal_name;
+		}
+		if ( '' !== $georgian_id ) {
+			$business['identifier'] = [
+				'@type'      => 'PropertyValue',
+				'propertyID' => 'Georgian identification number',
+				'value'      => $georgian_id,
+			];
+		}
+
+		return $business;
 	}
 
 	private static function website(): array {
@@ -152,13 +232,70 @@ class GLC_Schema {
 		$brand = wp_get_post_terms( $post_id, 'car_brand', [ 'fields' => 'names' ] );
 		$year  = get_post_meta( $post_id, 'glc_year', true );
 
+		/*
+		 * Product.description is a recommended field and 13 of the imported cars
+		 * have no body text, so the validator warned on each. Fall back to a
+		 * sentence assembled ONLY from the stored specs — year, transmission,
+		 * drivetrain, fuel, seats — never from anything the owner has not entered.
+		 * Empty specs are simply left out; nothing is guessed.
+		 */
+		$description = GLC_Content::excerpt( $post_id, 40 );
+		if ( '' === trim( $description ) ) {
+			$specs = array_filter( [
+				$year ? (string) $year : '',
+				(string) get_post_meta( $post_id, 'glc_transmission', true ),
+				(string) get_post_meta( $post_id, 'glc_drivetrain', true ),
+				(string) get_post_meta( $post_id, 'glc_fuel_type', true ),
+				( $seats = (int) get_post_meta( $post_id, 'glc_seats', true ) ) ? $seats . ' ' . glc_ui( 'seats' ) : '',
+			] );
+			$description = trim( sprintf(
+				'%s%s — %s, %s.',
+				get_the_title( $post_id ),
+				$specs ? ' (' . implode( ', ', $specs ) . ')' : '',
+				glc_ui( 'booking_title' ),
+				glc_ui( 'fleet_subtitle' )
+			) );
+		}
+
+		/*
+		 * A Product offer advertising lowPrice 0 is not a missing price — it is a
+		 * false price, and it was being published to Google's structured-data
+		 * pipeline and to every AI crawler robots.txt invites. When the car has no
+		 * usable rate the offers node is omitted entirely: describing the vehicle
+		 * without quoting a price is honest; quoting zero is not.
+		 */
+		$currency = GLC_Settings::get( 'payment_currency', 'USD' );
+		$offers   = ( $low > 0 && $high > 0 ) ? [
+			'@type'         => 'AggregateOffer',
+			'priceCurrency' => $currency,
+			'lowPrice'      => $low,
+			'highPrice'     => $high,
+			'offerCount'    => count( GLC_Pricing::TIERS ),
+			'availability'  => get_post_meta( $post_id, 'glc_available', true )
+				? 'https://schema.org/InStock'
+				: 'https://schema.org/OutOfStock',
+			'url'           => get_permalink( $post_id ),
+			'seller'        => [ '@id' => home_url( '/#business' ) ],
+			'priceSpecification' => [
+				'@type'             => 'UnitPriceSpecification',
+				'price'             => $low,
+				'priceCurrency'     => $currency,
+				'unitCode'          => 'DAY',
+				'referenceQuantity' => [ '@type' => 'QuantitativeValue', 'value' => 1, 'unitCode' => 'DAY' ],
+			],
+		] : null;
+
+		/* Product rich-result markup requires a real product image. Two imported
+		 * vehicle rows currently have none, and a generic placeholder would claim
+		 * evidence the business does not have. Keep honest Car entity markup for
+		 * those rows; Product is restored automatically when a photo is attached. */
 		return [
-			'@type'               => [ 'Product', 'Car' ],
+			'@type'               => $images ? [ 'Product', 'Car' ] : 'Car',
 			'@id'                 => get_permalink( $post_id ) . '#car',
 			'name'                => get_the_title( $post_id ),
 			// Localized description: schema declares inLanguage per locale, so the
 			// description must match it rather than always being English.
-			'description'         => GLC_Content::excerpt( $post_id, 40 ),
+			'description'         => $description,
 			'image'               => array_values( array_unique( $images ) ),
 			'url'                 => get_permalink( $post_id ),
 			'brand'               => $brand ? [ '@type' => 'Brand', 'name' => $brand[0] ] : null,
@@ -166,31 +303,20 @@ class GLC_Schema {
 			'vehicleModelDate'    => $year ? (string) $year : null,
 			'color'               => get_post_meta( $post_id, 'glc_color', true ) ?: null,
 			'vehicleTransmission' => get_post_meta( $post_id, 'glc_transmission', true ) ?: null,
+			'driveWheelConfiguration' => get_post_meta( $post_id, 'glc_drivetrain', true ) ?: null,
 			'fuelType'            => get_post_meta( $post_id, 'glc_fuel_type', true ) ?: null,
 			'seatingCapacity'     => (int) get_post_meta( $post_id, 'glc_seats', true ) ?: null,
-			'offers'              => [
-				'@type'         => 'AggregateOffer',
-				'priceCurrency' => GLC_Settings::get( 'payment_currency', 'USD' ),
-				'lowPrice'      => $low,
-				'highPrice'     => $high,
-				'offerCount'    => count( GLC_Pricing::TIERS ),
-				'availability'  => get_post_meta( $post_id, 'glc_available', true )
-					? 'https://schema.org/InStock'
-					: 'https://schema.org/OutOfStock',
-				'url'           => get_permalink( $post_id ),
-				'seller'        => [ '@id' => home_url( '/#business' ) ],
-				'priceSpecification' => [
-					'@type'             => 'UnitPriceSpecification',
-					'price'             => $low,
-					'priceCurrency'     => GLC_Settings::get( 'payment_currency', 'USD' ),
-					'unitCode'          => 'DAY',
-					'referenceQuantity' => [ '@type' => 'QuantitativeValue', 'value' => 1, 'unitCode' => 'DAY' ],
-				],
-			],
+			'offers'              => $offers,
 		];
 	}
 
 	private static function place( int $post_id ): array {
+		// The place CPT already stores coordinates and they were never used, so the
+		// node claimed authority over a national landmark with an address of
+		// "Georgia" and nothing else. Real coordinates make the claim substantive.
+		$lat = (float) get_post_meta( $post_id, 'glc_lat', true );
+		$lng = (float) get_post_meta( $post_id, 'glc_lng', true );
+
 		return [
 			'@type'       => 'TouristAttraction',
 			'@id'         => get_permalink( $post_id ) . '#place',
@@ -199,6 +325,9 @@ class GLC_Schema {
 			'image'       => has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'full' ) : null,
 			'url'         => get_permalink( $post_id ),
 			'address'     => [ '@type' => 'PostalAddress', 'addressCountry' => 'GE' ],
+			'geo'         => ( $lat && $lng )
+				? [ '@type' => 'GeoCoordinates', 'latitude' => $lat, 'longitude' => $lng ]
+				: null,
 		];
 	}
 
@@ -224,6 +353,40 @@ class GLC_Schema {
 			'about'            => [
 				'@type' => 'TouristDestination',
 				'name'  => get_post_meta( $post_id, 'glc_guide_route', true ),
+			],
+		];
+	}
+
+	/**
+	 * Service node for a curated service page (long-term rental, …). The
+	 * service type is a page meta so a new service page needs no code. No
+	 * `offers`: the per-day rate is read live by the rates block on the page,
+	 * and a single price here would freeze one number Google may quote for a
+	 * year. areaServed mirrors the business node's four cities.
+	 */
+	private static function service( int $post_id ): array {
+		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
+		if ( class_exists( 'GLC_City' ) ) {
+			foreach ( GLC_City::all() as $city ) {
+				$name = GLC_City::city_label( $city->ID );
+				if ( $name ) {
+					$area[] = [ '@type' => 'City', 'name' => $name ];
+				}
+			}
+		}
+		return [
+			'@type'       => 'Service',
+			'@id'         => get_permalink( $post_id ) . '#service',
+			'serviceType' => (string) get_post_meta( $post_id, 'glc_service_type', true ),
+			'name'        => GLC_Content::title( $post_id ),
+			'description' => get_post_meta( $post_id, 'glc_seo_description_en', true ) ?: GLC_Content::excerpt( $post_id, 40 ),
+			'url'         => get_permalink( $post_id ),
+			'provider'    => [ '@id' => home_url( '/#business' ) ],
+			'areaServed'  => $area,
+			'availableChannel' => [
+				'@type'        => 'ServiceChannel',
+				'serviceUrl'   => get_permalink( $post_id ),
+				'servicePhone' => GLC_Settings::get( 'phone' ),
 			],
 		];
 	}
@@ -267,6 +430,63 @@ class GLC_Schema {
 				],
 			], $faqs ),
 		];
+	}
+
+	/**
+	 * The breadcrumb trail for the current request, or [] when there isn't one.
+	 *
+	 * Shared by the JSON-LD node and the visible breadcrumb bar so the markup
+	 * always describes something the visitor can actually see — Google expects
+	 * structured data to correspond to visible page content, and the site emitted
+	 * BreadcrumbList with no breadcrumb anywhere on the page.
+	 */
+	public static function current_trail(): array {
+		if ( is_singular( 'car' ) ) {
+			return [
+				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
+				[ get_permalink(), get_the_title() ],
+			];
+		}
+		if ( is_singular( 'place' ) ) {
+			return [
+				[ get_post_type_archive_link( 'place' ), glc_ui( 'places_title' ) ],
+				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
+			];
+		}
+		if ( is_singular( 'city' ) && class_exists( 'GLC_City' ) ) {
+			return [
+				[ get_post_type_archive_link( 'car' ), glc_ui( 'fleet_title' ) ],
+				[ get_permalink(), GLC_Content::title( get_the_ID() ) ],
+			];
+		}
+		if ( is_singular( 'page' ) && ( get_post_meta( get_the_ID(), 'glc_guide_route', true ) || get_post_meta( get_the_ID(), 'glc_service_type', true ) ) ) {
+			return [ [ get_permalink(), GLC_Content::title( get_the_ID() ) ] ];
+		}
+		return [];
+	}
+
+	/** Visible breadcrumb bar matching current_trail(). */
+	public static function breadcrumb_html(): string {
+		$trail = self::current_trail();
+		if ( ! $trail ) {
+			return '';
+		}
+		$items = [ sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( home_url( '/' ) ),
+			esc_html( get_bloginfo( 'name' ) )
+		) ];
+		$last  = count( $trail ) - 1;
+		foreach ( $trail as $i => [ $url, $name ] ) {
+			$items[] = $i === $last
+				? '<span aria-current="page">' . esc_html( $name ) . '</span>'
+				: sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $name ) );
+		}
+		return sprintf(
+			'<nav class="glc-breadcrumbs" aria-label="%s">%s</nav>',
+			esc_attr( glc_ui( 'breadcrumb' ) ),
+			implode( '<span class="glc-breadcrumb-sep" aria-hidden="true">/</span>', $items )
+		);
 	}
 
 	private static function breadcrumbs( array $trail ): array {

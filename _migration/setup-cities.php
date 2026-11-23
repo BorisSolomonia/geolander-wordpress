@@ -51,18 +51,18 @@ $cities = [
 	[
 		'slug' => 'tbilisi', 'order' => 1,
 		'title' => 'Car Rental in Tbilisi',
-		'excerpt' => 'Rent a 4x4 in Tbilisi with free delivery to Tbilisi International Airport (TBS). Full insurance, no deposit, pay at pickup.',
+		'excerpt' => 'Rent a 4x4 in Tbilisi — collection at our Mtatsminda office is free; delivery to Tbilisi Airport (TBS) or your address has a fee per direction, shown before you book. Full insurance, no security deposit.',
 		'airport_name' => 'Tbilisi International', 'airport_code' => 'TBS',
-		'delivery' => 'Free delivery to Tbilisi Airport & city hotels',
+		'delivery' => 'Airport [geolander_fee place="tbilisi_airport"] · city address [geolander_fee place="tbilisi_city"] — each way',
 		'body' =>
-			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. We deliver your car free of charge to Tbilisi International Airport (TBS) or to any hotel or address in the city — usually within the hour once your dates are confirmed on WhatsApp. Every rental is a real 4x4 with full insurance, unlimited mileage, and no security deposit; you pay at pickup, not online.' ) .
+			glc_city_p( 'Tbilisi is where most Georgia road trips begin, and it is Geolander\'s home base. Our rental office is in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. Collect the car at our office, or we deliver it to Tbilisi International Airport (TBS) for [geolander_fee place="tbilisi_airport"] or to a hotel or address in the city for [geolander_fee place="tbilisi_city"], each way, once your dates are confirmed on WhatsApp. Full insurance and free winter tyres are included, there is no security deposit, and a 10% prepayment confirms the booking. The remaining balance is paid at pickup.' ) .
 			glc_city_h( 'Where a Tbilisi rental takes you' ) .
-			glc_city_p( 'From Tbilisi the whole country is within a day\'s drive, and a proper 4x4 opens the routes an ordinary car cannot:' ) .
+			glc_city_p( 'Tbilisi is a practical starting point for routes across Georgia. The right vehicle depends on the road surface and current conditions:' ) .
 			glc_city_ul( [
 				'<strong>Kazbegi &amp; Gudauri</strong> — the Georgian Military Highway north to Gergeti Trinity Church (about 3 hours).',
 				'<strong>Kakheti wine country</strong> — Sighnaghi, Telavi and the Alazani Valley to the east.',
-				'<strong>Davit Gareja</strong> — the desert cave monastery on the Azerbaijan border, where the last gravel stretch really wants 4x4.',
-				'<strong>Tusheti</strong> — for the experienced: the Abano Pass, one of the world\'s most demanding mountain roads (summer only, ask us first).',
+				'<strong>Davit Gareja</strong> — the desert cave monastery near the Azerbaijan border, reached by a route whose surface should be checked before departure.',
+				'<strong>Tusheti</strong> — for experienced mountain-road drivers, only while the Abano Pass is officially open and conditions are safe.',
 			] ) .
 			glc_city_h( 'Driving in and out of Tbilisi' ) .
 			glc_city_p( 'City traffic is busy and parking near the old town is tight, so many travellers collect the car on the day they leave for the mountains rather than for city sightseeing. Tell us your plan on WhatsApp and we will suggest the pickup timing that saves you a parking headache.' ),
@@ -70,11 +70,11 @@ $cities = [
 	[
 		'slug' => 'batumi', 'order' => 2,
 		'title' => 'Car Rental in Batumi',
-		'excerpt' => 'Rent a 4x4 in Batumi with free delivery to Batumi Airport (BUS) and seafront hotels. Full insurance, no deposit.',
+		'excerpt' => 'Rent a 4x4 in Batumi — airport (BUS) or city delivery at one fee per direction, shown before you book. Full insurance, no deposit.',
 		'airport_name' => 'Batumi International', 'airport_code' => 'BUS',
-		'delivery' => 'Free delivery to Batumi Airport & seafront hotels',
+		'delivery' => '[geolander_fee place="batumi_airport"] each way · airport or city',
 		'body' =>
-			glc_city_p( 'Batumi is Georgia\'s Black Sea capital — palm-lined boulevards, summer nightlife, and mountains that rise straight off the coast. We deliver your car free to Batumi International Airport (BUS) or to your seafront hotel, so you can land, settle in, and pick the car up only when you actually want to drive.' ) .
+			glc_city_p( 'Batumi is Georgia\'s Black Sea capital — palm-lined boulevards, summer nightlife, and mountains that rise straight off the coast. Delivery to Batumi Airport (BUS) or to an address in Batumi costs [geolander_fee place="batumi_airport"] per direction; pickup and return are shown separately in the quote before you send a booking request.' ) .
 			glc_city_h( 'Why you want 4x4 in Adjara' ) .
 			glc_city_p( 'The coast is flat and easy, but the reason to rent in Batumi is what sits just behind it — the green, rainy mountains of Adjara, where the interesting roads turn to gravel fast:' ) .
 			glc_city_ul( [
@@ -89,11 +89,11 @@ $cities = [
 	[
 		'slug' => 'kutaisi', 'order' => 3,
 		'title' => 'Car Rental at Kutaisi Airport',
-		'excerpt' => 'Pick up a 4x4 at Kutaisi Airport (KUT) — the budget-flight gateway. Free airport delivery, full insurance, no deposit.',
+		'excerpt' => 'Pick up a 4x4 at Kutaisi Airport (KUT) or in the city — one clear fee per direction, shown before you book. Full insurance and no deposit.',
 		'airport_name' => 'Kutaisi International', 'airport_code' => 'KUT',
-		'delivery' => 'Free pickup at Kutaisi Airport arrivals',
+		'delivery' => '[geolander_fee place="kutaisi_airport"] each way · airport or city',
 		'body' =>
-			glc_city_p( 'Kutaisi International Airport (KUT) is how most budget travellers reach Georgia — the Wizz Air and low-cost hub for the whole region. The catch is that the airport sits well outside the city with little around it, so a car waiting at arrivals is the single best way to start your trip. We meet you at the terminal with the keys; full insurance, unlimited mileage, no deposit, pay on arrival.' ) .
+			glc_city_p( 'Kutaisi International Airport (KUT) is a major arrival point for budget travellers reaching Georgia. The airport sits outside the city, so collecting a car at arrivals is a practical way to begin a western Georgia itinerary. We meet you at the terminal with the keys; full insurance and no security deposit are included. A 10% prepayment confirms the booking, and the remaining balance is paid at pickup.' ) .
 			glc_city_h( 'Kutaisi is the gateway to western Georgia' ) .
 			glc_city_p( 'Skip the taxi queues and drive straight into the west, which is greener, wilder and less visited than the east:' ) .
 			glc_city_ul( [
@@ -108,11 +108,11 @@ $cities = [
 	[
 		'slug' => 'kobuleti', 'order' => 4,
 		'title' => 'Car Rental in Kobuleti',
-		'excerpt' => 'Rent a 4x4 in Kobuleti with free delivery to your hotel. Quieter Black Sea base near Batumi. Full insurance, no deposit.',
+		'excerpt' => 'Rent a 4x4 in Kobuleti, delivered to your hotel or guesthouse (fee on request). Quieter Black Sea base near Batumi. Full insurance, no deposit.',
 		'airport_name' => 'Batumi International', 'airport_code' => 'BUS',
-		'delivery' => 'Free delivery to Kobuleti hotels & guesthouses',
+		'delivery' => 'Hotel & guesthouse delivery — fee on request',
 		'body' =>
-			glc_city_p( 'Kobuleti is the calmer stretch of Georgia\'s Black Sea coast — a long pebble beach and low-key guesthouses, half an hour up from Batumi and close to Batumi Airport (BUS). It suits families and travellers who want the sea without Batumi\'s crowds, and a car turns a quiet beach base into a launch pad for the whole southwest. We deliver free to your hotel or guesthouse.' ) .
+			glc_city_p( 'Kobuleti is the calmer stretch of Georgia\'s Black Sea coast — a long pebble beach and low-key guesthouses, half an hour up from Batumi and close to Batumi Airport (BUS). It suits families and travellers who want the sea without Batumi\'s crowds, and a car turns a quiet beach base into a launch pad for the whole southwest. Delivery to your hotel or guesthouse is arranged on WhatsApp — ask for the fee for your dates.' ) .
 			glc_city_h( 'Day trips from Kobuleti' ) .
 			glc_city_p( 'Everything in Adjara is within easy reach, plus a few things right on the doorstep:' ) .
 			glc_city_ul( [
@@ -146,7 +146,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა თბილისში',
 			'body'  =>
-				glc_tp( 'თბილისი არის ის ადგილი, საიდანაც საქართველოში მოგზაურობა უმეტესად იწყება — და სწორედ აქ არის Geolander-ის ბაზა. მანქანას უფასოდ მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS) ან ქალაქის ნებისმიერ სასტუმროსა თუ მისამართზე — ჩვეულებრივ ერთ საათში, მას შემდეგ რაც თარიღებს WhatsApp-ით დაადასტურებთ. ყველა მანქანა ნამდვილი 4x4-ია, სრული დაზღვევით, შეუზღუდავი გარბენით და დეპოზიტის გარეშე; გადახდა ხდება მანქანის მიღებისას, არა ონლაინ.' ) .
+				glc_tp( 'თბილისი არის ის ადგილი, საიდანაც საქართველოში მოგზაურობა უმეტესად იწყება — და სწორედ აქ არის Geolander-ის ბაზა. ჩვენი ოფისი თბილისის ცენტრში, მთაწმინდაზე, ვეძინის ქუჩა 8/5-ში მდებარეობს. მანქანა შეგიძლიათ ოფისში აიღოთ, ან მოგაწვდით თბილისის საერთაშორისო აეროპორტში (TBS) — [geolander_fee place="tbilisi_airport"] ერთი მიმართულებით, ან სასტუმროში თუ ქალაქის მისამართზე — [geolander_fee place="tbilisi_city"] ერთი მიმართულებით, როდესაც თარიღებს WhatsApp-ით დაადასტურებთ. სრული დაზღვევა და ზამთრის საბურავები უფასოდაა ჩართული, დეპოზიტი არ არის და გადახდა მანქანის მიღებისას ხდება.' ) .
 				glc_th( 'სად წაგიყვანთ თბილისში დაქირავებული მანქანა' ) .
 				glc_tp( 'თბილისიდან მთელი ქვეყანა ერთი დღის სავალზეა, ხოლო კარგი 4x4 ხსნის იმ გზებს, რომლებზეც ჩვეულებრივი მანქანა ვერ ავა:' ) .
 				glc_tul( [
@@ -161,7 +161,7 @@ $trans = [
 		'ru' => [
 			'title' => 'Аренда автомобиля в Тбилиси',
 			'body'  =>
-				glc_tp( 'Тбилиси — отправная точка большинства путешествий по Грузии, и здесь же база Geolander. Мы бесплатно доставим автомобиль в Тбилисский международный аэропорт (TBS) или к любому отелю или адресу в городе — обычно в течение часа после подтверждения дат в WhatsApp. Каждая машина — настоящий внедорожник с полной страховкой, без ограничения пробега и без залога; оплата при получении, а не онлайн.' ) .
+				glc_tp( 'Тбилиси — отправная точка большинства путешествий по Грузии, и здесь же база Geolander. Наш офис находится в самом центре Тбилиси, на Мтацминде, по адресу улица Ведзини 8/5. Автомобиль можно забрать в нашем офисе, или мы доставим его в Тбилисский международный аэропорт (TBS) за [geolander_fee place="tbilisi_airport"] в одну сторону либо к отелю или адресу в городе за [geolander_fee place="tbilisi_city"] в одну сторону — после подтверждения дат в WhatsApp. Полная страховка и зимние шины включены бесплатно, залога нет, оплата при получении.' ) .
 				glc_th( 'Куда вас увезёт машина из Тбилиси' ) .
 				glc_tp( 'Из Тбилиси вся страна в пределах одного дня пути, а хороший внедорожник открывает маршруты, недоступные обычной машине:' ) .
 				glc_tul( [
@@ -178,7 +178,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა ბათუმში',
 			'body'  =>
-				glc_tp( 'ბათუმი საქართველოს შავი ზღვის დედაქალაქია — პალმებით მოჩარჩოებული ბულვარები, ზაფხულის ღამის ცხოვრება და მთები, რომლებიც პირდაპირ სანაპიროდან იწყება. მანქანას უფასოდ მოგაწვდით ბათუმის საერთაშორისო აეროპორტში (BUS) ან თქვენს ზღვისპირა სასტუმროში, რომ ჩამოხვიდეთ, მოეწყოთ და მანქანა მაშინ აიღოთ, როცა მართლა დაგჭირდებათ.' ) .
+				glc_tp( 'ბათუმი საქართველოს შავი ზღვის დედაქალაქია — პალმებით მოჩარჩოებული ბულვარები, ზაფხულის ღამის ცხოვრება და მთები, რომლებიც პირდაპირ სანაპიროდან იწყება. მანქანას მოგაწვდით ბათუმის საერთაშორისო აეროპორტში (BUS) ან თქვენს ზღვისპირა სასტუმროში — [geolander_fee place="batumi_airport"] ერთი მიმართულებით; მიღებისა და დაბრუნების საფასური შეთავაზებაში ცალ-ცალკე ჩანს.' ) .
 				glc_th( 'რატომ გჭირდებათ 4x4 აჭარაში' ) .
 				glc_tp( 'სანაპირო ბრტყელი და მარტივია, მაგრამ ბათუმში მანქანის დაქირავების მთავარი მიზეზი ის არის, რაც უკან დგას — აჭარის მწვანე, წვიმიანი მთები, სადაც საინტერესო გზები სწრაფად გადადის ხრეშზე:' ) .
 				glc_tul( [
@@ -193,7 +193,7 @@ $trans = [
 		'ru' => [
 			'title' => 'Аренда автомобиля в Батуми',
 			'body'  =>
-				glc_tp( 'Батуми — черноморская столица Грузии: бульвары в пальмах, летняя ночная жизнь и горы, поднимающиеся прямо от побережья. Мы бесплатно доставим машину в Батумский международный аэропорт (BUS) или к вашему отелю у моря — прилетайте, устраивайтесь и берите автомобиль тогда, когда действительно захотите ехать.' ) .
+				glc_tp( 'Батуми — черноморская столица Грузии: бульвары в пальмах, летняя ночная жизнь и горы, поднимающиеся прямо от побережья. Мы доставим машину в Батумский международный аэропорт (BUS) или к вашему отелю у моря за [geolander_fee place="batumi_airport"] в одну сторону; сборы за получение и возврат показаны в расчёте отдельно.' ) .
 				glc_th( 'Зачем нужен внедорожник в Аджарии' ) .
 				glc_tp( 'Побережье ровное и лёгкое, но главная причина брать машину в Батуми — то, что находится сразу за ним: зелёные дождливые горы Аджарии, где интересные дороги быстро переходят в гравий:' ) .
 				glc_tul( [
@@ -210,7 +210,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა ქუთაისის აეროპორტში',
 			'body'  =>
-				glc_tp( 'ქუთაისის საერთაშორისო აეროპორტი (KUT) არის ის, საიდანაც ბიუჯეტური მოგზაურების უმეტესობა აღწევს საქართველოში — Wizz Air-ისა და დაბალბიუჯეტიანი ფრენების ჰაბი მთელი რეგიონისთვის. სირთულე ისაა, რომ აეროპორტი ქალაქის გარეთ, ცარიელ ადგილას მდებარეობს, ამიტომ ჩამოსვლისთანავე მოცდენილი მანქანა თქვენი მოგზაურობის დაწყების საუკეთესო გზაა. ჩამოსვლისას გხვდებით ტერმინალთან გასაღებით; სრული დაზღვევა, შეუზღუდავი გარბენი, დეპოზიტის გარეშე, გადახდა ჩამოსვლისას.' ) .
+				glc_tp( 'ქუთაისის საერთაშორისო აეროპორტი (KUT) დასავლეთ საქართველოში ჩამოსვლის მნიშვნელოვანი პუნქტია. აეროპორტი ქალაქის გარეთ მდებარეობს, ამიტომ ჩამოსვლისას მანქანის მიღება მოგზაურობის დაწყების პრაქტიკული გზაა. ტერმინალთან გასაღებით დაგხვდებით; სრული დაზღვევა, დეპოზიტის გარეშე, გადახდა ჩამოსვლისას.' ) .
 				glc_th( 'ქუთაისი — დასავლეთ საქართველოს კარიბჭე' ) .
 				glc_tp( 'გამოტოვეთ ტაქსის რიგები და პირდაპირ დასავლეთში გაემართეთ, რომელიც უფრო მწვანე, ველური და ნაკლებად ნანახია, ვიდრე აღმოსავლეთი:' ) .
 				glc_tul( [
@@ -242,7 +242,7 @@ $trans = [
 		'ka' => [
 			'title' => 'მანქანის ქირაობა ქობულეთში',
 			'body'  =>
-				glc_tp( 'ქობულეთი საქართველოს შავი ზღვის სანაპიროს უფრო მშვიდი მონაკვეთია — გრძელი კენჭიანი პლაჟი და მოკრძალებული სასტუმროები, ბათუმიდან ნახევარი საათის სავალზე და ბათუმის აეროპორტთან (BUS) ახლოს. ის შესაფერისია ოჯახებისთვის და მათთვის, ვისაც ზღვა ბათუმის ხალხმრავლობის გარეშე სურს, ხოლო მანქანა მშვიდ პლაჟურ ბაზას მთელი სამხრეთ-დასავლეთის ამოსავალ წერტილად აქცევს. მიწოდება უფასოა თქვენს სასტუმროში ან სასტუმრო სახლში.' ) .
+				glc_tp( 'ქობულეთი საქართველოს შავი ზღვის სანაპიროს უფრო მშვიდი მონაკვეთია — გრძელი კენჭიანი პლაჟი და მოკრძალებული სასტუმროები, ბათუმიდან ნახევარი საათის სავალზე და ბათუმის აეროპორტთან (BUS) ახლოს. ის შესაფერისია ოჯახებისთვის და მათთვის, ვისაც ზღვა ბათუმის ხალხმრავლობის გარეშე სურს, ხოლო მანქანა მშვიდ პლაჟურ ბაზას მთელი სამხრეთ-დასავლეთის ამოსავალ წერტილად აქცევს. მიწოდებას თქვენს სასტუმროში ან სასტუმრო სახლში WhatsApp-ით შევათანხმებთ — საფასური თქვენი თარიღებისთვის გვკითხეთ.' ) .
 				glc_th( 'ერთდღიანი მოგზაურობები ქობულეთიდან' ) .
 				glc_tp( 'აჭარაში ყველაფერი ხელმისაწვდომია, პლუს რამდენიმე რამ პირდაპირ ზღურბლთან:' ) .
 				glc_tul( [
@@ -257,7 +257,7 @@ $trans = [
 		'ru' => [
 			'title' => 'Аренда автомобиля в Кобулети',
 			'body'  =>
-				glc_tp( 'Кобулети — более спокойная часть черноморского побережья Грузии: длинный галечный пляж и тихие гостевые дома, в получасе к северу от Батуми и рядом с аэропортом Батуми (BUS). Подходит семьям и тем, кто хочет моря без батумской толпы, а машина превращает спокойную пляжную базу в стартовую площадку для всего юго-запада. Доставка бесплатна к вашему отелю или гостевому дому.' ) .
+				glc_tp( 'Кобулети — более спокойная часть черноморского побережья Грузии: длинный галечный пляж и тихие гостевые дома, в получасе к северу от Батуми и рядом с аэропортом Батуми (BUS). Подходит семьям и тем, кто хочет моря без батумской толпы, а машина превращает спокойную пляжную базу в стартовую площадку для всего юго-запада. Доставку к вашему отелю или гостевому дому согласуем в WhatsApp — уточните стоимость для ваших дат.' ) .
 				glc_th( 'Однодневные поездки из Кобулети' ) .
 				glc_tp( 'Вся Аджария в лёгкой доступности, плюс кое-что прямо под боком:' ) .
 				glc_tul( [

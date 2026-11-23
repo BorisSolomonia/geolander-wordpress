@@ -1,0 +1,242 @@
+/*
+ * The partner panel's own screens. Everything else is WordPress admin CSS.
+ * Colours and sizes are named once here and used by name below.
+ */
+.glc-panel {
+	--glc-gap: 12px;
+	--glc-gap-small: 6px;
+	--glc-rate-width: 5.5em;
+	--glc-strip-height: 14px;
+	--glc-strip-radius: 3px;
+	--glc-rule: 3px;
+	--glc-list-max-height: 22em;
+	--glc-photo-size: 96px;
+	--glc-photo-radius: 4px;
+	--glc-photo-alt-width: 28em;
+	--glc-field-label-width: 14em;
+	--glc-fault: #b32d2e;
+	--glc-fault-soft: #fcf0f1;
+	--glc-differs: #fcf9e8;
+	--glc-differs-line: #dba617;
+	--glc-muted: #646970;
+	--glc-line: #c3c4c7;
+	--glc-season-0: #2271b1;
+	--glc-season-1: #3db2a0;
+	--glc-season-2: #8c6fc2;
+	--glc-season-3: #c9a227;
+	--glc-season-4: #5b8a3a;
+	--glc-season-5: #b0689a;
+}
+
+.glc-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--glc-gap-small) calc(var(--glc-gap) * 2);
+	margin: 0 0 var(--glc-gap);
+	color: var(--glc-muted);
+}
+.glc-facts li {
+	margin: 0;
+}
+
+.glc-panel table.widefat {
+	width: auto;
+	max-width: 100%;
+}
+.glc-panel .glc-seasons td,
+.glc-panel .glc-seasons th {
+	vertical-align: middle;
+	white-space: nowrap;
+}
+.glc-rate {
+	width: var(--glc-rate-width);
+}
+.glc-season--marked td {
+	background: var(--glc-fault-soft);
+	box-shadow: inset 0 1px 0 var(--glc-fault), inset 0 -1px 0 var(--glc-fault);
+}
+
+/* One thin cell per day of the year, coloured by the season that holds it. */
+.glc-strip {
+	display: flex;
+	height: var(--glc-strip-height);
+	margin: var(--glc-gap) 0 var(--glc-gap-small);
+	border: 1px solid var(--glc-line);
+	border-radius: var(--glc-strip-radius);
+	overflow: hidden;
+}
+.glc-strip i {
+	flex: 1 1 0;
+}
+.glc-strip__s0 { background: var(--glc-season-0); }
+.glc-strip__s1 { background: var(--glc-season-1); }
+.glc-strip__s2 { background: var(--glc-season-2); }
+.glc-strip__s3 { background: var(--glc-season-3); }
+.glc-strip__s4 { background: var(--glc-season-4); }
+.glc-strip__s5 { background: var(--glc-season-5); }
+.glc-strip__gap { background: var(--glc-fault); }
+.glc-strip__overlap {
+	background: repeating-linear-gradient(45deg, var(--glc-fault), var(--glc-fault) 2px, var(--glc-fault-soft) 2px, var(--glc-fault-soft) 4px);
+}
+
+.glc-fault,
+.glc-panel td.glc-fault {
+	color: var(--glc-fault);
+	font-weight: 600;
+}
+.glc-panel td.glc-fault {
+	background: var(--glc-fault-soft);
+}
+.glc-differs {
+	background: var(--glc-differs);
+	box-shadow: inset 2px 0 0 var(--glc-differs-line);
+}
+
+.glc-outcome,
+.glc-flash,
+.glc-change-list {
+	max-width: 70em;
+}
+.glc-outcome ul,
+.glc-flash ul,
+.glc-change-list {
+	max-height: var(--glc-list-max-height);
+	overflow: auto;
+	margin: 0 0 var(--glc-gap) 1.5em;
+	list-style: disc;
+}
+.glc-outcome--refused {
+	color: var(--glc-fault);
+}
+.glc-preview-out--stale {
+	opacity: 0.5;
+}
+.glc-samples caption {
+	caption-side: top;
+	text-align: left;
+	font-weight: 600;
+	padding: var(--glc-gap-small) 0;
+}
+
+.glc-two {
+	display: flex;
+	flex-wrap: wrap;
+	gap: calc(var(--glc-gap) * 2);
+	margin-bottom: var(--glc-gap);
+}
+
+.glc-number {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.glc-by-car {
+	margin: var(--glc-gap) 0;
+}
+.glc-by-car summary {
+	cursor: pointer;
+	margin-bottom: var(--glc-gap-small);
+}
+
+/* The bulk and Excel screens: a preview per car, and the cells of an uploaded file that differ. */
+.glc-bulk-mode {
+	margin: 0 0 var(--glc-gap);
+	padding: 0;
+	border: 0;
+}
+.glc-start-from,
+.glc-pick-table {
+	margin-bottom: var(--glc-gap);
+}
+.glc-batch-car {
+	margin: calc(var(--glc-gap) * 2) 0;
+	padding-left: var(--glc-gap);
+	border-left: var(--glc-rule) solid var(--glc-line);
+}
+.glc-batch-car--refused {
+	border-left-color: var(--glc-fault);
+}
+.glc-batch-car--changes {
+	border-left-color: var(--glc-differs-line);
+}
+.glc-cells caption {
+	caption-side: top;
+	text-align: left;
+	font-weight: 600;
+	padding: var(--glc-gap-small) 0;
+}
+.glc-stops ul {
+	max-height: var(--glc-list-max-height);
+	overflow: auto;
+	margin: 0 0 var(--glc-gap) 1.5em;
+	list-style: disc;
+}
+
+/* A car's photos, in page order: the picture, what is said about it, and the buttons that move it. */
+.glc-photos {
+	margin: var(--glc-gap) 0;
+	padding: 0;
+	list-style: none;
+	max-width: 70em;
+}
+.glc-photo {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--glc-gap);
+	margin: 0;
+	padding: var(--glc-gap-small) 0;
+	border-bottom: 1px solid var(--glc-line);
+}
+.glc-photo--dragged {
+	opacity: 0.5;
+}
+.glc-photo-picture {
+	width: var(--glc-photo-size);
+	height: var(--glc-photo-size);
+	object-fit: cover;
+	border-radius: var(--glc-photo-radius);
+	background: var(--glc-fault-soft);
+	cursor: grab;
+}
+.glc-photo-fields {
+	display: flex;
+	flex: 1 1 var(--glc-photo-alt-width);
+	flex-direction: column;
+	gap: var(--glc-gap-small);
+	min-width: 0;
+}
+.glc-photo-alt input {
+	width: 100%;
+	max-width: var(--glc-photo-alt-width);
+}
+.glc-photo-alt span {
+	display: block;
+	color: var(--glc-muted);
+}
+.glc-photo-moves {
+	display: flex;
+	align-items: center;
+	gap: var(--glc-gap-small);
+}
+
+/* A car's details: what a partner may change, then what Geolander sets, to read. */
+.glc-panel .glc-specs th {
+	width: var(--glc-field-label-width);
+}
+.glc-panel .glc-specs--fixed td,
+.glc-panel .glc-specs--fixed th {
+	padding-top: var(--glc-gap-small);
+	padding-bottom: var(--glc-gap-small);
+	color: var(--glc-muted);
+}
+
+/* The language switch above every screen of the panel. */
+.glc-lang-switch {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: center;
+	gap: var(--glc-gap-small);
+	margin: var(--glc-gap) var(--glc-gap) 0 0;
+	color: var(--glc-muted);
+}

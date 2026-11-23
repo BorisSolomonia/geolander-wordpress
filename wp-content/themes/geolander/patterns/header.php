@@ -4,22 +4,52 @@
  * Slug: geolander/header
  * Inserter: no
  */
-$glc_nav = [
-	home_url( '/' )             => glc_t( 'nav_home' ),
-	home_url( '/fleet/' )       => glc_t( 'nav_fleet' ),
-	home_url( '/places/' )      => glc_t( 'nav_places' ),
-	home_url( '/travel-info/' ) => glc_t( 'nav_travel_info' ),
-	home_url( '/music/' )       => glc_t( 'nav_music' ),
-	home_url( '/terms/' )       => glc_t( 'nav_terms' ),
-	home_url( '/contact/' )     => glc_t( 'nav_contact' ),
+/*
+ * Primary navigation.
+ *
+ * Three of the seven slots used to go to tourist content (Places, Travel Info,
+ * Georgian Music) and none went to a city page or a policy page — so the pages
+ * that actually earn money were supported only by site-wide footer links, the
+ * weakest internal link there is. This order leads with commercial and
+ * decision-stage destinations and demotes the rest to the footer.
+ *
+ * Candidates whose page does not exist yet are skipped, so the nav upgrades
+ * itself as the coverage hub, the permission page and the trust pages are
+ * published — and never links to a 404 in the meantime.
+ */
+$glc_nav_candidates = [
+	'/fleet/'               => glc_t( 'nav_fleet' ),
+	'/where-you-can-drive/' => glc_t( 'nav_where_drive' ),
+	'/car-rental/'          => glc_t( 'nav_locations' ),
+	'/long-term-car-rental-georgia/' => glc_t( 'nav_long_term' ),
+	'/guides/'              => glc_t( 'nav_guides' ),
+	'/trust/'               => glc_t( 'nav_trust' ),
+	'/places/'              => glc_t( 'nav_places' ),
+	'/contact/'             => glc_t( 'nav_contact' ),
 ];
+
+$glc_nav = [];
+foreach ( $glc_nav_candidates as $glc_path => $glc_label ) {
+	// /fleet/ and /places/ are CPT archives, not pages — always present.
+	$glc_always = in_array( $glc_path, [ '/fleet/', '/places/' ], true );
+	$glc_page   = get_page_by_path( trim( $glc_path, '/' ) );
+	if ( $glc_always || ( $glc_page instanceof WP_Post && 'publish' === $glc_page->post_status ) ) {
+		$glc_nav[ home_url( $glc_path ) ] = $glc_label;
+	}
+}
+if ( ! $glc_nav ) { // Defensive: never render an empty nav.
+	$glc_nav = [
+		home_url( '/fleet/' )   => glc_t( 'nav_fleet' ),
+		home_url( '/contact/' ) => glc_t( 'nav_contact' ),
+	];
+}
 $glc_phone = GLC_Settings::get( 'phone' );
 $glc_tel   = preg_replace( '/[^+0-9]/', '', $glc_phone );
 ?>
 <div class="glc-header">
 	<div class="glc-header-inner">
 		<a class="glc-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Geolander">
-			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="140" height="44" />
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="71" height="44" />
 		</a>
 		<nav class="glc-nav" aria-label="Main">
 			<?php foreach ( $glc_nav as $glc_url => $glc_label ) : ?>

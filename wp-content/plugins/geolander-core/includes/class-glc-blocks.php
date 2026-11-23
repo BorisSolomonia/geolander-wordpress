@@ -46,7 +46,9 @@ class GLC_Blocks {
 			'booking-widget' => [ 'render_callback' => [ __CLASS__, 'booking_widget' ] ],
 			'car-gallery'    => [ 'render_callback' => [ __CLASS__, 'car_gallery' ] ],
 			'car-specs'      => [ 'render_callback' => [ __CLASS__, 'car_specs' ] ],
+			'rental-facts'   => [ 'render_callback' => [ __CLASS__, 'rental_facts' ] ],
 			'price-table'    => [ 'render_callback' => [ __CLASS__, 'price_table' ] ],
+			'long-term-rates'=> [ 'render_callback' => [ __CLASS__, 'long_term_rates' ] ],
 			'faq-list'       => [ 'render_callback' => [ __CLASS__, 'faq_list' ] ],
 			'testimonials'   => [ 'render_callback' => [ __CLASS__, 'testimonials' ] ],
 			'places-grid'    => [ 'render_callback' => [ __CLASS__, 'places_grid' ] ],
@@ -59,6 +61,14 @@ class GLC_Blocks {
 	public static function assets() {
 		if ( is_singular( 'car' ) ) {
 			wp_enqueue_script( 'glc-booking', GLC_URL . 'assets/booking.js', [], GLC_VERSION, [ 'strategy' => 'defer' ] );
+			wp_enqueue_script( 'glc-lightbox', GLC_URL . 'assets/lightbox.js', [], GLC_VERSION, [ 'strategy' => 'defer' ] );
+			wp_localize_script( 'glc-lightbox', 'glcLightbox', [
+				'prev'    => glc_ui( 'photo_prev' ),
+				'next'    => glc_ui( 'photo_next' ),
+				'close'   => glc_ui( 'photo_close' ),
+				'counter' => glc_ui( 'photo_counter' ),
+				'rtl'     => is_rtl(),
+			] );
 			$ads_id    = GLC_Settings::get( 'ads_id' );
 			$ads_label = GLC_Settings::get( 'ads_conversion_label' );
 			wp_localize_script( 'glc-booking', 'glcBooking', [
@@ -66,6 +76,7 @@ class GLC_Blocks {
 				'restCheckout' => rest_url( 'geolander/v1/checkout' ),
 				'adsSendTo'    => $ads_id && $ads_label ? "{$ads_id}/{$ads_label}" : '',
 				'carId'        => get_the_ID(),
+				'locations'    => GLC_Rental::locations( (int) get_the_ID() ),
 				// Locale formatting rules, so live client-side quote updates match
 				// the server-rendered prices instead of reverting to US format.
 				'fmt'          => GLC_Format::js_config(),
@@ -75,6 +86,10 @@ class GLC_Blocks {
 					'quoteError' => glc_ui( 'quote_error' ),
 					'nextTitle'  => glc_ui( 'whats_next_title' ),
 					'nextText'   => glc_ui( 'whats_next_text' ),
+					'customerError' => glc_ui( 'customer_details_error' ),
+					'timeError'     => glc_ui( 'time_error' ),
+					'receiptSent'    => glc_ui( 'receipt_sent' ),
+					'receiptNotSent' => glc_ui( 'receipt_not_sent' ),
 				],
 			] );
 		}
@@ -89,25 +104,6 @@ class GLC_Blocks {
 			$to = '';
 		}
 		return [ $from, $to ];
-	}
-
-	/**
-	 * Direct WhatsApp link for a car — no dates, no quote, just a conversation.
-	 *
-	 * Deliberately does NOT go through GLC_Gateways::checkout(): this is the
-	 * "just asking" path from the fleet grid, so it must not mint a booking
-	 * reference or log a booking_request. The dated quote flow on the car page
-	 * still does all of that for real enquiries.
-	 *
-	 * Message stays English on purpose — Geolander staff read these; see the note
-	 * in class-glc-gateways.php.
-	 */
-	private static function whatsapp_link( WP_Post $car ): string {
-		// One builder for every WhatsApp link on the site — the URL format is
-		// exacting (see GLC_Gateway_WhatsApp::url()) and must not be duplicated.
-		return GLC_Gateway_WhatsApp::url(
-			sprintf( 'Hi! I am interested in the %s. Is it available?', $car->post_title )
-		);
 	}
 
 	/* --------------------------------------------------------- Fleet grid */
@@ -140,6 +136,7 @@ class GLC_Blocks {
 		$seats        = get_post_meta( $id, 'glc_seats', true );
 		$transmission = get_post_meta( $id, 'glc_transmission', true );
 		$fuel         = get_post_meta( $id, 'glc_fuel_type', true );
+		$drivetrain    = get_post_meta( $id, 'glc_drivetrain', true );
 		$available    = (bool) get_post_meta( $id, 'glc_available', true );
 		$price_from   = (float) get_post_meta( $id, 'glc_price_from', true );
 		$brand_title  = preg_replace( '/\s\d{4}$/', '', $car->post_title );
@@ -171,19 +168,23 @@ class GLC_Blocks {
 			<div class="glc-card-body">
 				<h3 class="glc-card-title"><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $brand_title ); ?> <span class="glc-year"><?php echo esc_html( $year ); ?></span></a></h3>
 				<div class="glc-chips">
-					<span class="glc-chip glc-chip--4x4">4x4</span>
+					<?php if ( $drivetrain ) : ?><span class="glc-chip glc-chip--4x4"><?php echo esc_html( $drivetrain ); ?></span><?php endif; ?>
 					<span class="glc-chip"><?php echo esc_html( glc_ui( $transmission ?: 'automatic' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( $seats . ' ' . glc_ui( 'seats' ) ); ?></span>
 					<span class="glc-chip"><?php echo esc_html( glc_ui( $fuel ?: 'gasoline' ) ); ?></span>
 				</div>
 				<?php
 				/*
-				 * No per-car price on cards by design: the fleet sells fit and the
-				 * trip, not a number, and the real price depends on season + rental
-				 * length anyway. The headline range lives on the front page, and the
-				 * exact seasonal quote lives on the car page. When the visitor has
-				 * already chosen dates we still show their real total — at that point
-				 * it's an answer to a question they asked, not a price tag.
+				 * The fleet sells fit and the trip, not a number — but the archive's
+				 * own title tag advertises "from $N/day", and the page was answering
+				 * the price question with silence. A price-shopper arriving from that
+				 * snippet found no price anywhere, which is a mismatch between promise
+				 * and page rather than restraint.
+				 *
+				 * With dates chosen: show their real total (an answer to a question
+				 * they asked). Without dates: show this car's honest "from" floor —
+				 * and nothing at all when it has no rate table, because a zero is a
+				 * false price, not a missing one.
 				 */
 				?>
 				<?php if ( $quote ) : ?>
@@ -192,15 +193,19 @@ class GLC_Blocks {
 							<span class="glc-price-unit"><?php echo esc_html( GLC_Format::money( $quote['per_day_avg'] ) ); ?><?php echo esc_html( glc_ui( 'per_day' ) ); ?> · <?php echo esc_html( $quote['days'] . ' ' . glc_ui( 'days' ) ); ?></span>
 						</span>
 					</div>
+				<?php else : ?>
+					<?php [ $glc_low ] = GLC_Pricing::rate_range( $id ); ?>
+					<?php if ( $glc_low > 0 ) : ?>
+						<div class="glc-card-price">
+							<span class="glc-price"><?php echo esc_html( glc_ui( 'from' ) ); ?> <?php echo esc_html( GLC_Format::money( $glc_low ) ); ?><span class="glc-price-unit"><?php echo esc_html( glc_ui( 'per_day' ) ); ?></span></span>
+						</div>
+					<?php endif; ?>
 				<?php endif; ?>
 				<span class="glc-microline">✓ <?php echo esc_html( glc_ui( 'trust_cancel' ) ); ?> · ✓ <?php echo esc_html( glc_ui( 'trust_insurance' ) ); ?></span>
-				<?php $glc_wa = self::whatsapp_link( $car ); ?>
 				<div class="glc-card-actions">
-					<?php if ( $glc_wa ) : ?>
-						<a class="glc-card-wa" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener">
-							<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'ask_whatsapp' ) ); ?>
-						</a>
-					<?php endif; ?>
+					<a class="glc-card-wa" href="<?php echo esc_url( $url . '#glc-booking' ); ?>">
+						<span aria-hidden="true">💬</span> <?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?>
+					</a>
 					<a class="glc-card-details" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( glc_ui( 'check_details' ) ); ?></a>
 				</div>
 			</div>
@@ -221,8 +226,22 @@ class GLC_Blocks {
 			$from = current_datetime()->modify( '+3 days' )->format( 'Y-m-d' );
 			$to   = current_datetime()->modify( '+8 days' )->format( 'Y-m-d' );
 		}
-		$quote = GLC_Pricing::quote( $id, $from, $to );
+		// The form opens on the default handover time, so the first total is priced for
+		// the same two times the fields show. A refusal (a charge not decided) is no quote.
+		$time  = (string) GLC_Settings::get( 'handover_default_time' );
+		$quote = GLC_Rental::quote( $id, $from, $to, GLC_Rental::DEFAULT_PICKUP, GLC_Rental::DEFAULT_RETURN, $time, $time );
+		$quote = is_array( $quote ) ? $quote : null;
 		$today = current_datetime()->format( 'Y-m-d' );
+		// This car's own fees: a place it cannot price online is listed but cannot be chosen.
+		$locations = GLC_Rental::locations( (int) $id );
+		$place     = static function ( array $location ): string {
+			$fee = 'priced' === $location['state'] ? '+' . GLC_Format::money_exact( $location['fee'] ) : glc_ui( 'free' === $location['state'] ? 'free' : 'planner_confirm_fee' );
+			return $location['label'] . ' · ' . $fee;
+		};
+		// The hours and this car's early/late amount. No amount decided: the times are still asked, the note is left out.
+		$window     = GLC_Rental::handover_window();
+		$hours_fee  = GLC_Rental::out_of_hours_text( (int) $id );
+		$hours_note = $window && '' !== $hours_fee ? sprintf( glc_ui( 'handover_hours_note' ), $window[0], $window[1], $hours_fee ) : '';
 
 		ob_start();
 		?>
@@ -237,24 +256,56 @@ class GLC_Blocks {
 				<input type="date" id="glc-b-to" min="<?php echo esc_attr( $today ); ?>" value="<?php echo esc_attr( $to ); ?>" />
 			</div>
 			<div class="glc-field">
-				<label for="glc-b-name"><?php echo esc_html( glc_ui( 'your_name' ) ); ?></label>
-				<input type="text" id="glc-b-name" autocomplete="name" />
+				<label for="glc-b-pickup-time"><?php echo esc_html( glc_ui( 'pickup_time' ) ); ?></label>
+				<input type="time" id="glc-b-pickup-time" value="<?php echo esc_attr( $time ); ?>" required />
 			</div>
-			<?php
-			/*
-			 * No prices on the car page (decision: 2026-07-16). The rental length
-			 * stays — it's a fact about the trip the visitor just described, not a
-			 * price — but per-day and total are gone. The server still prices the
-			 * booking; the figure simply travels to staff in the WhatsApp message
-			 * instead of being shown here.
-			 */
-			?>
+			<div class="glc-field">
+				<label for="glc-b-return-time"><?php echo esc_html( glc_ui( 'return_time' ) ); ?></label>
+				<input type="time" id="glc-b-return-time" value="<?php echo esc_attr( $time ); ?>" required />
+			</div>
+			<?php if ( $hours_note ) : ?>
+				<p class="glc-micro glc-hours-note"><?php echo esc_html( $hours_note ); ?></p>
+			<?php endif; ?>
+			<div class="glc-field">
+				<label for="glc-b-pickup"><?php echo esc_html( glc_ui( 'pickup_location' ) ); ?></label>
+				<select id="glc-b-pickup">
+					<?php foreach ( $locations as $glc_key => $glc_location ) : ?>
+						<option value="<?php echo esc_attr( $glc_key ); ?>"<?php echo 'unknown' === $glc_location['state'] ? ' disabled' : ''; ?>><?php echo esc_html( $place( $glc_location ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<div class="glc-field">
+				<label for="glc-b-return"><?php echo esc_html( glc_ui( 'return_location' ) ); ?></label>
+				<select id="glc-b-return">
+					<?php foreach ( $locations as $glc_key => $glc_location ) : ?>
+						<option value="<?php echo esc_attr( $glc_key ); ?>"<?php echo 'unknown' === $glc_location['state'] ? ' disabled' : ''; ?>><?php echo esc_html( $place( $glc_location ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<div class="glc-field">
+				<label for="glc-b-name"><?php echo esc_html( glc_ui( 'your_name' ) ); ?></label>
+				<input type="text" id="glc-b-name" autocomplete="name" required maxlength="120" />
+			</div>
+			<div class="glc-field">
+				<label for="glc-b-email"><?php echo esc_html( glc_ui( 'your_email' ) ); ?></label>
+				<input type="email" id="glc-b-email" autocomplete="email" required maxlength="254" />
+			</div>
 			<div class="glc-booking-lines" id="glc-b-lines" <?php echo $quote ? '' : 'hidden'; ?>>
 				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'total_days' ) ); ?></span><span id="glc-b-days"><?php echo esc_html( $quote['days'] ?? '' ); ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'rental_price' ) ); ?></span><span id="glc-b-rental"><?php echo $quote ? esc_html( GLC_Format::money( $quote['rental_total'] ) ) : ''; ?></span></div>
+				<div class="glc-line" id="glc-b-pickup-row" hidden><span><?php echo esc_html( glc_ui( 'pickup_charge' ) ); ?></span><span id="glc-b-pickup-fee"></span></div>
+				<div class="glc-line" id="glc-b-return-row" hidden><span><?php echo esc_html( glc_ui( 'return_charge' ) ); ?></span><span id="glc-b-return-fee"></span></div>
+				<?php foreach ( [ 'pickup', 'return' ] as $glc_side ) : ?>
+					<?php $glc_time_fee = $quote ? (float) $quote[ $glc_side . '_time_fee' ] : 0.0; // shown only when there is one to pay ?>
+					<div class="glc-line" id="glc-b-<?php echo esc_attr( $glc_side ); ?>-time-row" <?php echo $glc_time_fee > 0 ? '' : 'hidden'; ?>><span><?php echo esc_html( glc_ui( $glc_side . '_time_charge' ) ); ?></span><span id="glc-b-<?php echo esc_attr( $glc_side ); ?>-time-fee"><?php echo $glc_time_fee > 0 ? esc_html( GLC_Format::money_exact( $glc_time_fee ) ) : ''; ?></span></div>
+				<?php endforeach; ?>
+				<div class="glc-line glc-line--total"><span><?php echo esc_html( glc_ui( 'final_total' ) ); ?></span><span class="glc-amount" id="glc-b-total"><?php echo $quote ? esc_html( GLC_Format::money( $quote['total'] ) ) : ''; ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'prepayment_amount' ) ); ?></span><span id="glc-b-prepayment"><?php echo $quote ? esc_html( GLC_Format::money_exact( $quote['prepayment'] ) ) : ''; ?></span></div>
+				<div class="glc-line"><span><?php echo esc_html( glc_ui( 'balance_at_pickup' ) ); ?></span><span id="glc-b-balance"><?php echo $quote ? esc_html( GLC_Format::money_exact( $quote['balance'] ) ) : ''; ?></span></div>
 			</div>
 			<p class="glc-micro" id="glc-b-error" hidden></p>
 			<button type="button" id="glc-b-submit"><?php echo esc_html( glc_ui( 'book_whatsapp' ) ); ?></button>
-			<p class="glc-micro"><strong>✓</strong> <?php echo esc_html( glc_ui( 'no_prepayment' ) ); ?><br /><strong>✓</strong> <?php echo esc_html( glc_ui( 'free_cancellation' ) ); ?><br /><?php echo esc_html( glc_ui( 'price_locked' ) ); ?></p>
+			<p class="glc-micro"><strong>✓</strong> <?php echo esc_html( glc_ui( 'booking_prepayment' ) ); ?><br /><strong>✓</strong> <?php echo esc_html( glc_ui( 'cancellation_refund' ) ); ?><br /><?php echo esc_html( glc_ui( 'price_locked' ) ); ?></p>
 			<div id="glc-b-next" hidden style="background:#eef5ea;border-radius:10px;padding:0.9rem;font-size:0.85rem;">
 				<strong id="glc-b-next-title"></strong>
 				<p style="margin:0.3rem 0 0;" id="glc-b-next-text"></p>
@@ -263,8 +314,7 @@ class GLC_Blocks {
 
 		<div class="glc-bar" id="glc-bar">
 			<span class="glc-bar-price">
-				<?php // Sticky bar carries the car and dates, not a price. ?>
-				<strong id="glc-bar-total"><?php echo esc_html( get_the_title( $id ) ); ?></strong>
+				<strong id="glc-bar-total"><?php echo $quote ? esc_html( GLC_Format::money( $quote['total'] ) ) : esc_html( get_the_title( $id ) ); ?></strong>
 				<span id="glc-bar-dates"><?php echo $quote
 					? esc_html( GLC_Format::date( $from ) . ' → ' . GLC_Format::date( $to ) )
 					: esc_html( glc_ui( 'select_dates' ) ); ?></span>
@@ -283,14 +333,54 @@ class GLC_Blocks {
 		if ( ! $gallery ) {
 			return '<div class="glc-gallery"><div class="glc-no-photo" style="grid-column:1/-1;aspect-ratio:21/9;border-radius:var(--glc-radius);">' . esc_html( glc_ui( 'photos_soon' ) ) . '</div></div>';
 		}
-		$gallery = array_slice( $gallery, 0, 5 );
-		$out     = '<div class="glc-gallery">';
-		foreach ( $gallery as $i => $att ) {
-			$full = wp_get_attachment_image_url( $att, 'full' );
+		/*
+		 * The grid still shows five tiles, because that is the layout. But the
+		 * gallery now carries EVERY photo for the lightbox: 12 of the 27 published
+		 * cars have more than five (up to 13), so until now a third of the fleet's
+		 * photographs were uploaded and then invisible to visitors. The overflow
+		 * count is shown on the last tile so people know there is more to see.
+		 *
+		 * The <a href> stays a real link to the full image. That is deliberate: with
+		 * JavaScript off, or for a crawler, clicking still reaches the photograph.
+		 * assets/lightbox.js intercepts the click and opens the dialog instead.
+		 * 'full' rather than a named size because glc-hero and glc-card are both
+		 * HARD CROPS — fine for tiles, wrong for looking at the car.
+		 */
+		$items = [];
+		foreach ( $gallery as $att ) {
+			$src = wp_get_attachment_image_src( $att, 'full' );
+			if ( ! $src || empty( $src[0] ) ) { continue; }
+			$items[] = [
+				'src' => $src[0],
+				'w'   => (int) ( $src[1] ?? 0 ),
+				'h'   => (int) ( $src[2] ?? 0 ),
+				'alt' => (string) get_post_meta( $att, '_wp_attachment_image_alt', true ),
+			];
+		}
+		if ( ! $items ) {
+			return '<div class="glc-gallery"><div class="glc-no-photo" style="grid-column:1/-1;aspect-ratio:21/9;border-radius:var(--glc-radius);">' . esc_html( glc_ui( 'photos_soon' ) ) . '</div></div>';
+		}
+
+		$visible  = array_slice( $gallery, 0, 5 );
+		$overflow = count( $items ) - count( $visible );
+		$out      = sprintf(
+			'<div class="glc-gallery" data-glc-lightbox="%s">',
+			esc_attr( wp_json_encode( $items, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) )
+		);
+		foreach ( $visible as $i => $att ) {
+			$full  = wp_get_attachment_image_url( $att, 'full' );
+			$last  = ( count( $visible ) - 1 ) === $i;
+			$badge = ( $last && $overflow > 0 )
+				/* translators: %d: how many further photographs there are */
+				? '<span class="glc-gallery-more" aria-hidden="true">+' . (int) $overflow . '</span>'
+				: '';
 			$out .= sprintf(
-				'<a href="%s" target="_blank" rel="noopener">%s</a>',
-				esc_url( $full ),
-				wp_get_attachment_image( $att, 0 === $i ? 'glc-hero' : 'glc-card', false, [ 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ] )
+				'<a href="%s" data-glc-index="%d" aria-label="%s">%s%s</a>',
+				esc_url( (string) $full ),
+				$i,
+				esc_attr( sprintf( glc_ui( 'photo_open' ), $i + 1, count( $items ) ) ),
+				wp_get_attachment_image( $att, 0 === $i ? 'glc-hero' : 'glc-card', false, [ 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ] ),
+				$badge
 			);
 		}
 		return $out . '</div>';
@@ -304,7 +394,9 @@ class GLC_Blocks {
 			'spec_year'         => get_post_meta( $id, 'glc_year', true ),
 			'spec_seats'        => get_post_meta( $id, 'glc_seats', true ),
 			'spec_transmission' => glc_ui( get_post_meta( $id, 'glc_transmission', true ) ?: 'automatic' ),
+			'spec_drivetrain'   => get_post_meta( $id, 'glc_drivetrain', true ),
 			'spec_fuel'         => glc_ui( get_post_meta( $id, 'glc_fuel_type', true ) ?: 'gasoline' ),
+			'spec_fuel_economy' => get_post_meta( $id, 'glc_fuel_economy_note', true ),
 			'spec_color'        => get_post_meta( $id, 'glc_color', true ),
 			'spec_body'         => implode( ', ', wp_get_post_terms( $id, 'car_body_type', [ 'fields' => 'names' ] ) ),
 		];
@@ -318,14 +410,69 @@ class GLC_Blocks {
 		return $out . '</dl>';
 	}
 
+	/* -------------------------------------------------------- Rental facts */
+
+	/** Visible answers to the questions customers ask before booking. */
+	public static function rental_facts(): string {
+		// The four delivery places, in the order the sentence names them: a price, the
+		// word "free" when the owner has typed 0, or "confirm with us" when not set.
+		// On a car page these are that car's own fees; on any other page they speak
+		// for the fleet ("from $80" once cars differ). GLC_Rental::fee_shortcode decides.
+		$fees = [];
+		foreach ( [ 'tbilisi_city', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport' ] as $glc_place ) {
+			$fees[] = GLC_Rental::fee_shortcode( [ 'place' => $glc_place ] );
+		}
+		// Early or late handover, with the same amount the quote charges. Left out while
+		// that amount is not decided: an absent row, not a zero and not "free".
+		$window    = GLC_Rental::handover_window();
+		$hours_fee = GLC_Rental::out_of_hours_text( GLC_Rental::page_car() );
+		$facts   = [
+			'rental_exact_car'   => glc_ui( 'rental_exact_car_value' ),
+			'rental_winter'      => glc_ui( 'rental_winter_value' ),
+			'rental_insurance'   => glc_ui( 'rental_insurance_value' ),
+			'rental_excess'      => glc_ui( 'rental_excess_value' ),
+			'rental_coverage'    => glc_ui( 'rental_coverage_value' ),
+			'rental_not_covered' => glc_ui( 'rental_not_covered_value' ),
+			'rental_liability'   => glc_ui( 'rental_liability_value' ),
+			'rental_deposit'     => glc_ui( 'rental_deposit_value' ),
+			'rental_mileage'     => glc_ui( 'rental_mileage_value' ),
+			'rental_delivery'    => vsprintf( glc_ui( 'rental_delivery_value' ), $fees ),
+		];
+		if ( $window && '' !== $hours_fee ) {
+			$facts['rental_out_of_hours'] = sprintf( glc_ui( 'rental_out_of_hours_value' ), $window[0], $window[1], $hours_fee );
+		}
+
+		$out = '<dl class="glc-rental-facts">';
+		foreach ( $facts as $label => $value ) {
+			$out .= '<div><dt>' . esc_html( glc_ui( $label ) ) . '</dt><dd>' . esc_html( $value ) . '</dd></div>';
+		}
+		$out .= '</dl>';
+		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'rental_insurance_exclusions' ) ) . '</p>';
+		$out .= GLC_Trip_Tools::link();
+		return $out;
+	}
+
 	/* -------------------------------------------------------- Price table */
 
+	/**
+	 * The season × rental-length grid of one car. Hidden by default since
+	 * 2026-10: a customer sees the total for their own dates and places, not the
+	 * table behind it. The setting price_grid_car_page brings it back without
+	 * a deploy; /pricing.md keeps the full grid either way.
+	 */
 	public static function price_table(): string {
+		if ( '1' !== (string) GLC_Settings::get( 'price_grid_car_page' ) ) {
+			return '';
+		}
 		$id      = get_the_ID();
 		$pricing = get_post_meta( $id, 'glc_pricing', true );
 		if ( ! is_array( $pricing ) || ! $pricing ) {
 			return '';
 		}
+		$pricing = array_filter( $pricing, static fn( $season ) => is_array( $season ) && array_filter(
+			(array) ( $season['rates'] ?? [] ), static fn( $rate ) => is_numeric( $rate ) && (float) $rate > 0
+		) );
+		if ( ! $pricing ) { return ''; }
 		[ $from, $to ] = self::requested_dates();
 		$active_tier   = '';
 		$active_labels = [];
@@ -337,7 +484,17 @@ class GLC_Blocks {
 			}
 		}
 
-		$out  = '<table class="glc-price-table"><thead><tr><th>' . esc_html( glc_ui( 'season' ) ) . '</th>';
+		/*
+		 * The table lives in its own horizontal scroller. A <table> does not shrink
+		 * below the intrinsic width of its content, and this one has eight columns
+		 * (season + seven duration tiers), which measured 512px on a real iPhone 15
+		 * against a 393px viewport. Without this wrapper it widened the whole
+		 * document to 532px: every section then overflowed, content was cut off at
+		 * the right edge, and the page could be panned sideways — which is what made
+		 * vertical scrolling feel broken. Measured on BrowserStack, 2026-10-08.
+		 */
+		$out  = '<div class="glc-table-scroll">';
+		$out .= '<table class="glc-price-table"><thead><tr><th>' . esc_html( glc_ui( 'season' ) ) . '</th>';
 		foreach ( GLC_Pricing::TIER_LABELS as $label ) {
 			$out .= '<th>' . esc_html( $label ) . ' ' . esc_html( glc_ui( 'days_label' ) ) . '</th>';
 		}
@@ -346,15 +503,166 @@ class GLC_Blocks {
 			$out .= '<tr><td>' . esc_html( $season['label'] ?? '' ) . '</td>';
 			foreach ( GLC_Pricing::TIERS as $tier ) {
 				$is_active = $tier === $active_tier && in_array( $season['label'] ?? '', $active_labels, true );
+				$rate = $season['rates'][ $tier ] ?? null;
 				$out      .= sprintf(
 					'<td%s>%s</td>',
 					$is_active ? ' class="glc-active-cell"' : '',
-					esc_html( GLC_Format::money( (float) ( $season['rates'][ $tier ] ?? 0 ) ) )
+					is_numeric( $rate ) && (float) $rate > 0 ? esc_html( GLC_Format::money( (float) $rate ) ) : ''
 				);
 			}
 			$out .= '</tr>';
 		}
-		return $out . '</tbody></table>';
+		return $out . '</tbody></table></div>';
+	}
+
+	/* --------------------------------------------------- Long-term rates */
+
+	/**
+	 * Fleet-wide table of the short (1–2 day), 19–30 day and 31+ day rates per
+	 * season, with the saving a month-long rental earns — every number read
+	 * live from each car's season table. Long rentals are the business's most
+	 * profitable segment and the site said nothing about them (F-3, 2026-09-01).
+	 *
+	 * Honesty rules inherited from the rest of the plugin: an unpriced car is
+	 * listed under "price on request", never as $0; a season missing a tier is
+	 * shown as "—"; nothing is typed in by hand.
+	 */
+	public static function long_term_rates(): string {
+		if ( '1' !== (string) GLC_Settings::get( 'price_grid_long_term' ) ) {
+			return self::long_term_floors();
+		}
+		$tiers  = [ 'd1_2', 'd19_30', 'd31p' ];
+		$rows   = [];
+		$unpriced = [];
+		$floor  = 0.0;
+		$best   = 0.0;
+		foreach ( glc_fleet_query()->posts as $car ) {
+			$seasons = GLC_Pricing::tier_rates( $car->ID, $tiers );
+			if ( ! $seasons ) {
+				$unpriced[] = $car;
+				continue;
+			}
+			foreach ( $seasons as $label => $rates ) {
+				$month  = $rates['d31p'] ?? 0.0;
+				$saving = self::long_term_saving( $rates );
+				$rows[] = [ $car, $label, $rates, $saving ];
+				if ( $month > 0 && ( 0.0 === $floor || $month < $floor ) ) {
+					$floor = $month;
+				}
+				$best = max( $best, $saving );
+			}
+		}
+		if ( ! $rows ) {
+			return '';
+		}
+
+		$out = '<div class="glc-long-term">';
+		if ( $floor > 0 ) {
+			$out .= sprintf(
+				'<p class="glc-long-term-lead"><strong>%s %s%s</strong>%s</p>',
+				esc_html( glc_ui( 'from' ) ),
+				esc_html( GLC_Format::money( $floor ) ),
+				esc_html( glc_ui( 'per_day' ) ),
+				self::long_term_saving_text( $best )
+			);
+		}
+		$out .= '<table class="glc-price-table glc-long-term-table"><thead><tr>'
+			. '<th>' . esc_html( glc_ui( 'longterm_vehicle' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_season' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_short' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_19_30' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_31' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_saving' ) ) . '</th>'
+			. '</tr></thead><tbody>';
+		foreach ( $rows as [ $car, $label, $rates, $saving ] ) {
+			$cell = fn( string $tier ) => isset( $rates[ $tier ] ) ? esc_html( GLC_Format::money( $rates[ $tier ] ) ) : '—';
+			$out .= sprintf(
+				'<tr><td><a href="%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td><td class="glc-active-cell">%s</td><td>%s</td></tr>',
+				esc_url( get_permalink( $car ) ),
+				esc_html( $car->post_title ),
+				esc_html( $label ),
+				$cell( 'd1_2' ),
+				$cell( 'd19_30' ),
+				$cell( 'd31p' ),
+				$saving > 0 ? esc_html( '−' . round( $saving * 100 ) . '%' ) : '—'
+			);
+		}
+		$out .= '</tbody></table>';
+		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_note' ) ) . '</p>';
+		if ( $unpriced ) {
+			$names = implode( ', ', array_map( fn( $c ) => esc_html( $c->post_title ), $unpriced ) );
+			$out  .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_unpriced' ) ) . ': ' . $names . '</p>';
+		}
+		return $out . '</div>';
+	}
+
+	/** What one season saves per day at 31+ days against a 1–2 day rental, as a share; 0 when it saves nothing or a price is missing. */
+	private static function long_term_saving( array $rates ): float {
+		$short = $rates['d1_2'] ?? 0.0;
+		$month = $rates['d31p'] ?? 0.0;
+		return ( $short > 0 && $month > 0 && $month < $short ) ? ( 1 - $month / $short ) : 0.0;
+	}
+
+	/** The second half of the lead line, " · Saving at 31+ days vs. a short rental: N%"; nothing when no season saves anything. */
+	private static function long_term_saving_text( float $best ): string {
+		return $best > 0 ? ' · ' . esc_html( sprintf( '%s: %d%%', glc_ui( 'longterm_saving' ), round( $best * 100 ) ) ) : '';
+	}
+
+	/**
+	 * The long-term page without the grid (the default since 2026-10): one line
+	 * per car, its lowest day price for a month or longer, which is the lowest
+	 * 31+ day cell of that car's own season table. The lead line is the lowest
+	 * of those across the fleet, and the largest saving any season of any car
+	 * gives, worked out exactly as the full table works it out. A car with no
+	 * such price stays listed as "price on request", never as a zero.
+	 */
+	private static function long_term_floors(): string {
+		$rows     = [];
+		$unpriced = [];
+		$best     = 0.0;
+		foreach ( glc_fleet_query()->posts as $car ) {
+			// The same three prices per season the full table reads, so the same seasons are counted.
+			foreach ( GLC_Pricing::tier_rates( $car->ID, [ 'd1_2', 'd19_30', 'd31p' ] ) as $rates ) {
+				$best = max( $best, self::long_term_saving( $rates ) );
+			}
+			$month = array_column( GLC_Pricing::tier_rates( $car->ID, [ 'd31p' ] ), 'd31p' );
+			if ( $month ) {
+				$rows[] = [ $car, min( $month ) ];
+			} else {
+				$unpriced[] = $car;
+			}
+		}
+		if ( ! $rows ) {
+			return '';
+		}
+
+		$out  = '<div class="glc-long-term">';
+		$out .= sprintf(
+			'<p class="glc-long-term-lead"><strong>%s %s%s</strong>%s</p>',
+			esc_html( glc_ui( 'from' ) ),
+			esc_html( GLC_Format::money( min( array_column( $rows, 1 ) ) ) ),
+			esc_html( glc_ui( 'per_day' ) ),
+			self::long_term_saving_text( $best )
+		);
+		$out .= '<table class="glc-price-table glc-long-term-table"><thead><tr>'
+			. '<th>' . esc_html( glc_ui( 'longterm_vehicle' ) ) . '</th>'
+			. '<th>' . esc_html( glc_ui( 'longterm_tier_31' ) ) . '</th>'
+			. '</tr></thead><tbody>';
+		foreach ( $rows as [ $car, $floor ] ) {
+			$out .= sprintf(
+				'<tr><td><a href="%s">%s</a></td><td class="glc-active-cell">%s</td></tr>',
+				esc_url( get_permalink( $car ) ),
+				esc_html( $car->post_title ),
+				esc_html( sprintf( glc_ui( 'longterm_month_from' ), GLC_Format::money( $floor ) ) )
+			);
+		}
+		$out .= '</tbody></table>';
+		$out .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_note' ) ) . '</p>';
+		if ( $unpriced ) {
+			$names = implode( ', ', array_map( fn( $c ) => esc_html( $c->post_title ), $unpriced ) );
+			$out  .= '<p class="glc-policy-note">' . esc_html( glc_ui( 'longterm_unpriced' ) ) . ': ' . $names . '</p>';
+		}
+		return $out . '</div>';
 	}
 
 	/* ---------------------------------------------------------------- FAQ */

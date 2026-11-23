@@ -22,8 +22,18 @@ if [ -r "$CGROUP_DIR/memory.events" ]; then
 	cat "$CGROUP_DIR/memory.events"
 fi
 
-echo '== Apache processes =='
-ps -eo pid,ppid,rss,etime,cmd | awk 'NR == 1 || /apache2 -DFOREGROUND/'
+echo '== all processes by CPU (miner/rogue-process visibility) =='
+ps -eo pid,ppid,user,%cpu,%mem,rss,etime,cmd --sort=-%cpu | head -n 25
+
+echo '== writable PHP-family files outside uploads =='
+find /var/www/html -xdev -path /var/www/html/wp-content/uploads -prune -o \
+	-type f \( -name '*.php' -o -name '*.phtml' -o -name '*.phar' \) -perm /022 -print
+
+echo '== executable/PHP-family files in uploads =='
+if [ -d /var/www/html/wp-content/uploads ]; then
+	find /var/www/html/wp-content/uploads -xdev -type f \
+		\( -name '*.php' -o -name '*.phtml' -o -name '*.phar' -o -perm /111 \) -print
+fi
 
 echo '== Apache scoreboard (localhost only) =='
 curl --fail --silent --show-error "$STATUS_URL" || echo 'Apache status endpoint unavailable'

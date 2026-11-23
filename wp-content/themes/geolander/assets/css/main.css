@@ -29,6 +29,9 @@
 	--glc-accent: #ff6b35;
 	--glc-accent-deep: #e4531f;
 	--glc-success: #8FBE6E;
+	/* WhatsApp brand green and the dark text that reads on it (6.4:1). */
+	--glc-whatsapp: #25d366;
+	--glc-whatsapp-ink: #073b1a;
 	--glc-radius: 14px;
 	--glc-shadow: 0 18px 48px -18px rgba(20, 36, 32, 0.45);
 	--glc-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -87,6 +90,7 @@ h1, h2, h3 { text-wrap: balance; }
 	content: "";
 	flex: 1;
 	height: 1px;
+	background: rgba(159, 180, 168, 0.35); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-stone) 35%, transparent);
 }
 
@@ -148,9 +152,11 @@ h1, h2, h3 { text-wrap: balance; }
 	position: sticky;
 	top: 0;
 	z-index: 60;
+	background: rgba(20, 36, 32, 0.82); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-ink) 82%, transparent);
 	backdrop-filter: blur(14px);
 	-webkit-backdrop-filter: blur(14px);
+	border-bottom: 1px solid rgba(242, 244, 241, 0.08); /* color-mix fallback */
 	border-bottom: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
 }
 .glc-header a { text-decoration: none; }
@@ -203,6 +209,7 @@ h1, h2, h3 { text-wrap: balance; }
 	right: 0;
 	min-width: 240px;
 	background: var(--glc-surface);
+	border: 1px solid rgba(242, 244, 241, 0.1); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
 	border-radius: var(--glc-radius);
 	box-shadow: var(--glc-shadow);
@@ -216,7 +223,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 0.95rem;
 	font-feature-settings: "case";
 }
-.glc-mobile-nav a:hover { background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
+.glc-mobile-nav a:hover { background: rgba(242, 244, 241, 0.07); background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
 .glc-mobile-nav .glc-mobile-phone { color: var(--glc-accent); }
 
 @media (max-width: 1180px) {
@@ -233,6 +240,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 0.78rem;
 	letter-spacing: 0.08em;
 	padding: 0.45rem 0.7rem;
+	border: 1px solid rgba(242, 244, 241, 0.22); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 22%, transparent);
 	border-radius: 8px;
 	color: var(--glc-glacier);
@@ -245,6 +253,7 @@ h1, h2, h3 { text-wrap: balance; }
 	inset-inline-end: 0;
 	min-width: 170px;
 	background: var(--glc-surface);
+	border: 1px solid rgba(242, 244, 241, 0.1); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
 	border-radius: 12px;
 	box-shadow: var(--glc-shadow);
@@ -258,7 +267,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 0.9rem;
 	font-weight: 600;
 }
-.glc-lang-menu a:hover { background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
+.glc-lang-menu a:hover { background: rgba(242, 244, 241, 0.07); background: color-mix(in srgb, var(--glc-glacier) 7%, transparent); }
 .glc-lang-menu a.glc-lang-active { color: var(--glc-accent); }
 
 /* RTL adjustments (Arabic) */
@@ -314,9 +323,11 @@ h1, h2, h3 { text-wrap: balance; }
 	background: linear-gradient(180deg, rgba(20, 36, 32, 0.35) 0%, rgba(20, 36, 32, 0.15) 40%, rgba(20, 36, 32, 0.78) 82%, var(--glc-ink) 100%);
 }
 
-/* Scroll-driven slow zoom — progressive enhancement, off-main-thread */
+/* Scroll-driven slow zoom — progressive enhancement, off-main-thread.
+ * Mouse/trackpad screens only: on a phone the hero fills the screen, so a scroll-linked zoom
+ * reads as "the page zooms in and out by itself" (iPhone report, 2026-10-09; Safari 26+ runs it). */
 @supports (animation-timeline: scroll()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@media (prefers-reduced-motion: no-preference) and (pointer: fine) {
 		.glc-hero-media img {
 			animation: glc-hero-zoom linear both;
 			animation-timeline: scroll(root);
@@ -347,6 +358,7 @@ h1, h2, h3 { text-wrap: balance; }
 	margin: 0;
 }
 .glc-hero .glc-hero-sub {
+	color: rgba(242, 244, 241, 0.82); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 82%, transparent);
 	font-size: clamp(1rem, 1.8vw, 1.2rem);
 	max-width: 52ch;
@@ -364,6 +376,7 @@ h1, h2, h3 { text-wrap: balance; }
 /* One honest range, instead of a price tag on every car. */
 .glc-hero .glc-hero-range {
 	align-items: baseline;
+	color: rgba(242, 244, 241, 0.72); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 72%, transparent);
 	display: flex;
 	flex-wrap: wrap;
@@ -413,6 +426,7 @@ h1, h2, h3 { text-wrap: balance; }
 	gap: 0.5rem 1.6rem;
 	padding-top: 0.7rem;
 	font-size: 0.85rem;
+	color: rgba(242, 244, 241, 0.75); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 75%, transparent);
 }
 .glc-trust span::before {
@@ -448,7 +462,18 @@ h1, h2, h3 { text-wrap: balance; }
 	min-width: 0;
 	color-scheme: dark;
 }
-.glc-field input[type="date"] { font-family: var(--glc-mono); font-size: 0.88rem; }
+.glc-field input[type="date"],
+.glc-field input[type="time"] {
+	font-family: var(--glc-mono);
+	font-size: 0.88rem;
+	/* iOS 26/27 Safari keeps a native date input in content-box sizing whatever box-sizing says,
+	 * so width:100% plus the padding ran 27.6px past the card (WebKit bug 301648, 2026-10-09).
+	 * Let the grid stretch it instead: stretching sets the outer width, so the sizing mode stops
+	 * mattering. appearance:none also fits, but collapses an empty input (WebKit bug 198959).
+	 * The same bug covers time inputs, so the handover-time fields take the same fix. */
+	width: auto;
+	justify-self: stretch;
+}
 .glc-field input:focus-visible,
 .glc-field select:focus-visible {
 	outline: 2px solid var(--glc-accent);
@@ -465,6 +490,7 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-card {
 	position: relative;
 	background: var(--glc-surface);
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 	border-radius: var(--glc-radius);
 	overflow: clip;
@@ -485,12 +511,18 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-card:hover {
 	transform: scale(1.015);
 	box-shadow: var(--glc-shadow);
+	border-color: rgba(255, 107, 53, 0.45); /* color-mix fallback */
 	border-color: color-mix(in srgb, var(--glc-accent) 45%, transparent);
 	z-index: 1; /* sit above neighbours while enlarged */
 }
 .glc-card-media {
 	position: relative;
 	aspect-ratio: 3 / 2;
+	/* The ratio IS the size. With the default min-height:auto the photo's natural size sets a
+	 * minimum height, the ratio turns that into a minimum width, and Safari 27 (the first Safari
+	 * to honour WordPress's sizes="auto") feeds the box width back into the photo's natural size.
+	 * That loop grew the homepage cards past the screen and made iPhones jump (2026-10-09). */
+	min-height: 0;
 	background: linear-gradient(160deg, var(--glc-surface), var(--glc-ink));
 	overflow: clip;
 }
@@ -509,7 +541,9 @@ h1, h2, h3 { text-wrap: balance; }
 	font-weight: 300;
 	font-size: 0.85rem;
 	letter-spacing: 0.12em;
+	color: rgba(242, 244, 241, 0.85); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 85%, transparent);
+	background: rgba(20, 36, 32, 0.55); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-ink) 55%, transparent);
 	backdrop-filter: blur(6px);
 	padding: 0.2rem 0.55rem;
@@ -520,6 +554,7 @@ h1, h2, h3 { text-wrap: balance; }
 	inset: 0;
 	display: grid;
 	place-items: center;
+	background: rgba(20, 36, 32, 0.68); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-ink) 68%, transparent);
 	color: var(--glc-glacier);
 	font-weight: 700;
@@ -575,11 +610,14 @@ h1, h2, h3 { text-wrap: balance; }
 	letter-spacing: 0.06em;
 	padding: 0.28rem 0.65rem;
 	border-radius: 999px;
+	border: 1px solid rgba(242, 244, 241, 0.18); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 18%, transparent);
+	color: rgba(242, 244, 241, 0.8); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 80%, transparent);
 	white-space: nowrap;
 }
 .glc-chip--4x4 {
+	border-color: rgba(255, 107, 53, 0.55); /* color-mix fallback */
 	border-color: color-mix(in srgb, var(--glc-accent) 55%, transparent);
 	color: var(--glc-accent);
 }
@@ -589,6 +627,7 @@ h1, h2, h3 { text-wrap: balance; }
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 0.8rem;
+	border-top: 1px solid rgba(242, 244, 241, 0.08); /* color-mix fallback */
 	border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
 	padding-top: 0.8rem;
 	margin-top: auto;
@@ -637,18 +676,22 @@ h1, h2, h3 { text-wrap: balance; }
 	transition: filter 0.2s var(--glc-ease), background-color 0.2s var(--glc-ease);
 }
 .glc-card-wa {
-	background: var(--glc-success);
-	color: var(--glc-paper);
+	/* WhatsApp green with dark text (6.4:1); the old success/paper pair read at 1.98:1. */
+	background: var(--glc-whatsapp);
+	color: var(--glc-whatsapp-ink);
 }
 .glc-card-wa:hover,
 .glc-card-wa:focus-visible { filter: brightness(1.1); }
 .glc-card-details {
 	background: transparent;
+	border: 1px solid rgba(242, 244, 241, 0.22); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 22%, transparent);
-	color: var(--glc-ink-text);
+	/* Light text: cards are always on the dark surface; --glc-ink-text (#141414) read at ~1.3:1. */
+	color: var(--glc-glacier);
 }
 .glc-card-details:hover,
 .glc-card-details:focus-visible {
+	background: rgba(242, 244, 241, 0.08); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-glacier) 8%, transparent);
 }
 @media (max-width: 420px) {
@@ -680,6 +723,7 @@ h1, h2, h3 { text-wrap: balance; }
 		flex: 0 0 86%;
 		scroll-snap-align: center;
 		aspect-ratio: 3 / 2;
+		min-height: 0; /* same photo-size loop as .glc-card-media */
 	}
 }
 
@@ -702,7 +746,9 @@ h1, h2, h3 { text-wrap: balance; }
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 	gap: 1px;
+	background: rgba(242, 244, 241, 0.1); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border: 1px solid rgba(242, 244, 241, 0.1); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
 	border-radius: var(--glc-radius);
 	overflow: clip;
@@ -735,6 +781,7 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-price-table td {
 	padding: 0.55rem 0.6rem;
 	text-align: center;
+	border-bottom: 1px solid rgba(242, 244, 241, 0.09); /* color-mix fallback */
 	border-bottom: 1px solid color-mix(in srgb, var(--glc-glacier) 9%, transparent);
 }
 .glc-price-table th {
@@ -747,6 +794,7 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-price-table td:first-child,
 .glc-price-table th:first-child { text-align: left; white-space: nowrap; }
 .glc-price-table td.glc-active-cell {
+	background: rgba(255, 107, 53, 0.18); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-accent) 18%, transparent);
 	color: var(--glc-accent);
 	font-weight: 700;
@@ -774,7 +822,8 @@ h1, h2, h3 { text-wrap: balance; }
 	color: var(--glc-ink-text);
 }
 .glc-booking .glc-field label { color: #6b7280; }
-.glc-booking .glc-field input {
+.glc-booking .glc-field input,
+.glc-booking .glc-field select {
 	background: #fff;
 	color: var(--glc-ink-text);
 	border-color: #d8d4cb;
@@ -814,6 +863,8 @@ h1, h2, h3 { text-wrap: balance; }
 	text-align: center;
 }
 .glc-booking .glc-micro strong { color: var(--glc-success); }
+/* The note under the two handover times belongs to the fields above it, not to the button below. */
+.glc-booking .glc-hours-note { text-align: start; margin: -0.45rem 0 0; }
 .glc-booking .glc-ref {
 	font-family: var(--wp--preset--font-family--display);
 	letter-spacing: 0.08em;
@@ -832,8 +883,10 @@ h1, h2, h3 { text-wrap: balance; }
 		left: 0;
 		right: 0;
 		z-index: 70;
+		background: rgba(20, 36, 32, 0.92); /* color-mix fallback */
 		background: color-mix(in srgb, var(--glc-ink) 92%, transparent);
 		backdrop-filter: blur(14px);
+		border-top: 1px solid rgba(242, 244, 241, 0.12); /* color-mix fallback */
 		border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 12%, transparent);
 		padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
 		align-items: center;
@@ -869,6 +922,7 @@ h1, h2, h3 { text-wrap: balance; }
 	padding: 1.6rem 1.4rem 1.4rem;
 	background: var(--glc-surface);
 	border-radius: var(--glc-radius);
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 	display: grid;
 	gap: 0.5rem;
@@ -880,6 +934,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-family: var(--wp--preset--font-family--display);
 	font-weight: 300;
 	font-size: 2.2rem;
+	color: rgba(255, 107, 53, 0.8); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-accent) 80%, transparent);
 	line-height: 1;
 }
@@ -890,7 +945,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-weight: 800;
 	margin: 0;
 }
-.glc-step p { margin: 0; font-size: 0.9rem; color: color-mix(in srgb, var(--glc-glacier) 70%, transparent); }
+.glc-step p { margin: 0; font-size: 0.9rem; color: rgba(242, 244, 241, 0.7); color: color-mix(in srgb, var(--glc-glacier) 70%, transparent); }
 
 /* ---------------------------------------------------------------- Routes */
 
@@ -937,7 +992,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 1.35rem;
 	color: var(--glc-glacier);
 }
-.glc-route-label span { font-size: 0.82rem; color: color-mix(in srgb, var(--glc-glacier) 72%, transparent); }
+.glc-route-label span { font-size: 0.82rem; color: rgba(242, 244, 241, 0.72); color: color-mix(in srgb, var(--glc-glacier) 72%, transparent); }
 .glc-route-label .glc-elev {
 	font-family: var(--glc-mono);
 	font-size: 0.72rem;
@@ -949,6 +1004,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-family: var(--glc-mono);
 	font-size: 0.78rem;
 	letter-spacing: 0.1em;
+	color: rgba(242, 244, 241, 0.7); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 70%, transparent);
 }
 .glc-hero-elev strong { color: var(--glc-accent); font-weight: 600; }
@@ -966,6 +1022,7 @@ h1, h2, h3 { text-wrap: balance; }
 	gap: 0.7rem;
 	align-items: center;
 	background: var(--glc-surface);
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 	border-radius: 10px;
 	padding: 0.95rem 1.1rem;
@@ -977,6 +1034,44 @@ h1, h2, h3 { text-wrap: balance; }
 	color: var(--glc-success);
 	font-weight: 800;
 	font-size: 1.05rem;
+}
+
+.glc-rental-facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 1px;
+	margin: 0;
+	background: rgba(242, 244, 241, 0.1); /* color-mix fallback */
+	background: color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border: 1px solid rgba(242, 244, 241, 0.1); /* color-mix fallback */
+	border: 1px solid color-mix(in srgb, var(--glc-glacier) 10%, transparent);
+	border-radius: var(--glc-radius);
+	overflow: clip;
+}
+.glc-rental-facts > div {
+	background: var(--glc-surface);
+	padding: 1rem 1.1rem;
+}
+.glc-rental-facts dt {
+	font-size: 0.68rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--glc-stone);
+}
+.glc-rental-facts dd {
+	margin: 0.35rem 0 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	line-height: 1.45;
+}
+.glc-policy-note {
+	margin: 0.8rem 0 0;
+	padding: 0.85rem 1rem;
+	border-inline-start: 3px solid var(--glc-accent);
+	background: rgba(255, 107, 53, 0.07); /* color-mix fallback */
+	background: color-mix(in srgb, var(--glc-accent) 7%, transparent);
+	font-size: 0.84rem;
+	line-height: 1.55;
 }
 
 /* ----------------------------------------------------------- Testimonials */
@@ -992,10 +1087,11 @@ h1, h2, h3 { text-wrap: balance; }
 	padding: 1.5rem;
 	display: grid;
 	gap: 0.9rem;
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 }
 .glc-quote .glc-stars { color: var(--glc-accent); letter-spacing: 0.15em; font-size: 0.9rem; }
-.glc-quote blockquote { margin: 0; font-size: 0.95rem; line-height: 1.65; color: color-mix(in srgb, var(--glc-glacier) 85%, transparent); }
+.glc-quote blockquote { margin: 0; font-size: 0.95rem; line-height: 1.65; color: rgba(242, 244, 241, 0.85); color: color-mix(in srgb, var(--glc-glacier) 85%, transparent); }
 .glc-quote figcaption { display: grid; gap: 0.1rem; }
 .glc-quote figcaption strong { font-size: 0.92rem; }
 .glc-quote figcaption span { font-size: 0.78rem; color: var(--glc-stone); }
@@ -1005,12 +1101,13 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-faq { display: grid; gap: 0.6rem; max-width: 820px; }
 .glc-faq details {
 	background: var(--glc-surface);
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 	border-radius: 12px;
 	overflow: clip;
 	transition: border-color 0.25s var(--glc-ease);
 }
-.glc-faq details[open] { border-color: color-mix(in srgb, var(--glc-accent) 40%, transparent); }
+.glc-faq details[open] { border-color: rgba(255, 107, 53, 0.4); border-color: color-mix(in srgb, var(--glc-accent) 40%, transparent); }
 .glc-faq summary {
 	cursor: pointer;
 	list-style: none;
@@ -1037,6 +1134,7 @@ h1, h2, h3 { text-wrap: balance; }
 	padding: 0 1.2rem 1.2rem;
 	font-size: 0.92rem;
 	line-height: 1.7;
+	color: rgba(242, 244, 241, 0.78); /* color-mix fallback */
 	color: color-mix(in srgb, var(--glc-glacier) 78%, transparent);
 }
 
@@ -1052,6 +1150,7 @@ h1, h2, h3 { text-wrap: balance; }
 	background: var(--glc-surface);
 	border-radius: var(--glc-radius);
 	overflow: clip;
+	border: 1px solid rgba(242, 244, 241, 0.07); /* color-mix fallback */
 	border: 1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);
 	transition: transform 0.35s var(--glc-ease), box-shadow 0.35s var(--glc-ease);
 	display: grid;
@@ -1060,7 +1159,7 @@ h1, h2, h3 { text-wrap: balance; }
 .glc-place-card .glc-card-media { aspect-ratio: 16 / 10; }
 .glc-place-card .glc-card-body { padding: 1rem 1.1rem 1.2rem; gap: 0.4rem; }
 .glc-place-card h3 { margin: 0; font-size: 1.1rem; font-variation-settings: "wdth" 108; }
-.glc-place-card p { margin: 0; font-size: 0.85rem; color: color-mix(in srgb, var(--glc-glacier) 68%, transparent); }
+.glc-place-card p { margin: 0; font-size: 0.85rem; color: rgba(242, 244, 241, 0.68); color: color-mix(in srgb, var(--glc-glacier) 68%, transparent); }
 .glc-region-chip {
 	position: absolute;
 	top: 0.8rem;
@@ -1069,6 +1168,7 @@ h1, h2, h3 { text-wrap: balance; }
 	font-size: 0.7rem;
 	font-weight: 700;
 	letter-spacing: 0.08em;
+	background: rgba(20, 36, 32, 0.62); /* color-mix fallback */
 	background: color-mix(in srgb, var(--glc-ink) 62%, transparent);
 	backdrop-filter: blur(6px);
 	color: var(--glc-glacier);
@@ -1106,11 +1206,12 @@ h1, h2, h3 { text-wrap: balance; }
 /* --------------------------------------------------------------- Footer */
 
 .glc-footer {
+	border-top: 1px solid rgba(242, 244, 241, 0.08); /* color-mix fallback */
 	border-top: 1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);
 	margin-top: var(--wp--preset--spacing--60);
 	font-size: 0.9rem;
 }
-.glc-footer a { text-decoration: none; color: color-mix(in srgb, var(--glc-glacier) 75%, transparent); }
+.glc-footer a { text-decoration: none; color: rgba(242, 244, 241, 0.75); color: color-mix(in srgb, var(--glc-glacier) 75%, transparent); }
 .glc-footer a:hover { color: var(--glc-accent); }
 .glc-footer h3 {
 	font-family: var(--wp--preset--font-family--georgian);
@@ -1174,3 +1275,297 @@ body.single-car .glc-wa-bubble { display: none; }
 	color: var(--glc-ink-text);
 }
 .glc-light h2, .glc-light h3 { color: var(--glc-ink-text); }
+
+/* Breadcrumbs — visible trail matching the BreadcrumbList JSON-LD.
+   City pages emitted the markup with nothing on the page; car and place pages
+   render their own inline version. */
+.glc-breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.8rem;color:var(--glc-stone,#6b6b66);}
+.glc-breadcrumbs a{color:inherit;text-decoration:none;}
+.glc-breadcrumbs a:hover,.glc-breadcrumbs a:focus-visible{text-decoration:underline;}
+.glc-breadcrumbs [aria-current="page"]{color:var(--glc-ink,#14140f);font-weight:600;}
+.glc-breadcrumb-sep{opacity:.45;}
+
+/* --------------------------------------------------- Car photo lightbox */
+/* Opened by assets/lightbox.js on the native <dialog>. The "+N" badge sits on
+   the last tile because the grid shows five photos while the viewer carries
+   every one, and without it nobody would know the rest exist. */
+.glc-gallery a { position: relative; }
+.glc-gallery-more {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: rgba(20, 36, 32, 0.62);
+	color: #fff;
+	font-family: var(--glc-mono);
+	font-size: clamp(1.1rem, 3vw, 1.7rem);
+	letter-spacing: 0.02em;
+	pointer-events: none;
+}
+.glc-gallery a:hover .glc-gallery-more,
+.glc-gallery a:focus-visible .glc-gallery-more { background: rgba(20, 36, 32, 0.48); }
+
+.glc-lb {
+	border: 0;
+	padding: 0;
+	max-width: 100vw;
+	max-height: 100vh;
+	width: 100%;
+	height: 100%;
+	background: rgba(12, 20, 18, 0.94);
+	color: var(--glc-glacier, #eef4f2);
+	display: none;
+}
+.glc-lb[open] {
+	display: grid;
+	grid-template-rows: 1fr auto;
+	place-items: center;
+}
+.glc-lb::backdrop { background: rgba(12, 20, 18, 0.9); }
+
+.glc-lb-figure {
+	margin: 0;
+	padding: clamp(0.8rem, 3vw, 2rem);
+	display: grid;
+	gap: 0.7rem;
+	place-items: center;
+	max-width: 100%;
+	min-height: 0;
+}
+.glc-lb-img {
+	max-width: 100%;
+	/* Leaves room for the caption and the control bar at any viewport height. */
+	max-height: calc(100vh - 8.5rem);
+	height: auto;
+	width: auto;
+	object-fit: contain;
+	border-radius: var(--glc-radius, 6px);
+	background: rgba(255, 255, 255, 0.04);
+}
+.glc-lb-caption {
+	margin: 0;
+	font-size: 0.82rem;
+	text-align: center;
+	color: color-mix(in srgb, var(--glc-glacier, #eef4f2) 74%, transparent);
+	max-width: 62ch;
+}
+
+.glc-lb-bar {
+	display: flex;
+	align-items: center;
+	gap: 1.1rem;
+	padding: 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+.glc-lb-counter {
+	margin: 0;
+	font-family: var(--glc-mono);
+	font-size: 0.8rem;
+	letter-spacing: 0.08em;
+	min-width: 5.5ch;
+	text-align: center;
+}
+.glc-lb button {
+	appearance: none;
+	background: rgba(255, 255, 255, 0.09);
+	color: inherit;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 999px;
+	cursor: pointer;
+	/* 44px minimum: these are the main touch targets on a phone. */
+	min-width: 44px;
+	min-height: 44px;
+	font-size: 1.35rem;
+	line-height: 1;
+	display: grid;
+	place-items: center;
+}
+.glc-lb button:hover { background: rgba(255, 255, 255, 0.16); }
+.glc-lb button:focus-visible { outline: 2px solid var(--glc-glacier, #eef4f2); outline-offset: 2px; }
+.glc-lb-close {
+	position: fixed;
+	top: calc(0.7rem + env(safe-area-inset-top, 0px));
+	inset-inline-end: 0.7rem;
+	font-size: 1.05rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.glc-lb[open] { animation: glc-lb-in 140ms ease-out; }
+	@keyframes glc-lb-in { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* ------------------------------------------------- Touch-device fixes
+ *
+ * Two bugs Boris reported from an iPhone on 2026-10-06, both caused by content
+ * moving under his finger. Scoped to (pointer: coarse) so the desktop design is
+ * unchanged; these override the rules above by coming later in the file.
+ *
+ * 1 · THE PAGE ZOOMED ITSELF IN AND OUT.
+ *     iOS Safari zooms the whole page in whenever a focused form control has a
+ *     font-size below 16px, and zooms back out on blur. The booking widget's
+ *     inputs were 0.95rem (15.2px) and its date fields 0.88rem (14.08px), so
+ *     every tap on a date zoomed in and every tap away zoomed out. 16px is the
+ *     threshold, not a preference, and no viewport setting suppresses it
+ *     (iOS has ignored user-scalable=no since iOS 10, and disabling zoom would
+ *     be an accessibility regression anyway). So the controls grow instead.
+ *
+ * 2 · "VIEW ALL" OPENED ONE CAR INSTEAD OF THE FLEET.
+ *     The fleet section is .glc-reveal, which animates `translate: 0 26px -> 0`
+ *     over 0.7s, and the grid's cards stagger by another 22px. Hit testing
+ *     follows that transform, so a tap placed while the section is still
+ *     settling lands on whatever occupied that point mid-animation. Directly
+ *     above the "View all" button sits the last card's "Check details" link —
+ *     which is why it opened a car profile, and always the same one.
+ *     On touch the reveal therefore fades without moving: nothing travels under
+ *     a finger, so a tap cannot land on the element that used to be there.
+ */
+@media (pointer: coarse) {
+	.glc-field input,
+	.glc-field select,
+	.glc-field input[type="date"],
+	.glc-field input[type="time"] {
+		font-size: 16px;
+	}
+
+	.glc-reveal,
+	.glc-stagger > * {
+		translate: none;
+	}
+}
+
+/* ------------------------------------ Horizontal scrollers on touch
+ *
+ * Boris, iPhone, 2026-10-07: "when user tries to scroll, app behaves strangely."
+ *
+ * ROOT CAUSE, traced five levels down.
+ *
+ * 1 · The first thing under a thumb on a car page is the photo gallery: it sits
+ *     165px from the top of the document, and on a 390px iPhone its five tiles
+ *     at `flex: 0 0 86%` make a strip 1703px wide. iOS hands a gesture to
+ *     whichever scroller the touch STARTS in, so a vertical swipe begun there is
+ *     contested by a horizontal scroller before the page ever sees it.
+ *
+ * 2 · `scroll-snap-type: x mandatory` then obliges the browser to come to rest
+ *     on a snap point. Mandatory, unlike proximity, refuses to be left partly
+ *     scrolled: it drags the strip back. That pull is what reads as the page
+ *     fighting the finger.
+ *
+ * 3 · `overscroll-behavior-x` was left at `auto`, so when the strip hits its end
+ *     the scroll CHAINS outward — to the page, and on iOS toward the back-swipe
+ *     gesture. Nothing contained it.
+ *
+ * 4 · None of that was decided. The carousel exists only as a mobile override on
+ *     a desktop grid (`@media (max-width: 781px)` further up this file). An
+ *     override changes how a box LOOKS; it does not make anyone think about the
+ *     obligations a box takes on when it becomes a scroller — containment, snap
+ *     strictness, who wins a gesture. The desktop grid never needed them, so
+ *     they were never written.
+ *
+ * 5 · THE SOURCE: this stylesheet has no shared definition of what a horizontal
+ *     scroller must do on a touch screen. Each one is hand-written where it is
+ *     needed, so the next one will repeat the same omissions. That is why the
+ *     fix below is a named behaviour applied to the gallery, rather than three
+ *     properties patched onto one selector.
+ *
+ * What changes for a visitor: the photo strip still swipes sideways, but it no
+ * longer insists on landing dead-centre, it no longer pushes its overscroll into
+ * the page, and a vertical swipe that starts on a photo scrolls the page.
+ */
+@media (max-width: 781px) {
+	.glc-gallery,
+	.glc-hscroll {
+		/* proximity, not mandatory: rest where the finger left it */
+		scroll-snap-type: x proximity;
+		/* keep this scroller's overscroll to itself */
+		overscroll-behavior-x: contain;
+		/*
+		 * Deliberately NO touch-action here. `pan-x pan-y` would read as helpful
+		 * and would silently remove pinch-to-zoom over the photographs, which is
+		 * how a partially sighted visitor reads a car's condition. The default
+		 * already permits both pan directions; proximity snapping and contained
+		 * overscroll are what actually settle who owns the gesture.
+		 */
+	}
+}
+
+
+/* --------------------------------------------- Wide content containment
+ *
+ * A table cannot shrink below its content. The seasonal rate table has eight
+ * columns and measured 512px on a real iPhone 15 (viewport 393px), which widened
+ * the whole document to 532px and let the page pan sideways — the "scrolling
+ * behaves strangely" and "parts are incorrect" reports of 2026-10-07.
+ *
+ * So wide things scroll inside their own box, and the page itself is told never
+ * to scroll sideways. The second rule is the guard: it makes the next wide child
+ * someone adds a local problem instead of a whole-page one.
+ */
+.glc-table-scroll {
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	-webkit-overflow-scrolling: touch;
+	max-width: 100%;
+}
+html,
+body {
+	overflow-x: clip;
+}
+
+/* ------------------------------------------- Headings must fit the screen
+ *
+ * ROOT CAUSE of "borders and parts are incorrect" + "scrolling behaves
+ * strangely", measured on a real iPhone 15 (viewport 393px) on 2026-10-08:
+ *
+ *   main was correctly 353px wide, but its content measured 512px. Hiding
+ *   elements one at a time on the device traced it to a single <h1>, which was
+ *   512px and could not shrink. Twelve headings across six patterns set
+ *   `font-size: var(--wp--preset--font-size--xx-large)` as an INLINE style, and
+ *   an inline style beats a stylesheet — so the responsive
+ *   `clamp(1.65rem, 6.2vw, 3.25rem)` written for exactly this purpose never
+ *   applied. One car name at the full desktop size was 159px wider than the
+ *   phone, and every section inherited that width. The page could then be panned
+ *   sideways, which is what made vertical scrolling feel broken, and everything
+ *   past the right edge was cut off.
+ *
+ * Fixing twelve call sites would leave the thirteenth to repeat it, so the token
+ * itself becomes fluid. Desktop keeps the same maximum; a phone gets a size that
+ * fits. `overflow-wrap` is the backstop for a single unbreakable word, such as a
+ * long model name.
+ */
+:root {
+	--wp--preset--font-size--xx-large: clamp(1.65rem, 6.2vw, 3.25rem);
+}
+h1, h2, h3,
+.glc-section-head > :is(h1, h2, h3) {
+	overflow-wrap: anywhere;
+}
+
+/* ------------------------- Why the table scroller did not contain the table
+ *
+ * Measured on a real iPhone 15 (viewport 393px, main 353px), 2026-10-08.
+ *
+ * Wrapping the eight-column rate table in `.glc-table-scroll { overflow-x: auto }`
+ * was correct and insufficient. The wrapper's own minimum became 0, but every
+ * ancestor between it and the page kept the default `min-width: auto`:
+ *
+ *   .glc-single-layout (grid) > div (grid) > section (block) > .glc-table-scroll
+ *
+ * An automatic minimum means "never shrink below your content's minimum", so the
+ * table's 512px min-content climbed the chain untouched and set the width of the
+ * whole column. Every section of the page then inherited 512px inside a 353px
+ * main, content was cut off at the right edge, and the page could be panned
+ * sideways — which is what made vertical scrolling feel broken.
+ *
+ * Both lines below were verified on the device to return main to 353px:
+ *   `contain: inline-size` tells the browser this box's width never depends on
+ *   what is inside it, which is precisely true of a scroll container;
+ *   `min-width: 0` breaks the automatic-minimum chain for the ancestors.
+ * Keeping both means the fix survives a browser without containment support.
+ */
+.glc-single-layout,
+.glc-single-layout > *,
+.glc-single-layout section,
+.glc-table-scroll {
+	min-width: 0;
+}
+.glc-table-scroll {
+	contain: inline-size;
+}

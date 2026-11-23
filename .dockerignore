@@ -1,7 +1,25 @@
 docs/
 _migration/benchmark/
 _migration/html/
+_migration/fleet-import-raw/
 .github/
 docker-compose.yml
 README.md
 *.png
+
+# Credentials, runtime data, repository history and local tooling never enter
+# the Docker build context. Production COPY instructions need none of these.
+.git/
+.claude/
+.agents/
+.codex/
+.aws/
+.env
+*.env
+.env.*
+!.env.example
+.secrets
+data/
+tests/
+deploy.sh
+node_modules/

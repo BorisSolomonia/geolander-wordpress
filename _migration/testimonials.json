@@ -6,7 +6,7 @@
     "textEn": "Amazing experience! The RAV4 handled the mountain roads perfectly. Geolander made everything so easy with airport delivery. Highly recommended!",
     "textKa": "საოცარი გამოცდილება! RAV4-მა მთის გზები შესანიშნავად გაუძლო. Geolander-მა ყველაფერი ძალიან გაამარტივა აეროპორტში მიწოდებით.",
     "rating": 5,
-    "visible": true,
+    "visible": false,
     "sortOrder": 1,
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
@@ -17,7 +17,7 @@
     "textEn": "Perfect road trip across Georgia. The car was in great condition and the team was incredibly responsive on WhatsApp. Will use Geolander again!",
     "textKa": "იდეალური მოგზაურობა საქართველოში. მანქანა შესანიშნავ მდგომარეობაში იყო და გუნდი წარმოუდგენლად რეაგირებდა WhatsApp-ზე.",
     "rating": 5,
-    "visible": true,
+    "visible": false,
     "sortOrder": 2,
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
@@ -28,7 +28,7 @@
     "textEn": "Explored Svaneti with the Tucson. Great value for money. The team helped us plan our route and suggested amazing places we wouldn't have found otherwise.",
     "textKa": "სვანეთი შევისწავლეთ Tucson-ით. შესანიშნავი ფასი ხარისხისთვის. გუნდმა დაგვეხმარა მარშრუტის დაგეგმვაში.",
     "rating": 5,
-    "visible": true,
+    "visible": false,
     "sortOrder": 3,
     "createdAt": "2026-01-01T00:00:00.000Z"
   }

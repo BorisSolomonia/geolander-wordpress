@@ -1,0 +1,25 @@
+<?php
+/** გვერდის სისწრაფის გამომეტრებები Settings → Geolander ეკრანზე. */
+return [
+	'speed_heading'         => 'გვერდის სისწრაფე დროში',
+	'speed_every_hours'     => 'Geolander: ყოველ %d საათში',
+	'speed_not_configured'  => 'ჯერ არაფერი იზომება: ჩასვით PageSpeed Insights-ის API გასაღები ზემოთ მოცემულ ველში. მანამდე ეკრანი შედეგს არ აჩვენებს, რადგან მიხვედრილი რიცხვი უარესია, ვიდრე არცერთი.',
+	'speed_none_yet'        => 'ჯერ არცერთი გამომეტრება არ არის. პირველი მოვა საიტზე მომდევნო ვიზიტიდან რამდენიმე წუთში, ან დააჭირეთ ქვემოთ მოცემულ ღილაკს.',
+	'speed_latest'          => 'უახლესი შედეგი: %d 100-დან, ზღვარი %d',
+	'speed_ok'              => 'ზღვარზე მაღლა',
+	'speed_below'           => 'ზღვარზე ქვემოთ',
+	'speed_measure_now'     => 'გაზომე ახლა',
+	'speed_measures'        => 'ზომავს %s მისამართს %s მომხმარებლის სახით.',
+	'speed_readings'        => 'ყველა %d გამომეტრება',
+	'speed_col_when'        => 'როდის',
+	'speed_col_score'       => 'შედეგი',
+	'speed_col_lcp'         => 'ყველაზე დიდი დახატული',
+	'speed_col_cls'         => 'ხტუნვა',
+	'speed_col_images'      => 'სურათები დაზოგავდა',
+	'speed_seconds'         => '%s წმ',
+	'speed_last_error'      => 'ბოლო ცდა (%s) არ დასრულდა: %s',
+	'speed_no_key'          => 'PageSpeed Insights-ის API გასაღები არ არის მითითებული, ამიტომ არაფერი გაიზომა.',
+	'speed_http'            => 'PageSpeed Insights-მა უპასუხა HTTP %d.',
+	'speed_no_score'        => 'PageSpeed Insights-მა უპასუხა სისწრაფის შედეგის გარეშე.',
+	'speed_refused'         => 'ამის გაშვება არ შეგიძლიათ.',
+];

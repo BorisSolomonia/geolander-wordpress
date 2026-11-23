@@ -24,6 +24,13 @@ if (($vehicleTitles | Sort-Object -Unique).Count -ne 19) {
 	throw 'Vehicle SEO titles must be unique.'
 }
 
+if ($vehicleBlock.Groups['body'].Value -notmatch "'jeep-renegade-2017-nn-545-kn'") {
+	throw 'The 19-title map must include the published Jeep Renegade.'
+}
+if ($vehicleBlock.Groups['body'].Value -match "'mitsubishi-outlander-2018-gray'") {
+	throw 'The 19-title map must not reference the skipped duplicate Outlander source.'
+}
+
 foreach ($title in $vehicleTitles) {
 	$renderedLength = ($title + ' | Geolander').Length
 	if ($renderedLength -lt 50 -or $renderedLength -gt 60) {
@@ -44,7 +51,17 @@ foreach ($slug in @(
 	}
 }
 
-if ($seo -notmatch "glc_seo_title_en" -or $seo -notmatch "glc_seo_description_en") {
+if ($migration -notmatch 'glc-related-guides' -or $migration -notmatch 'Related mountain driving guides') {
+	throw 'Mountain guides must link to each other.'
+}
+
+foreach ($stale in @('Only with prior approval', 'standard terms prohibit off-road driving', 'route approval still depends')) {
+	if ($migration -match [regex]::Escape($stale)) {
+		throw "Route guide still contradicts owner-confirmed route policy: $stale"
+	}
+}
+
+if (-not $seo.Contains("'glc_seo_title_' . self::locale()") -or -not $seo.Contains("'glc_seo_description_' . self::locale()")) {
 	throw 'SEO layer does not consume custom title and description metadata.'
 }
 if ($schema -notmatch "glc_guide_route" -or $schema -notmatch "'@type'\s*=>\s*'Article'") {

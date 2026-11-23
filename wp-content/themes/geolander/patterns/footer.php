@@ -13,6 +13,27 @@ $glc_nav = [
 	home_url( '/terms/' )       => glc_t( 'nav_terms' ),
 	home_url( '/contact/' )     => glc_t( 'nav_contact' ),
 ];
+$glc_about = get_page_by_path( 'about' );
+if ( $glc_about instanceof WP_Post && 'publish' === $glc_about->post_status ) {
+	$glc_nav[ home_url( '/about/' ) ] = glc_t( 'nav_about' );
+}
+$glc_long_term = get_page_by_path( 'long-term-car-rental-georgia' );
+if ( $glc_long_term instanceof WP_Post && 'publish' === $glc_long_term->post_status ) {
+	$glc_nav[ home_url( '/long-term-car-rental-georgia/' ) ] = glc_t( 'nav_long_term' );
+}
+/*
+ * Pages the 2026-09-07 crawl found ORPHANED — in the sitemap, linked from
+ * nowhere: the Kazbegi landing (the strategy's best URL), developers, privacy.
+ * A site-wide footer link is the weakest internal link there is, but an orphan
+ * gets crawled only when Google feels like it. Labels are each page's own
+ * localised title, so no catalogue key is needed.
+ */
+foreach ( [ 'car-rental-kazbegi', 'developers', 'privacy-policy' ] as $glc_slug ) {
+	$glc_orphan = get_page_by_path( $glc_slug );
+	if ( $glc_orphan instanceof WP_Post && 'publish' === $glc_orphan->post_status ) {
+		$glc_nav[ get_permalink( $glc_orphan ) ] = class_exists( 'GLC_Content' ) ? GLC_Content::title( $glc_orphan ) : get_the_title( $glc_orphan );
+	}
+}
 $glc_phone = GLC_Settings::get( 'phone' );
 // Verified deep-link format (keeps the "+", opens the app) — see
 // GLC_Gateway_WhatsApp::url(). The old bare-digit wa.me link was unreliable.
@@ -20,13 +41,13 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 ?>
 <footer class="glc-footer">
 	<div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:3.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2.5rem;">
-		<div style="display:grid;gap:1rem;align-content:start;">
-			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="150" height="47" style="height:47px;width:auto;" loading="lazy" />
+		<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-content:start;">
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="76" height="47" style="height:47px;width:auto;" loading="lazy" />
 			<p style="font-size:0.88rem;color:var(--glc-stone);margin:0;"><?php echo esc_html( glc_t( 'footer_desc' ) ); ?></p>
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'quick_links' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<?php foreach ( $glc_nav as $glc_url => $glc_label ) : ?>
 					<li><a href="<?php echo esc_url( $glc_url ); ?>"><?php echo esc_html( $glc_label ); ?></a></li>
 				<?php endforeach; ?>
@@ -34,7 +55,7 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'contact_info' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" rel="noopener"><?php echo esc_html( GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ) ); ?></a></li>
 				<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^+0-9]/', '', $glc_phone ) ); ?>"><?php echo esc_html( $glc_phone ); ?></a></li>
 				<li><a href="mailto:<?php echo esc_attr( GLC_Settings::get( 'email' ) ); ?>"><?php echo esc_html( GLC_Settings::get( 'email' ) ); ?></a></li>
@@ -42,7 +63,7 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'follow_us' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'instagram' ) ); ?>" rel="noopener">Instagram</a></li>
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'facebook' ) ); ?>" rel="noopener">Facebook</a></li>
 			</ul>
@@ -56,9 +77,9 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		<?php if ( $glc_cities ) : ?>
 			<div>
 				<h3><?php echo esc_html( glc_t( 'we_deliver' ) ); ?></h3>
-				<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+				<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 					<?php foreach ( $glc_cities as $glc_city ) : ?>
-						<li><a href="<?php echo esc_url( get_permalink( $glc_city ) ); ?>"><?php echo esc_html( GLC_City::city_name( $glc_city->ID ) ); ?></a></li>
+						<li><a href="<?php echo esc_url( get_permalink( $glc_city ) ); ?>"><?php echo esc_html( GLC_City::city_label( $glc_city->ID ) ); ?></a></li>
 					<?php endforeach; ?>
 				</ul>
 			</div>

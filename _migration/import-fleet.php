@@ -109,7 +109,9 @@ function glc_fleet_apply_json( int $post_id, array $data ): void {
 		'glc_seats'        => 'seats',
 		'glc_color'        => 'color',
 		'glc_transmission' => 'transmission',
+		'glc_drivetrain'   => 'drivetrain',
 		'glc_fuel_type'    => 'fuel',
+		'glc_fuel_economy_note' => 'fuel_economy_note',
 		'glc_registration' => 'registration',
 		'glc_price_from'   => 'price_from',
 	];
@@ -134,6 +136,32 @@ function glc_fleet_apply_json( int $post_id, array $data ): void {
 	}
 }
 
+/** Normalize a registration plate so punctuation cannot create a duplicate. */
+function glc_fleet_normalize_registration( string $registration ): string {
+	return strtoupper( preg_replace( '/[^A-Z0-9]/i', '', $registration ) ?? '' );
+}
+
+/** Find an existing physical car by plate, regardless of hyphen/spacing differences. */
+function glc_fleet_find_by_registration( string $registration ): int {
+	$needle = glc_fleet_normalize_registration( $registration );
+	if ( '' === $needle ) {
+		return 0;
+	}
+	$ids = get_posts( [
+		'post_type'      => 'car',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	] );
+	foreach ( $ids as $id ) {
+		$current = glc_fleet_normalize_registration( (string) get_post_meta( $id, 'glc_registration', true ) );
+		if ( $current === $needle ) {
+			return (int) $id;
+		}
+	}
+	return 0;
+}
+
 $dirs = array_values( array_filter( glob( $base . '/*', GLOB_ONLYDIR ) ?: [] ) );
 if ( ! $dirs ) {
 	WP_CLI::error( "No car sub-folders inside {$base}. Add one folder per car (folder name = car name)." );
@@ -146,9 +174,46 @@ $updated = 0;
 foreach ( $dirs as $dir ) {
 	$title = trim( basename( $dir ) );
 	$slug  = sanitize_title( $title );
+	$json  = '';
+	$data  = [];
 
-	// Idempotent: reuse an existing car with the same slug.
+	// Load facts before matching: a physical plate is a more reliable identity
+	// than a title or slug, both of which routinely change as copy improves.
+	foreach ( [ '/car.json', '/car.json.json', '/car.JSON' ] as $glc_candidate ) {
+		if ( is_file( $dir . $glc_candidate ) ) {
+			$json = $dir . $glc_candidate;
+			break;
+		}
+	}
+	if ( ! $json ) {
+		foreach ( glob( $dir . '/*.json*' ) ?: [] as $glc_candidate ) {
+			if ( false === stripos( basename( $glc_candidate ), '_EXAMPLE' ) ) {
+				$json = $glc_candidate;
+				break;
+			}
+		}
+	}
+	if ( $json ) {
+		$decoded = json_decode( (string) file_get_contents( $json ), true );
+		if ( is_array( $decoded ) ) {
+			$data = $decoded;
+		} else {
+			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON; skipped its specs.', basename( $json ), $title ) );
+		}
+	}
+	if ( ! empty( $data['skip_import'] ) ) {
+		WP_CLI::log( "  skipped {$title}: sidecar marks this as a duplicate source folder" );
+		continue;
+	}
+
+	// Idempotent: prefer the immutable physical plate, with slug as fallback.
 	$existing = get_posts( [ 'post_type' => 'car', 'name' => $slug, 'posts_per_page' => 1, 'post_status' => 'any' ] );
+	if ( ! $existing && ! empty( $data['registration'] ) ) {
+		$plate_match = glc_fleet_find_by_registration( (string) $data['registration'] );
+		if ( $plate_match ) {
+			$existing = [ get_post( $plate_match ) ];
+		}
+	}
 	$post_id  = wp_insert_post( [
 		'ID'          => $existing[0]->ID ?? 0,
 		'post_type'   => 'car',
@@ -167,21 +232,52 @@ foreach ( $dirs as $dir ) {
 	// sets it if absent, so it never overrides a later admin/car.json choice.
 	add_post_meta( $post_id, 'glc_available', true, true );
 
-	// Optional specs / pricing.
-	$json = $dir . '/car.json';
+	/*
+	 * Optional specs / pricing.
+	 *
+	 * THIS LOOKUP IS WHY EVERY IMPORTED CAR PUBLISHED "$0/day".
+	 *
+	 * Every sidecar file in _migration/fleet-import/ is actually named
+	 * "car.json.json" — the classic result of saving a file on Windows with
+	 * "hide extensions for known file types" enabled. This asked for "car.json",
+	 * found nothing, and silently carried on: no registration plate, no seasonal
+	 * pricing, no body type and no specs were ever applied to a single one of
+	 * those cars.
+	 *
+	 * Downstream, that produced the zero prices in Product schema and in
+	 * /pricing.md, the cars missing from the price list entirely, and the
+	 * "duplicate" records that could not be told apart because none of them had
+	 * a plate. One extra ".json".
+	 *
+	 * So: accept the obvious variants and — more importantly — WARN LOUDLY when a
+	 * folder has no sidecar at all, rather than failing silently.
+	 */
 	$has_pricing = false;
-	if ( is_file( $json ) ) {
-		$data = json_decode( (string) file_get_contents( $json ), true );
-		if ( is_array( $data ) ) {
+
+	if ( $json ) {
+		if ( $data ) {
 			glc_fleet_apply_json( $post_id, $data );
 			$has_pricing = ! empty( $data['pricing'] );
+			if ( 'car.json' !== basename( $json ) ) {
+				WP_CLI::log( sprintf( '  ↪ used %s (expected car.json — rename it to avoid confusion)', basename( $json ) ) );
+			}
 		} else {
-			WP_CLI::warning( "  car.json in {$title} is not valid JSON — skipped its specs." );
+			WP_CLI::warning( sprintf( '  %s in %s is not valid JSON — skipped its specs.', basename( $json ), $title ) );
 		}
+	} else {
+		WP_CLI::warning( sprintf(
+			'  NO car.json in "%s" — this car gets no plate, no specs and NO PRICE. Do not publish it in that state.',
+			$title
+		) );
 	}
 
 	// Images: sorted so a NN- prefix controls order; first = featured.
-	$files = glob( $dir . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', GLOB_BRACE ) ?: [];
+	// GLOB_BRACE is not available in the Alpine-based WP-CLI image used by
+	// docker-compose. Filter one portable glob instead, case-insensitively.
+	$files = array_values( array_filter(
+		glob( $dir . '/*' ) ?: [],
+		static fn( $file ) => is_file( $file ) && preg_match( '/\.(?:jpe?g|png|webp)$/i', $file )
+	) );
 	sort( $files, SORT_NATURAL | SORT_FLAG_CASE );
 
 	// Replace this car's previously-imported photos before re-importing. The

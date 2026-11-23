@@ -2,17 +2,14 @@
 
 ## 0. Railway (chosen path — git-driven)
 
-Repo ships `Dockerfile` + `railway.json` + `.github/workflows/deploy.yml` (verified building).
+Repo ships `Dockerfile` + `railway.json`; Railway builds the image directly from the connected GitHub repository.
 Code (theme + plugin) is baked into the image; **plugins installed via wp-admin do NOT survive
 redeploys** — add plugins to the repo instead. Media uploads persist on a volume.
 
-1. Push the repo to GitHub:
-   `git init && git add -A && git commit -m "Geolander WordPress"` then create the GitHub repo and push.
+1. Export this working tree to a clean directory **without the existing `.git` directory**, initialize a new repository there, commit, create the new GitHub repository, and push. The old local object store is oversized and must not become the new project's history.
 2. Railway dashboard → New Project:
    - **MySQL** service (note the generated credentials).
-   - **App service** from the GitHub repo (Railway builds the Dockerfile on push — if you use this,
-     delete `.github/workflows/deploy.yml`; keep the workflow only if you prefer Actions-driven
-     deploys, then add the `RAILWAY_TOKEN` repo secret and do NOT also connect the repo in Railway).
+   - **App service** from the GitHub repo. Railway builds the Dockerfile on push.
 3. App service → Variables:
    - `WORDPRESS_DB_HOST` = `${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}`
    - `WORDPRESS_DB_USER` = `${{MySQL.MYSQLUSER}}`, `WORDPRESS_DB_PASSWORD` = `${{MySQL.MYSQLPASSWORD}}`,
@@ -23,33 +20,68 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    `/var/www/html/wp-content/uploads`.
 5. First boot: open the app URL, run the WP install (STRONG password), then in the service shell
    (or `railway ssh`): activate plugin + theme, permalinks, import content:
-   `wp plugin activate geolander-core && wp theme activate geolander && wp rewrite structure '/%postname%/' && wp rewrite flush && wp eval-file /migration/import.php && wp eval-file /migration/setup-pages.php && wp eval-file /migration/setup-seo.php`
+   `wp plugin activate geolander-core && wp theme activate geolander && wp rewrite structure '/%postname%/' && wp rewrite flush && wp eval-file /migration/import.php && wp eval-file /migration/convert-place-images-webp.php && wp eval-file /migration/import-fleet.php && wp eval-file /migration/consolidate-fleet.php && wp eval-file /migration/audit-fleet.php && wp eval-file /migration/setup-pages.php && wp eval-file /migration/setup-seo.php && wp eval-file /migration/setup-agent-readiness.php && wp rewrite flush`
 6. Custom domain: add `geo-lander.com` to the service, set the CNAME at your DNS. **Recommended:**
    put Cloudflare (free) in front for CDN + page caching — Railway has no built-in page cache.
    The `geolander-core` plugin (`GLC_Perf`) now emits `Cache-Control: public, max-age=300,
    s-maxage=86400` on static pages and `private, no-cache` on dynamic ones, so configure Cloudflare to
    **respect origin cache headers** (Caching → Browser Cache TTL: "Respect Existing Headers"), then add
-   a Cache Rule that **bypasses cache** when ANY of these hold, so the origin's own decision is honored:
-   - path starts with `/wp-admin` or `/wp-json`
+   a Cache Rule that makes HTML **eligible for cache** (respecting origin headers) and **bypasses cache**
+   when ANY of these hold:
+   - path starts with `/wp-admin`, `/wp-json` or `/wp-login`
    - request has a `from` or `to` query param (live seasonal quotes)
-   - Cookie contains `glc_lang` **or** `wordpress_logged_in` (language-switched or logged-in visitors)
+   - Cookie contains `wordpress_logged_in`
 
-   The unprefixed homepage `/` is deliberately sent `private, no-cache` by the plugin (its response
-   depends on cookie/Accept-Language language negotiation), so it is always decided at the origin —
-   do **not** add a "cache everything" rule that would override this. Prefixed pages (`/ka/…`,
-   `/ru/…`) are path-keyed and fully cacheable.
-
-   **Caveat (unprefixed deep links):** `GLC_I18n` also 302-redirects unprefixed deep links (`/fleet/`,
-   `/cars/…`) for a *first-visit* non-English browser (no cookie yet). Because those pages ARE edge-cached
-   as English, such a visitor can be served English HTML instead of the redirect. In practice this is
-   rare and non-breaking: search engines follow hreflang straight to the `/ru/…` URL, and the on-page
-   switcher is always present; the cookie-bypass rule covers every *returning* visitor. The clean,
-   recommended fix (a small product decision) is to **scope the Accept-Language auto-redirect to the
-   homepage only** and let deep links stay language-stable — standard i18n practice, and it removes the
-   caveat entirely while keeping the cache win. Tracked in `docs/PERFORMANCE_AUDIT.md` (finding S1).
-7. Email: containers can't send mail reliably — install an SMTP plugin (add to repo) wired to a
-   free tier (e.g. Brevo) so booking notifications/password resets work.
+   Every page, `/` included, is a pure function of its URL (2026-11-22): `GLC_I18n` takes the language
+   from the path only, never redirects by cookie or Accept-Language, and writes no language cookie, so
+   no response carries a `Set-Cookie` that would stop Cloudflare storing it. `tests/edge-cacheable-html.test.ps1`
+   guards this. After a content edit, purge the changed URLs (or wait out the one-day `s-maxage`).
+7. Email: Cloudflare DNS alone cannot send customer mail. Booking confirmations are generated in
+   **Booking Requests → Customer confirmation** and can always be opened as a prefilled email draft.
+   For automatic request receipts and confirmation delivery, add these Railway variables from an
+   SMTP/transactional-email provider: `GLC_SMTP_HOST`, `GLC_SMTP_PORT` (normally `587`),
+   `GLC_SMTP_USERNAME`, `GLC_SMTP_PASSWORD`, `GLC_SMTP_ENCRYPTION` (normally `tls`), and
+   `GLC_SMTP_FROM` (normally `info@geo-lander.com`). Authenticate the domain with the provider's
+   SPF/DKIM records in Cloudflare before enabling customer delivery.
 8. Backups: enable Railway MySQL backups; the uploads volume + repo are the rest of the state.
+
+### 0.0.1 Clean replacement after the security incident
+
+The old Railway runtime must be treated as compromised. Read `docs/RUNTIME-SECURITY-AUDIT-2026-08-29.md` before deployment.
+
+- Create a new project, new MySQL service, and new uploads volume. Do not attach or clone an old web-root/database volume.
+- Rotate database, WordPress administrator, Railway, Cloudflare, SMTP, payment, and WordPress salt credentials before importing data.
+- Import business content into the fresh database and copy only inspected media files. Never migrate WordPress core, plugins, themes, caches, temporary files, or session directories from the old service.
+- Keep the production hardening enabled. Do not set `GLC_SKIP_FILE_HARDENING` or `GLC_SKIP_WORDPRESS_HARDENING` in Railway; those switches exist only for local bind-mount development.
+- Use `/healthz` for Railway health checks. It is static and does not allocate a PHP worker.
+- Schedule `wp cron event run --due-now` from a trusted scheduled service. Production intentionally sets `DISABLE_WP_CRON` and denies public `/wp-cron.php` requests.
+- At Cloudflare, block `/xmlrpc.php` and `/wp-cron.php`; rate-limit `/wp-login.php`, `/wp-json/geolander/v1/checkout`, and other public write endpoints. Keep `/wp-json` out of edge cache.
+- For a small MySQL service, start with a 256 MiB InnoDB buffer pool, one buffer-pool instance, 16 MiB log buffer, 64 maximum connections, and table-open cache 256. Confirm the variables supported by the deployed MySQL version and measure actual RSS before opening traffic.
+- Immediately after first boot run `wp core verify-checksums`, `wp plugin list`, `wp theme list`, and `geolander-memory-snapshot`. The snapshot must show no writable PHP outside uploads, no PHP/executable media in uploads, and no unexplained CPU process.
+- The deployable fleet source is the optimized `_migration/fleet-import/` tree. Full-resolution originals remain only in the locally ignored `_migration/fleet-import-raw/`; back that folder up outside Git if it must be retained.
+
+## 0.1 Agent-readable endpoints
+
+After every deployment that changes agent routes, run:
+
+```text
+wp eval-file /migration/setup-agent-readiness.php
+wp rewrite flush
+```
+
+Then verify:
+
+- `/` returns HTML for `Accept: text/html` and Markdown for `Accept: text/markdown`.
+- Both variants include `Vary: Accept, Accept-Encoding`.
+- A nonexistent URL returns HTTP 404; its Markdown variant links to `/llms.txt`, `/wp-sitemap.xml`, and `/fleet/`.
+- `/llms.txt`, `/pricing.md`, `/agent-instructions.md`, and `/openapi.json` return 200 with the documented content type.
+- `/.well-known/api-catalog` returns an RFC 9727 Linkset with `application/linkset+json` for both GET and HEAD discovery.
+- `/.well-known/oauth-authorization-server` returns RFC 8414 JSON with issuer, authorization, token, and JWK endpoints plus supported grant and response types.
+- `/wp-json/geolander-agent/v1/quote` returns a Cloudflare OAuth `401` challenge when no bearer token is supplied; the public `/wp-json/geolander/v1/` customer routes remain unchanged.
+- `/about/` and `/developers/` return 200 and appear in `/wp-sitemap.xml`.
+- `node _migration/validate-schema.mjs https://geo-lander.com` passes after deployment.
+
+The WordPress service must have the public (non-secret) Cloudflare Access settings `GLC_CF_ACCESS_TEAM_DOMAIN` and `GLC_CF_ACCESS_AUD`. The origin validates the rotating Access signing keys from the configured team's `/cdn-cgi/access/certs` endpoint.
 
 ## 1. Production hosting (alternative: managed WP host)
 Any PHP 8.1+ / MySQL host works. Recommended: managed WP hosting with server-level
@@ -78,8 +110,9 @@ proxy). Steps:
    `class-glc-gateways.php` against current BOG e-commerce API docs** (token URL,
    orders URL, response shape `_links.redirect.href`) and add the payment callback
    handler for the success/fail redirect URLs (`?glc_payment=success|fail&ref=GL-…`).
-4. Consider a partial-prepayment amount (e.g. 20%) rather than full charge —
-   matches how Localrent built trust in this market.
+4. Charge the owner-confirmed **10% booking prepayment**, not the full rental
+   total. Cancellation at least 30 days before the rental starts refunds 50%
+   of that prepayment; with fewer than 30 days remaining it is non-refundable.
 
 ## 3. Content gaps (flagged during migration)
 - **Photos missing** for: Toyota RAV4 2016, Jeep Renegade 2017 (no photos existed

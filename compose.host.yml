@@ -1,0 +1,98 @@
+name: geolander
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  wordpress:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: geolander-wordpress:production
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${MARIADB_USER:?set MARIADB_USER in .env.host}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD:?set MARIADB_PASSWORD in .env.host}
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE:?set MARIADB_DATABASE in .env.host}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', '${GLC_SITE_URL:?set GLC_SITE_URL in .env.host}');
+        define('WP_SITEURL', '${GLC_SITE_URL:?set GLC_SITE_URL in .env.host}');
+        define('FORCE_SSL_ADMIN', true);
+        define('WP_ENVIRONMENT_TYPE', 'production');
+      GLC_CF_ACCESS_TEAM_DOMAIN: ${GLC_CF_ACCESS_TEAM_DOMAIN:-}
+      GLC_CF_ACCESS_AUD: ${GLC_CF_ACCESS_AUD:-}
+      GLC_WEB_BOT_AUTH_PRIVATE_KEY: ${GLC_WEB_BOT_AUTH_PRIVATE_KEY:?set GLC_WEB_BOT_AUTH_PRIVATE_KEY in .env.host}
+      GLC_SMTP_HOST: ${GLC_SMTP_HOST:-}
+      GLC_SMTP_PORT: ${GLC_SMTP_PORT:-587}
+      GLC_SMTP_USERNAME: ${GLC_SMTP_USERNAME:-}
+      GLC_SMTP_PASSWORD: ${GLC_SMTP_PASSWORD:-}
+      GLC_SMTP_ENCRYPTION: ${GLC_SMTP_ENCRYPTION:-tls}
+      GLC_SMTP_FROM: ${GLC_SMTP_FROM:-}
+    volumes:
+      - ./data/uploads:/var/www/html/wp-content/uploads
+    ports:
+      # Administrative smoke tests are available only from the VM itself.
+      # Public traffic enters through the outbound-only Cloudflare Tunnel.
+      - 127.0.0.1:${GLC_HOST_LOOPBACK_PORT:-8080}:80
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 90s
+    mem_limit: 384m
+    mem_reservation: 192m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    command:
+      - --innodb-buffer-pool-size=192M
+      - --innodb-log-buffer-size=16M
+      - --max-connections=32
+      - --table-open-cache=256
+      - --skip-name-resolve
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:?set MARIADB_DATABASE in .env.host}
+      MARIADB_USER: ${MARIADB_USER:?set MARIADB_USER in .env.host}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?set MARIADB_PASSWORD in .env.host}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?set MARIADB_ROOT_PASSWORD in .env.host}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 45s
+    mem_limit: 384m
+    mem_reservation: 192m
+    cpus: 0.75
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env.host}
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    mem_limit: 96m
+    mem_reservation: 32m
+    cpus: 0.25
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging

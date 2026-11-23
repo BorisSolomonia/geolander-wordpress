@@ -1,0 +1,25 @@
+<?php
+/** The page-speed readings under Settings → Geolander. */
+return [
+	'speed_heading'         => 'Page speed over time',
+	'speed_every_hours'     => 'Geolander: every %d hours',
+	'speed_not_configured'  => 'Nothing is measured yet: paste a PageSpeed Insights API key into the field above. Until then this screen shows no score, because a guessed number is worse than none.',
+	'speed_none_yet'        => 'No reading yet. The first one arrives within a few minutes of the next visit to the site, or press the button below.',
+	'speed_latest'          => 'Newest reading: %d out of 100, against a floor of %d',
+	'speed_ok'              => 'above the floor',
+	'speed_below'           => 'BELOW the floor',
+	'speed_measure_now'     => 'Measure now',
+	'speed_measures'        => 'Measures %s as a %s visitor.',
+	'speed_readings'        => 'All %d readings',
+	'speed_col_when'        => 'When',
+	'speed_col_score'       => 'Score',
+	'speed_col_lcp'         => 'Biggest thing drawn',
+	'speed_col_cls'         => 'Jumping about',
+	'speed_col_images'      => 'Pictures could save',
+	'speed_seconds'         => '%s s',
+	'speed_last_error'      => 'The last attempt (%s) did not finish: %s',
+	'speed_no_key'          => 'No PageSpeed Insights API key is set, so nothing was measured.',
+	'speed_http'            => 'PageSpeed Insights answered HTTP %d.',
+	'speed_no_score'        => 'PageSpeed Insights answered without a performance score.',
+	'speed_refused'         => 'You cannot run this.',
+];

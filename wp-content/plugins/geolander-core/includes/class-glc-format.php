@@ -62,6 +62,18 @@ class GLC_Format {
 		return $r['sym_before'] ? $symbol . $amount : $amount . ' ' . $symbol;
 	}
 
+	/** Money that preserves cents when a calculated amount is not a whole unit. */
+	public static function money_exact( float $value, ?string $locale = null ): string {
+		if ( abs( $value - round( $value ) ) < 0.001 ) {
+			return self::money( $value, $locale );
+		}
+		$r       = self::rules( $locale );
+		$decimal = in_array( $locale ?: ( class_exists( 'GLC_I18n' ) ? GLC_I18n::locale() : self::FALLBACK ), [ 'ka', 'ru', 'uk', 'fr' ], true ) ? ',' : '.';
+		$amount  = number_format( $value, 2, $decimal, $r['sep'] );
+		$symbol  = self::symbol();
+		return $r['sym_before'] ? $symbol . $amount : $amount . ' ' . $symbol;
+	}
+
 	/** An ISO Y-m-d date rendered per locale; returns input unchanged if unparseable. */
 	public static function date( string $iso, ?string $locale = null ): string {
 		try {
@@ -72,12 +84,27 @@ class GLC_Format {
 		return $d->format( self::rules( $locale )['date'] );
 	}
 
-	/** Headline range low/high as raw numbers, from settings. */
+	/**
+	 * Headline range low/high as raw numbers.
+	 *
+	 * The floor is derived from the cheapest actually-bookable car rather than the
+	 * settings value, because the two had drifted: the fleet title tag advertised
+	 * "$26" while the hero and llms.txt said "$28". A visitor who clicks a "$26"
+	 * snippet and lands on "$28" has been handed a free reason to distrust the
+	 * site. This is the one place that can guarantee copy, title, schema
+	 * priceRange and llms.txt agree. The settings value stays as the fallback for
+	 * a fleet with no priced cars at all.
+	 */
 	public static function range(): array {
-		return [
-			(float) GLC_Settings::get( 'price_min', 28 ),
-			(float) GLC_Settings::get( 'price_max', 120 ),
-		];
+		$min = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_floor() : 0.0;
+		$max = class_exists( 'GLC_Pricing' ) ? GLC_Pricing::fleet_ceiling() : 0.0;
+		if ( $min <= 0 ) {
+			$min = (float) GLC_Settings::get( 'price_min', 26 );
+		}
+		if ( $max <= 0 ) {
+			$max = (float) GLC_Settings::get( 'price_max', 90 );
+		}
+		return [ $min, $max ];
 	}
 
 	/** Headline range rendered for the active locale, e.g. "$28 – $120". */
@@ -89,8 +116,10 @@ class GLC_Format {
 	/** The rules the front-end JS needs so client-side updates match the server. */
 	public static function js_config( ?string $locale = null ): array {
 		$r = self::rules( $locale );
+		$active_locale = $locale ?: ( class_exists( 'GLC_I18n' ) ? GLC_I18n::locale() : self::FALLBACK );
 		return [
 			'sep'        => $r['sep'],
+			'decimal'    => in_array( $active_locale, [ 'ka', 'ru', 'uk', 'fr' ], true ) ? ',' : '.',
 			'symBefore'  => $r['sym_before'],
 			'symbol'     => self::symbol(),
 			'datePattern'=> $r['date'],

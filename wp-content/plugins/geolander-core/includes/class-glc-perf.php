@@ -11,13 +11,14 @@
  *
  * Excluded from public caching:
  *  - non-GET requests and logged-in users
- *  - the /llms.txt and /pricing.md pseudo-files (they set their own headers)
+ *  - robots.txt (crawler policy changes must become visible immediately)
+ *  - AI pseudo-files such as /llms.txt, /pricing.md, and /openapi.json
+ *    (they set their own headers)
  *  - car/fleet pages carrying ?from&to (live seasonal quotes vary by dates)
  *  - 404s (short cache only)
- *  - the unprefixed front page (language negotiation makes it origin-decided)
  *
- * Pair with a CDN rule that bypasses cache when the `glc_lang` or
- * `wordpress_logged_in` cookie is present (see docs/DEPLOYMENT.md).
+ * Pair with a CDN rule that bypasses cache for /wp-admin, /wp-json, /wp-login,
+ * from/to quote queries and the `wordpress_logged_in` cookie (see docs/DEPLOYMENT.md).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -27,9 +28,34 @@ class GLC_Perf {
 	/** Public TTL for a browser; CDN edge TTL via s-maxage. */
 	private const MAXAGE   = 300;    // 5 min at the browser
 	private const S_MAXAGE = 86400;  // 1 day at the edge
+	private const REVISION_LIMIT = 5;
+	private const CLEANUP_VERSION = 1;
 
 	public static function init() {
+		add_action( 'init', [ __CLASS__, 'cleanup_legacy_runtime_state' ], 1 );
 		add_action( 'send_headers', [ __CLASS__, 'cache_headers' ] );
+		add_filter( 'wp_revisions_to_keep', [ __CLASS__, 'revision_limit' ] );
+	}
+
+	/** Remove the attacker-amplifiable per-IP transient format once. */
+	public static function cleanup_legacy_runtime_state(): void {
+		if ( (int) get_option( 'glc_runtime_cleanup_version', 0 ) >= self::CLEANUP_VERSION ) {
+			return;
+		}
+		global $wpdb;
+		$value_prefix   = $wpdb->esc_like( '_transient_glc_rl_' ) . '%';
+		$timeout_prefix = $wpdb->esc_like( '_transient_timeout_glc_rl_' ) . '%';
+		$wpdb->query( $wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+			$value_prefix,
+			$timeout_prefix
+		) );
+		update_option( 'glc_runtime_cleanup_version', self::CLEANUP_VERSION, false );
+	}
+
+	/** Keep editor history useful without allowing revision tables to grow forever. */
+	public static function revision_limit( int $limit ): int {
+		return self::REVISION_LIMIT;
 	}
 
 	public static function cache_headers( $wp ): void {
@@ -40,6 +66,12 @@ class GLC_Perf {
 			return;
 		}
 		if ( is_user_logged_in() ) {
+			return;
+		}
+		// A stale edge copy can keep newly allowed agents blocked for a full day.
+		// robots.txt is tiny and infrequently requested, so always serve it fresh.
+		if ( get_query_var( 'robots' ) ) {
+			header( 'Cache-Control: no-store, max-age=0' );
 			return;
 		}
 		// AI pseudo-files manage their own caching.
@@ -56,19 +88,9 @@ class GLC_Perf {
 			return;
 		}
 
-		// The UNPREFIXED front page ("/") is not a pure function of its URL:
-		// GLC_I18n may 302 it by cookie/Accept-Language. A shared cache (Cloudflare
-		// ignores Vary on HTML) would then serve the cached English "/" to a
-		// first-visit non-English browser, or to a cookie-switched visitor whose
-		// Accept-Language still reads "en". So the origin must always decide "/".
-		// Prefixed home pages (/ka/, /ru/…) are path-keyed and never redirect, so
-		// they stay fully cacheable below.
-		if ( is_front_page()
-			&& ( ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale() ) ) {
-			header( 'Cache-Control: private, no-cache' );
-			return;
-		}
-
+		// Every page, the unprefixed front page "/" included, is a pure function of
+		// its URL: GLC_I18n takes the language from the path only and never
+		// redirects by cookie or Accept-Language, so "/" is cacheable like the rest.
 		header( sprintf( 'Cache-Control: public, max-age=%d, s-maxage=%d', self::MAXAGE, self::S_MAXAGE ) );
 	}
 }

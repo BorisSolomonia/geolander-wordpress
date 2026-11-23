@@ -1,0 +1,28 @@
+<?php
+/** Words shared by every screen of the partner panel: role, menu, months, places. */
+return [
+	'role_partner_name'     => 'Car partner',
+	'panel_menu'            => 'Partner panel',
+	'not_set'               => '—',
+	'day_month'             => '%2$s %1$d',
+	'date_range'            => '%1$s – %2$s',
+	'month_1'               => 'Jan',
+	'month_2'               => 'Feb',
+	'month_3'               => 'Mar',
+	'month_4'               => 'Apr',
+	'month_5'               => 'May',
+	'month_6'               => 'Jun',
+	'month_7'               => 'Jul',
+	'month_8'               => 'Aug',
+	'month_9'               => 'Sep',
+	'month_10'              => 'Oct',
+	'month_11'              => 'Nov',
+	'month_12'              => 'Dec',
+	'panel_refused'         => 'You cannot open or change this. Go back to your list of cars.',
+	'place_tbilisi_office'  => 'Tbilisi office',
+	'place_tbilisi_city'    => 'Tbilisi · city address',
+	'place_tbilisi_airport' => 'Tbilisi Airport (TBS)',
+	'place_kutaisi_airport' => 'Kutaisi · airport (KUT) or city',
+	'place_batumi_airport'  => 'Batumi · airport (BUS) or city',
+	'place_out_of_hours'    => 'Early or late handover',
+];

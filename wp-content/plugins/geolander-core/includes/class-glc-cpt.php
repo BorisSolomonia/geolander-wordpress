@@ -114,7 +114,9 @@ class GLC_CPT {
 			'glc_color'            => $string,
 			'glc_seats'            => $int,
 			'glc_transmission'     => $string,
+			'glc_drivetrain'       => $string,
 			'glc_fuel_type'        => $string,
+			'glc_fuel_economy_note'=> $string,
 			'glc_license_category' => $string,
 			'glc_price_from'       => $number,
 			'glc_available'        => $bool,
@@ -122,28 +124,19 @@ class GLC_CPT {
 			register_post_meta( 'car', $key, array_merge( $args, [ 'auth_callback' => [ __CLASS__, 'can_edit' ] ] ) );
 		}
 
+		// Not in REST since 2026-10. A car is a public post type, so with show_in_rest
+		// anyone could read the whole season table at /wp-json/wp/v2/car/<id>: the very
+		// table that was taken off the car page. The machine price list is /pricing.md.
+		// Shape, for reference: a list of { label, from: "MM-DD", to: "MM-DD",
+		// rates: { d1_2 … d31p } }; GLC_Price_Store is what validates and writes it,
+		// and the only thing that may: no editor screen, REST call or Custom Fields
+		// box can write this key (auth_callback), so a table cannot be changed
+		// without the checks, the revision step and the change-log entry.
 		register_post_meta( 'car', 'glc_pricing', [
 			'type'          => 'array',
 			'single'        => true,
-			'auth_callback' => [ __CLASS__, 'can_edit' ],
-			'show_in_rest'  => [
-				'schema' => [
-					'type'  => 'array',
-					'items' => [
-						'type'       => 'object',
-						'properties' => [
-							'label'      => [ 'type' => 'string' ],
-							'from'       => [ 'type' => 'string' ], // MM-DD
-							'to'         => [ 'type' => 'string' ], // MM-DD
-							'rates'      => [
-								'type'       => 'object',
-								'properties' => array_fill_keys( GLC_Pricing::TIERS, [ 'type' => 'number' ] ),
-								'additionalProperties' => false,
-							],
-						],
-					],
-				],
-			],
+			'auth_callback' => '__return_false',
+			'show_in_rest'  => false,
 		] );
 
 		register_post_meta( 'car', 'glc_gallery', [
@@ -163,7 +156,12 @@ class GLC_CPT {
 		register_post_meta( 'testimonial', 'glc_route', array_merge( $string, [ 'auth_callback' => [ __CLASS__, 'can_edit' ] ] ) );
 	}
 
-	public static function can_edit() {
-		return current_user_can( 'edit_posts' );
+	/**
+	 * Who may write registered meta from outside the plugin (REST, the Custom
+	 * Fields box): whoever may edit that very post. It used to ask for
+	 * `edit_posts`, which is "may edit some post somewhere", not this one.
+	 */
+	public static function can_edit( $allowed = false, $meta_key = '', $object_id = 0, $user_id = 0 ) {
+		return user_can( (int) $user_id ?: get_current_user_id(), 'edit_post', (int) $object_id );
 	}
 }

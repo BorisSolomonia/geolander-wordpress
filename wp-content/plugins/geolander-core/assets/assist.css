@@ -1,0 +1,36 @@
+/* "Ask" links drawn by assist.js. Tokens only; they sit inside existing components. */
+
+/* Fleet cards: a full-width quiet third action under "WhatsApp" and "Details". */
+.glc-card-actions > .glc-ask {
+	grid-column: 1 / -1;
+	background: transparent;
+	color: var(--glc-stone);
+	padding-block: 0.35rem;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+.glc-card-actions > .glc-ask:hover,
+.glc-card-actions > .glc-ask:focus-visible { color: var(--glc-glacier); }
+
+/* Price-table rows: a small link after the season name, so the table keeps its width. */
+.glc-ask--row {
+	display: inline-block;
+	margin-inline-start: 0.45em;
+	font-size: 0.75em;
+	color: var(--glc-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	white-space: nowrap;
+}
+
+/* Booking widget: a secondary line under the WhatsApp button. */
+.glc-ask--quote {
+	display: block;
+	margin-top: 0.6rem;
+	text-align: center;
+	font-size: 0.85rem;
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+.glc-ask:focus-visible { outline: 2px solid var(--glc-accent); outline-offset: 2px; }

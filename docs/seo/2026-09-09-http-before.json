@@ -1,0 +1,217 @@
+{
+  "measuredAt": "2026-09-09T15:07:39.700Z",
+  "base": "https://geo-lander.com/",
+  "scope": "HTTP only: not a rendered-browser, index coverage, ranking or Safe Browsing test",
+  "passed": 3,
+  "total": 14,
+  "results": [
+    {
+      "url": "https://geo-lander.com/",
+      "language": "en",
+      "status": 200,
+      "expected": 200,
+      "pass": true,
+      "problems": [],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": "https://geo-lander.com/",
+      "robots": "max-image-preview:large",
+      "hreflangCount": 8
+    },
+    {
+      "url": "https://geo-lander.com/",
+      "language": "ru",
+      "status": 302,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/ru/",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/fleet/",
+      "language": "ru",
+      "status": 302,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/ru/fleet/",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/robots.txt",
+      "language": "ru",
+      "status": 302,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/ru/robots.txt",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/llms.txt",
+      "language": "ru",
+      "status": 302,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/ru/llms.txt",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/wp-sitemap.xml",
+      "language": "ru",
+      "status": 200,
+      "expected": 200,
+      "pass": true,
+      "problems": [],
+      "location": null,
+      "contentType": "application/xml; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/.well-known/api-catalog",
+      "language": "ru",
+      "status": 302,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/ru/.well-known/api-catalog",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/font",
+      "language": "en",
+      "status": 404,
+      "expected": 404,
+      "pass": false,
+      "problems": [
+        "404 has canonical/alternates"
+      ],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": "max-image-preview:large",
+      "hreflangCount": 8
+    },
+    {
+      "url": "https://geo-lander.com/seo-audit-nonexistent-20260909/",
+      "language": "en",
+      "status": 404,
+      "expected": 404,
+      "pass": false,
+      "problems": [
+        "404 has canonical/alternates"
+      ],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": "max-image-preview:large",
+      "hreflangCount": 8
+    },
+    {
+      "url": "https://geo-lander.com/ru/",
+      "language": "en",
+      "status": 200,
+      "expected": 200,
+      "pass": true,
+      "problems": [],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": "https://geo-lander.com/ru/",
+      "robots": "max-image-preview:large",
+      "hreflangCount": 8
+    },
+    {
+      "url": "https://geo-lander.com/en/",
+      "language": "en",
+      "status": 302,
+      "expected": 301,
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": "/",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/fleet/?glc_lang=en",
+      "language": "en",
+      "status": 200,
+      "expected": 200,
+      "pass": false,
+      "problems": [
+        "parameter noindex conflicts with canonical"
+      ],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": "https://geo-lander.com/fleet/",
+      "robots": "max-image-preview:large, noindex, follow",
+      "hreflangCount": 8
+    },
+    {
+      "url": "https://geo-lander.com/en//external.example/",
+      "language": "en",
+      "status": 302,
+      "expected": 301,
+      "pass": false,
+      "problems": [
+        "status",
+        "off-site alias redirect"
+      ],
+      "location": "//external.example/",
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": null,
+      "hreflangCount": 0
+    },
+    {
+      "url": "https://geo-lander.com/fleet/page/2/",
+      "language": "en",
+      "status": 200,
+      "expected": [
+        301,
+        404
+      ],
+      "pass": false,
+      "problems": [
+        "status"
+      ],
+      "location": null,
+      "contentType": "text/html; charset=UTF-8",
+      "canonical": null,
+      "robots": "max-image-preview:large, noindex, follow",
+      "hreflangCount": 8
+    }
+  ]
+}
