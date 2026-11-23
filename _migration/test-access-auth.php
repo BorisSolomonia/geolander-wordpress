@@ -65,7 +65,12 @@ try {
 	WP_CLI::log( '  ✓ tampered assertion rejected' );
 
 	$metadata = GLC_AI::oauth_metadata();
-	foreach ( [ 'issuer', 'authorization_endpoint', 'token_endpoint', 'jwks_uri' ] as $field ) {
+	// The published issuer is this site, which is HTTP on the local development
+	// installation. Cloudflare's actual authorization/key endpoints stay HTTPS.
+	if ( ( $metadata['issuer'] ?? '' ) !== untrailingslashit( home_url( '/' ) ) ) {
+		throw new RuntimeException( 'OAuth metadata issuer does not match the site.' );
+	}
+	foreach ( [ 'authorization_endpoint', 'token_endpoint', 'jwks_uri' ] as $field ) {
 		if ( empty( $metadata[ $field ] ) || ! str_starts_with( $metadata[ $field ], 'https://' ) ) {
 			throw new RuntimeException( 'OAuth metadata missing HTTPS ' . $field );
 		}

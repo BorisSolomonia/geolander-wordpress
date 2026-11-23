@@ -353,7 +353,7 @@ class GLC_News {
 
 		printf(
 			"<script type=\"application/ld+json\">%s</script>\n",
-			wp_json_encode( [ '@context' => 'https://schema.org', '@graph' => $graph ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+			wp_json_encode( [ '@context' => 'https://schema.org', '@graph' => $graph ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG )
 		);
 	}
 

@@ -20,6 +20,18 @@ class GLC_Booking {
 	}
 
 	public static function routes() {
+		// The two handover times are optional for a client: one that is not sent is
+		// assumed by the engine, which says so in the quote. The pattern is published
+		// for clients to read; the check itself is the engine's, so a malformed time
+		// is answered with one code (glc_bad_time) on every path, REST, MCP and A2A.
+		$time = [
+			'required'          => false,
+			'type'              => 'string',
+			'pattern'           => GLC_Rental::TIME_PATTERN,
+			'validate_callback' => '__return_true',
+			'sanitize_callback' => [ __CLASS__, 'time_as_sent' ],
+		];
+
 		$quote = [
 			'methods'             => 'GET',
 			'callback'            => [ __CLASS__, 'quote' ],
@@ -30,6 +42,8 @@ class GLC_Booking {
 				'to'   => [ 'required' => true, 'type' => 'string', 'maxLength' => 10 ],
 				'pickup' => [ 'required' => false, 'type' => 'string', 'maxLength' => 32, 'default' => GLC_Rental::DEFAULT_PICKUP ],
 				'return' => [ 'required' => false, 'type' => 'string', 'maxLength' => 32, 'default' => GLC_Rental::DEFAULT_RETURN ],
+				'pickup_time' => $time,
+				'return_time' => $time,
 			],
 		];
 
@@ -45,6 +59,8 @@ class GLC_Booking {
 				'email'  => [ 'required' => true, 'type' => 'string', 'format' => 'email', 'maxLength' => 254 ],
 				'pickup' => [ 'required' => true, 'type' => 'string', 'maxLength' => 32 ],
 				'return' => [ 'required' => true, 'type' => 'string', 'maxLength' => 32 ],
+				'pickup_time' => $time,
+				'return_time' => $time,
 			],
 		];
 
@@ -59,6 +75,11 @@ class GLC_Booking {
 		$checkout['permission_callback'] = [ 'GLC_Access', 'authorize_agent_request' ];
 		register_rest_route( 'geolander-agent/v1', '/quote', $quote );
 		register_rest_route( 'geolander-agent/v1', '/checkout', $checkout );
+	}
+
+	/** A time exactly as the client sent it; anything that is not text becomes text the engine refuses. */
+	public static function time_as_sent( $value ): string {
+		return is_string( $value ) ? $value : '';
 	}
 
 	private static function validate( WP_REST_Request $req ): array|WP_Error {
@@ -77,7 +98,16 @@ class GLC_Booking {
 		if ( ! GLC_Rental::valid_location( $pickup ) || ! GLC_Rental::valid_location( $return ) ) {
 			return new WP_Error( 'glc_bad_location', __( 'Invalid pickup or return location.', 'geolander' ), [ 'status' => 400 ] );
 		}
-		$quote = GLC_Rental::quote( $car_id, $from, $to, $pickup, $return );
+		// null = not sent, which the engine answers with the default time. Internal
+		// callers (MCP, A2A) build the request themselves, so the type is checked here too.
+		$times = [];
+		foreach ( [ 'pickup_time', 'return_time' ] as $field ) {
+			$times[ $field ] = null === $req[ $field ] ? null : self::time_as_sent( $req[ $field ] );
+		}
+		$quote = GLC_Rental::quote( $car_id, $from, $to, $pickup, $return, $times['pickup_time'], $times['return_time'] );
+		if ( is_wp_error( $quote ) ) {
+			return $quote; // glc_bad_time or glc_fee_unknown, both 400
+		}
 		if ( ! $quote ) {
 			return new WP_Error( 'glc_no_quote', __( 'Could not price these dates.', 'geolander' ), [ 'status' => 400 ] );
 		}
@@ -103,20 +133,42 @@ class GLC_Booking {
 	 * Cloudflare supplies the finer per-client edge limit.
 	 */
 	private static function rate_limited(): bool {
-		$now   = time();
-		$state = get_option( self::RATE_LIMIT_OPTION, [] );
-		if ( ! is_array( $state ) || (int) ( $state['expires_at'] ?? 0 ) <= $now ) {
-			$state = [ 'count' => 1, 'expires_at' => $now + self::RATE_LIMIT_WINDOW ];
-			update_option( self::RATE_LIMIT_OPTION, $state, false );
-			return false;
+		global $wpdb;
+		// Admission must be atomic: two requests reading count 19 must not both
+		// consume the twentieth slot. Compare-and-swap also avoids stale object
+		// cache values and keeps the single, non-autoloaded storage row bounded.
+		for ( $attempt = 0; $attempt < 5; $attempt++ ) {
+			$now  = time();
+			$held = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", self::RATE_LIMIT_OPTION ) );
+			if ( null === $held ) {
+				if ( add_option( self::RATE_LIMIT_OPTION, [ 'count' => 1, 'expires_at' => $now + self::RATE_LIMIT_WINDOW ], '', false ) ) {
+					return false;
+				}
+				continue;
+			}
+			$state = maybe_unserialize( $held );
+			if ( ! is_array( $state ) || (int) ( $state['expires_at'] ?? 0 ) <= $now ) {
+				$state = [ 'count' => 1, 'expires_at' => $now + self::RATE_LIMIT_WINDOW ];
+			} else {
+				if ( (int) ( $state['count'] ?? 0 ) >= self::RATE_LIMIT_MAX ) {
+					return true;
+				}
+				$state['count'] = (int) ( $state['count'] ?? 0 ) + 1;
+			}
+			$updated = $wpdb->query( $wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value = %s, autoload = 'off' WHERE option_name = %s AND BINARY option_value = %s",
+				maybe_serialize( $state ), self::RATE_LIMIT_OPTION, $held
+			) );
+			if ( 1 === $updated ) {
+				wp_cache_delete( self::RATE_LIMIT_OPTION, 'options' );
+				wp_cache_delete( 'alloptions', 'options' );
+				return false;
+			}
+			if ( false === $updated ) {
+				return true;
+			}
 		}
-
-		if ( (int) ( $state['count'] ?? 0 ) >= self::RATE_LIMIT_MAX ) {
-			return true;
-		}
-		$state['count'] = (int) ( $state['count'] ?? 0 ) + 1;
-		update_option( self::RATE_LIMIT_OPTION, $state, false );
-		return false;
+		return true; // Heavy contention or database failure: do not admit an uncounted write.
 	}
 
 	public static function checkout( WP_REST_Request $req ) {

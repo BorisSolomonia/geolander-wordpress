@@ -61,7 +61,7 @@ foreach ($stale in @('Only with prior approval', 'standard terms prohibit off-ro
 	}
 }
 
-if ($seo -notmatch "glc_seo_title_en" -or $seo -notmatch "glc_seo_description_en") {
+if (-not $seo.Contains("'glc_seo_title_' . self::locale()") -or -not $seo.Contains("'glc_seo_description_' . self::locale()")) {
 	throw 'SEO layer does not consume custom title and description metadata.'
 }
 if ($schema -notmatch "glc_guide_route" -or $schema -notmatch "'@type'\s*=>\s*'Article'") {

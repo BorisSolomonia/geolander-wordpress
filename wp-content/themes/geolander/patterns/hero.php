@@ -50,7 +50,7 @@ if ( class_exists( 'GLC_Format' ) ) {
 		<div class="glc-trust">
 			<span><?php echo esc_html( glc_t( 'trust_cancel' ) ); ?></span>
 			<span><?php echo esc_html( glc_t( 'trust_insurance' ) ); ?></span>
-			<span><?php echo esc_html( glc_t( 'trust_delivery' ) ); ?></span>
+			<span><?php echo esc_html( glc_t( 'trust_deposit' ) ); ?></span>
 			<span><?php echo esc_html( glc_t( 'trust_support' ) ); ?></span>
 		</div>
 	</div>

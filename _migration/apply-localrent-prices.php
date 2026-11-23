@@ -21,6 +21,11 @@
  * SAFETY, in order of application:
  *  - Every car is validated BEFORE anything is written. One bad entry aborts the
  *    whole run, so the fleet is never left half-updated.
+ *  - Nothing is written here directly. The tables go to GLC_Price_Store as one
+ *    batch (source `cli`): it checks them again by the site's own rules (the
+ *    limits in Settings → Geolander, no day in two seasons), writes every car or
+ *    none, and records each change in the change log with the table before and
+ *    after. A table the store refuses is listed like any other failure.
  *  - The previous value is printed and stored in `glc_pricing_previous` on each
  *    post, so one line of wp-cli restores it (see the footer this prints).
  *  - A rate of zero or below, a missing tier, and a season table that does not
@@ -132,17 +137,34 @@ foreach ( $glc_payload['cars'] as $car ) {
 
 	$coverage = glc_season_days( $seasons );
 	$gaps     = 365 - count( $coverage );
-	$overlaps = count( array_filter( $coverage, fn( $n ) => $n > 1 ) );
 	if ( $gaps > 0 ) {
 		$glc_errors[] = "{$plate}: seasons leave {$gaps} day(s) of the year unpriced";
 	}
-	if ( $overlaps > 0 ) {
-		// Not fatal: GLC_Pricing::season_for_date takes the first match, which is
-		// deterministic. Worth saying out loud so a real overlap gets noticed.
-		WP_CLI::warning( "{$plate}: {$overlaps} day(s) fall in more than one season; the first listed season wins" );
-	}
+	// A day in two seasons used to be a warning here ("the first listed season
+	// wins"). The store refuses such a table, so it now arrives below as a failure.
 
 	$glc_planned[] = [ 'id' => $id, 'plate' => $plate, 'title' => $post->post_title, 'seasons' => $seasons ];
+}
+
+/* ------------------------------------------------- the store's own verdict */
+
+// Asked before anything is printed as planned, and in a dry run too: a dry run
+// that passes must mean the real run will be accepted.
+$glc_items  = [];
+$glc_plates = [];
+foreach ( $glc_planned as $car ) {
+	$glc_items[ $car['id'] ]  = [ 'changes' => [ 'pricing' => $car['seasons'] ] ];
+	$glc_plates[ $car['id'] ] = $car['plate'];
+}
+$glc_ctx  = [ 'source' => 'cli', 'note' => sprintf( 'Localrent %s × %s', $glc_payload['captured'] ?? '', $glc_payload['factor'] ?? '' ) ];
+$glc_plan = GLC_Price_Store::plan( $glc_items, $glc_ctx );
+if ( is_wp_error( $glc_plan ) ) {
+	WP_CLI::error( $glc_plan->get_error_message() );
+}
+foreach ( $glc_plan['errors'] as $id => $glc_found ) {
+	foreach ( $glc_found as $glc_error ) {
+		$glc_errors[] = $glc_plates[ $id ] . ': ' . $glc_error['message'];
+	}
 }
 
 if ( $glc_errors ) {
@@ -154,7 +176,6 @@ if ( $glc_errors ) {
 
 /* --------------------------------------------------------------- apply all */
 
-$glc_changed = 0;
 foreach ( $glc_planned as $car ) {
 	$old = get_post_meta( $car['id'], 'glc_pricing', true );
 	$new = $car['seasons'];
@@ -178,16 +199,6 @@ foreach ( $glc_planned as $car ) {
 		$peak_old,
 		$peak_new
 	) );
-
-	if ( $glc_dry_run ) {
-		continue;
-	}
-	if ( is_array( $old ) && $old ) {
-		update_post_meta( $car['id'], 'glc_pricing_previous', $old );
-	}
-	update_post_meta( $car['id'], 'glc_pricing', $new );
-	update_post_meta( $car['id'], 'glc_pricing_source', sprintf( 'Localrent %s × %s', $glc_payload['captured'] ?? '', $glc_payload['factor'] ?? '' ) );
-	$glc_changed++;
 }
 
 if ( $glc_dry_run ) {
@@ -195,5 +206,25 @@ if ( $glc_dry_run ) {
 	return;
 }
 
+// One batch through the store: every car is written, or none. It keeps the
+// previous table on each post, bumps the car's revision and logs the change.
+$glc_result = GLC_Price_Store::write_batch( $glc_items, $glc_ctx );
+if ( is_wp_error( $glc_result ) ) {
+	foreach ( $glc_result->get_error_data()['errors'] ?? [] as $id => $glc_found ) {
+		foreach ( $glc_found as $glc_error ) {
+			WP_CLI::log( '  ✗ ' . $glc_plates[ $id ] . ': ' . $glc_error['message'] );
+		}
+	}
+	WP_CLI::error( $glc_result->get_error_message() . ' Nothing was written.' );
+}
+foreach ( $glc_planned as $car ) {
+	// Where the prices came from. Not a price, so it is not the store's to write.
+	update_post_meta( $car['id'], 'glc_pricing_source', $glc_ctx['note'] );
+}
+$glc_changed = count( $glc_result['cars'] );
+
 WP_CLI::success( $glc_changed . ' car(s) repriced. Previous tables are on each post as `glc_pricing_previous`.' );
+if ( $glc_result['unchanged'] ) {
+	WP_CLI::log( count( $glc_result['unchanged'] ) . ' car(s) already carried exactly these prices; nothing was written for them.' );
+}
 WP_CLI::log( 'Roll one car back with:  wp post meta update <id> glc_pricing "$(wp post meta get <id> glc_pricing_previous --format=json --allow-root)" --format=json --allow-root' );

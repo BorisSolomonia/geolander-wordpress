@@ -173,6 +173,23 @@ class GLC_City {
 		return ( '' !== $stripped && $stripped !== $local ) ? $stripped : $english;
 	}
 
+	/** City name for places where it stands alone (lists, schema names), so a phrase like "l'aéroport de …" starts with a capital. */
+	public static function city_label( int $id ): string {
+		// An editor-set list name wins: only a person can choose the right case for a name standing alone.
+		if ( class_exists( 'GLC_Content' ) && class_exists( 'GLC_I18n' ) && GLC_I18n::DEFAULT_LOCALE !== GLC_I18n::locale() ) {
+			$set = trim( (string) get_post_meta( $id, GLC_Content::key( 'label', GLC_I18n::locale() ), true ) );
+			if ( '' !== $set ) {
+				return $set;
+			}
+		}
+		$name = self::city_name( $id );
+		// Georgian has no capital letters in running text: uppercasing gives Mtavruli, which is wrong there.
+		if ( preg_match( "/^\\p{Georgian}/u", $name ) ) {
+			return $name;
+		}
+		return mb_strtoupper( mb_substr( $name, 0, 1 ) ) . mb_substr( $name, 1 );
+	}
+
 	/** Remove the localized "car rental in/at" phrase around a city name. */
 	private static function strip( string $title ): string {
 		$patterns = [
@@ -182,7 +199,7 @@ class GLC_City {
 			'/^location de voitures? (à|a|au|en)\s+/iu',                                       // fr
 			'/^تأجير (سيارات|سيارة) في\s+/u',                                                  // ar
 			'/^(მანქანის|ავტომობილის) (ქირაობა|გაქირავება)\s+/u',                            // ka (leaves the locative "-ში" — natural in Georgian)
-			'/^([\x{4e00}-\x{9fff}]{2,})?(租车|汽车租赁)/u',                                    // zh: "第比利斯租车" → prefix city before 租车
+			'/\s*(租车|汽车租赁)$/u',                                              // zh: "第比利斯租车" → "第比利斯" (the phrase follows the city)
 		];
 		$out = $title;
 		foreach ( $patterns as $p ) {
@@ -202,7 +219,7 @@ class GLC_City {
 		$fields = [
 			'glc_airport_name'  => __( 'Airport name (e.g. Batumi International)', 'geolander' ),
 			'glc_airport_code'  => __( 'Airport IATA code (e.g. BUS)', 'geolander' ),
-			'glc_delivery_note' => __( 'Delivery note (e.g. Free delivery to hotels)', 'geolander' ),
+			'glc_delivery_note' => __( 'Delivery note (e.g. [geolander_fee place="batumi_airport"] each way · airport or city)', 'geolander' ),
 		];
 		foreach ( $fields as $key => $label ) {
 			printf(

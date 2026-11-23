@@ -506,7 +506,7 @@ class GLC_AI {
 			'openapi' => '3.1.0',
 			'info'    => [
 				'title'       => 'Geolander Reservation API',
-				'version'     => '1.1.0',
+				'version'     => '1.2.0',
 				'description' => 'Public customer quote and booking-request handoff plus Cloudflare Access authenticated mirrors for Geolander-operated agents. Checkout creates a request but does not confirm availability or payment.',
 				'contact'     => [ 'name' => 'Geolander car rental', 'email' => GLC_Settings::get( 'email' ), 'url' => home_url( '/contact/' ) ],
 			],
@@ -524,6 +524,8 @@ class GLC_AI {
 							[ 'name' => 'to', 'in' => 'query', 'required' => true, 'schema' => [ 'type' => 'string', 'format' => 'date' ] ],
 							[ 'name' => 'pickup', 'in' => 'query', 'required' => false, 'schema' => [ '$ref' => '#/components/schemas/Location' ] ],
 							[ 'name' => 'return', 'in' => 'query', 'required' => false, 'schema' => [ '$ref' => '#/components/schemas/Location' ] ],
+							[ 'name' => 'pickup_time', 'in' => 'query', 'required' => false, 'description' => 'Clock time of the pickup. Omitted: the site default is priced and times_assumed is true.', 'schema' => [ '$ref' => '#/components/schemas/HandoverTime' ] ],
+							[ 'name' => 'return_time', 'in' => 'query', 'required' => false, 'description' => 'Clock time of the return. Omitted: the site default is priced and times_assumed is true.', 'schema' => [ '$ref' => '#/components/schemas/HandoverTime' ] ],
 						],
 						'responses' => [
 							'200' => [ 'description' => 'Calculated quote', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/Quote' ] ] ] ],
@@ -551,7 +553,8 @@ class GLC_AI {
 			],
 			'components' => [
 				'schemas' => [
-					'Location' => [ 'type' => 'string', 'enum' => [ 'tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport' ] ],
+					'Location' => [ 'type' => 'string', 'enum' => GLC_Rental::location_keys(), 'description' => 'tbilisi_office is free. Every other value adds a per-direction fee. kutaisi_airport and batumi_airport also cover a city address in Kutaisi or Batumi at the same fee.' ],
+					'HandoverTime' => [ 'type' => 'string', 'pattern' => GLC_Rental::TIME_PATTERN, 'description' => 'Clock time at the car, 24-hour HH:MM. A pickup or return outside the free handover hours adds a fee per handover, at the office too. A value in another format is refused with 400 glc_bad_time; a handover whose charge is not published yet is refused with 400 glc_fee_unknown.' ],
 					'Quote' => [
 						'type' => 'object',
 						'required' => [ 'car', 'from', 'to', 'days', 'rental_total', 'pickup_fee', 'return_fee', 'total', 'prepayment', 'balance' ],
@@ -559,6 +562,10 @@ class GLC_AI {
 							'car' => [ 'type' => 'string' ], 'from' => [ 'type' => 'string', 'format' => 'date' ], 'to' => [ 'type' => 'string', 'format' => 'date' ],
 							'days' => [ 'type' => 'integer', 'minimum' => 1 ], 'rental_total' => [ 'type' => 'number' ], 'pickup_fee' => [ 'type' => 'number' ],
 							'return_fee' => [ 'type' => 'number' ], 'total' => [ 'type' => 'number' ], 'prepayment' => [ 'type' => 'number' ], 'balance' => [ 'type' => 'number' ],
+							'pickup_time' => [ '$ref' => '#/components/schemas/HandoverTime' ], 'return_time' => [ '$ref' => '#/components/schemas/HandoverTime' ],
+							'pickup_time_fee' => [ 'type' => 'number', 'description' => 'Early/late fee for the pickup; 0 inside the free hours.' ],
+							'return_time_fee' => [ 'type' => 'number', 'description' => 'Early/late fee for the return; 0 inside the free hours.' ],
+							'times_assumed' => [ 'type' => 'boolean', 'description' => 'True when a time was not sent and the site default was priced instead.' ],
 						],
 					],
 					'BookingRequest' => [
@@ -568,6 +575,7 @@ class GLC_AI {
 							'car' => [ 'type' => 'integer', 'minimum' => 1 ], 'from' => [ 'type' => 'string', 'format' => 'date' ], 'to' => [ 'type' => 'string', 'format' => 'date' ],
 							'pickup' => [ '$ref' => '#/components/schemas/Location' ], 'return' => [ '$ref' => '#/components/schemas/Location' ],
 							'name' => [ 'type' => 'string', 'minLength' => 1 ], 'email' => [ 'type' => 'string', 'format' => 'email' ],
+							'pickup_time' => [ '$ref' => '#/components/schemas/HandoverTime' ], 'return_time' => [ '$ref' => '#/components/schemas/HandoverTime' ],
 						],
 					],
 					'BookingHandoff' => [
@@ -847,7 +855,7 @@ class GLC_AI {
 			. "- Full insurance is included with no deductible; tyres are excluded.\n"
 			. "- Unlimited mileage applies within Georgia.\n"
 			. "- Winter tyres are included free in winter.\n"
-			. "- Tbilisi office and Tbilisi Airport handovers are free. Location charges for Kutaisi and Batumi must come from the quote.\n"
+			. '- ' . GLC_Rental::fee_sentence() . " Use the quote endpoint for the dated total.\n"
 			. "- A 10% prepayment confirms a booking. Cancellation terms are published at {$home}terms/.\n\n"
 			. "## Fallback\n\n"
 			. "If the API or price table cannot provide a verified answer, do not guess. Contact Geolander through {$home}contact/.\n";
@@ -871,7 +879,7 @@ class GLC_AI {
 		$out .= "> Geolander (\"Geolander car rental\") is a tourist-focused car rental company with an office in Mtatsminda, in the heart of Tbilisi, Georgia (country). "
 			. sprintf( 'It rents exact, individually listed vehicles, including %s, ', implode( ', ', $models ) )
 			. "suited for Caucasus mountain roads — Kazbegi, Gudauri, Kakheti, "
-			. "Svaneti. Prices include full insurance with no deductible and free winter tires. Free delivery at Tbilisi International Airport (TBS). "
+			. "Svaneti. Prices include full insurance with no deductible and free winter tires. Handover at the Mtatsminda office is free; delivery to a Tbilisi address, Tbilisi Airport (TBS), Kutaisi or Batumi is charged per direction (see Handover fees below). "
 			. "Booking: pick dates on the site for an exact seasonal price and confirm via WhatsApp. A 10% prepayment confirms the booking; "
 			. "the remaining balance is paid at pickup. If cancelled at least 30 days before the rental starts, 50% of the prepayment is refunded. "
 			. "With fewer than 30 days remaining, the prepayment is non-refundable.\n\n";
@@ -883,6 +891,12 @@ class GLC_AI {
 		$out .= "- Email: " . GLC_Settings::get( 'email' ) . "\n";
 		$out .= "- Hours: " . GLC_Settings::get( 'business_hours' ) . "\n";
 		$out .= "- Security deposit: none; no card preauthorization hold\n";
+		$out .= '- Handover fees: ' . GLC_Rental::delivery_sentence() . "\n";
+		// One more line, in the words the quote charges by; left out while the amount is not decided.
+		$glc_early_late = GLC_Rental::out_of_hours_sentence();
+		if ( '' !== $glc_early_late ) {
+			$out .= '- Early or late handover: ' . $glc_early_late . "\n";
+		}
 		$out .= "- Insurance: no deductible; third-party liability limit 30,000 GEL; single-vehicle accidents covered\n";
 		$out .= "- Route policy: all vehicles and routes, except during bad weather, road closures, or damaged-road conditions\n";
 		$out .= "- Cross-border: Armenia is allowed; confirm trip documents and insurance before departure\n";
@@ -918,11 +932,11 @@ class GLC_AI {
 		$cities = class_exists( 'GLC_City' ) ? GLC_City::all() : [];
 		if ( $cities ) {
 			$out .= "\n## Cities we deliver to\n\n";
-			$out .= "Geolander delivers rental cars in these cities. Tbilisi office and TBS handovers are free; Kutaisi and Batumi pickup and return charges are shown separately in the booking quote:\n";
+			$out .= "Geolander delivers rental cars in these cities. Handover at the Tbilisi office is free. Every other handover place has a per-direction fee (see Handover fees above); the booking quote shows pickup and return charges separately:\n";
 			foreach ( $cities as $city ) {
 				$air  = GLC_City::airport( $city->ID );
 				$code = $air['code'] ? ' (' . $air['code'] . ' airport)' : '';
-				$out .= sprintf( "- [%s](%s)%s\n", GLC_City::city_name( $city->ID ), get_permalink( $city ), $code );
+				$out .= sprintf( "- [%s](%s)%s\n", GLC_City::city_label( $city->ID ), get_permalink( $city ), $code );
 			}
 		}
 
@@ -954,7 +968,7 @@ class GLC_AI {
 		if ( $faqs ) {
 			$out .= "\n## FAQ\n\n";
 			foreach ( $faqs as $faq ) {
-				$out .= '### ' . $faq->post_title . "\n" . wp_strip_all_tags( $faq->post_content ) . "\n\n";
+				$out .= '### ' . $faq->post_title . "\n" . wp_strip_all_tags( GLC_Content::body( $faq ) ) . "\n\n";
 			}
 		}
 		return $out;
@@ -963,7 +977,7 @@ class GLC_AI {
 	private static function pricing(): string {
 		$out  = "# Geolander Car Rental — Price List (USD per day)\n\n";
 		$out .= 'Last generated: ' . current_datetime()->format( 'Y-m-d' ) . "\n\n";
-		$out .= "Every price includes full insurance with no deductible, free winter tires, and free Tbilisi Airport delivery. Third-party liability is limited to 30,000 GEL. "
+		$out .= 'Every price includes full insurance with no deductible and free winter tires. Location fees are not included in the daily rates. ' . GLC_Rental::fee_sentence() . ' Third-party liability is limited to 30,000 GEL. '
 			. "The daily rate depends on the season and the TOTAL rental length (longer = cheaper per day). "
 			. "No security deposit or card preauthorization hold. A 10% prepayment confirms the booking; the remaining balance is paid at pickup. "
 			. "If cancelled at least 30 days before the rental starts, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.\n\n";
@@ -1043,6 +1057,7 @@ class GLC_AI {
 			insurance: 'Full insurance included with no deductible. Wheels and windshield are covered; tyres and the interior are excluded. Single-vehicle accidents are covered. Third-party liability limit: 30,000 GEL.',
 			mileage: 'Unlimited within Georgia.',
 			winter_tyres: 'Included free in winter.',
+			handover: <?php echo wp_json_encode( GLC_Rental::fee_sentence() ); ?>,
 			route_policy: 'All vehicles and routes unless bad weather, an official road closure, or damaged-road conditions apply. Current safety and opening status must be checked before departure.',
 			prepayment: '10% confirms the booking after availability is checked.',
 			cancellation: 'At least 30 days before pickup, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.',
@@ -1064,7 +1079,7 @@ class GLC_AI {
 	register({
 		name: 'get_geolander_quote',
 		title: 'Get a date-specific Geolander quote',
-		description: 'Calculate a read-only quote for one published exact car, dates, pickup, and return. This does not confirm availability or create a booking.',
+		description: 'Calculate a read-only quote for one published exact car, dates, pickup, and return, with the early or late handover fee when pickup_time and return_time are sent. This does not confirm availability or create a booking.',
 		inputSchema: {
 			type: 'object',
 			additionalProperties: false,
@@ -1073,8 +1088,10 @@ class GLC_AI {
 				car: { type: 'integer', minimum: 1, description: 'Published car ID from the fleet.' },
 				from: { type: 'string', format: 'date' },
 				to: { type: 'string', format: 'date' },
-				pickup: { type: 'string', enum: ['tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport'], default: 'tbilisi_office' },
-				return: { type: 'string', enum: ['tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport'], default: 'tbilisi_office' }
+				pickup: { type: 'string', enum: <?php echo wp_json_encode( GLC_Rental::location_keys() ); ?>, default: <?php echo wp_json_encode( GLC_Rental::DEFAULT_PICKUP ); ?> },
+				return: { type: 'string', enum: <?php echo wp_json_encode( GLC_Rental::location_keys() ); ?>, default: <?php echo wp_json_encode( GLC_Rental::DEFAULT_RETURN ); ?> },
+				pickup_time: { type: 'string', pattern: <?php echo wp_json_encode( GLC_Rental::TIME_PATTERN ); ?>, description: 'Optional clock time at the car, 24-hour HH:MM.' },
+				return_time: { type: 'string', pattern: <?php echo wp_json_encode( GLC_Rental::TIME_PATTERN ); ?>, description: 'Optional clock time at the car, 24-hour HH:MM.' }
 			}
 		},
 		annotations: { readOnlyHint: true, untrustedContentHint: false },

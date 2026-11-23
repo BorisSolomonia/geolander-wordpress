@@ -85,7 +85,7 @@ Lint it, run the validator, test the logic against real data. This project has a
 | Hours | 24/7 | `[OBSERVED]` |
 | Country served | Georgia (**the country**, not the US state) | `[OBSERVED]` |
 | Delivery cities | Tbilisi, Batumi, Kutaisi (airport), Kobuleti | `[OBSERVED]` `setup-cities.php` |
-| Delivery charges | Tbilisi office and TBS: free. Kutaisi: **$68 pickup and $68 return**. Batumi: **$98 pickup and $98 return** | `[OBSERVED]` owner confirmation, 2026-08-21 |
+| Delivery charges | Tbilisi office: free. Tbilisi city address: **$10 each way**. Tbilisi Airport (TBS): **$20 each way**. Kutaisi (KUT or city): **$80 each way**. Batumi (BUS or city): **$100 each way**. Kobuleti: not priced, quoted on request. Each fee is a setting (Settings → Geolander → Pricing); text shows it through `[geolander_fee place="…"]`, never as a typed number. "Free airport delivery" is no longer true and must not be written anywhere | `[OBSERVED]` owner instruction, 2026-10-11 (per direction, as confirmed 2026-08-21 for the earlier fees) |
 | Booking model | Dates → live seasonal quote → WhatsApp confirmation. **A 10% prepayment confirms the booking; the remaining balance is paid at pickup.** BOG iPay is coded but dormant | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Cancellation | Cancel at least 30 days before the rental starts: **50% of the booking prepayment is refunded.** Fewer than 30 days before the rental starts: **the prepayment is non-refundable** | `[OBSERVED]` owner confirmation, 2026-08-21 |
 | Languages | 7 — `en` (default/x-default), `ka`, `ru`, `uk`, `ar`, `zh`, `fr` | `[OBSERVED]` |

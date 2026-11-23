@@ -41,13 +41,13 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 ?>
 <footer class="glc-footer">
 	<div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:3.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2.5rem;">
-		<div style="display:grid;gap:1rem;align-content:start;">
+		<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-content:start;">
 			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/img/logo.png' ) ); ?>" alt="Geolander" width="76" height="47" style="height:47px;width:auto;" loading="lazy" />
 			<p style="font-size:0.88rem;color:var(--glc-stone);margin:0;"><?php echo esc_html( glc_t( 'footer_desc' ) ); ?></p>
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'quick_links' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<?php foreach ( $glc_nav as $glc_url => $glc_label ) : ?>
 					<li><a href="<?php echo esc_url( $glc_url ); ?>"><?php echo esc_html( $glc_label ); ?></a></li>
 				<?php endforeach; ?>
@@ -55,7 +55,7 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'contact_info' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'google_maps_url' ) ); ?>" rel="noopener"><?php echo esc_html( GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ) ); ?></a></li>
 				<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^+0-9]/', '', $glc_phone ) ); ?>"><?php echo esc_html( $glc_phone ); ?></a></li>
 				<li><a href="mailto:<?php echo esc_attr( GLC_Settings::get( 'email' ) ); ?>"><?php echo esc_html( GLC_Settings::get( 'email' ) ); ?></a></li>
@@ -63,7 +63,7 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		</div>
 		<div>
 			<h3><?php echo esc_html( glc_t( 'follow_us' ) ); ?></h3>
-			<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+			<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'instagram' ) ); ?>" rel="noopener">Instagram</a></li>
 				<li><a href="<?php echo esc_url( GLC_Settings::get( 'facebook' ) ); ?>" rel="noopener">Facebook</a></li>
 			</ul>
@@ -77,9 +77,9 @@ $glc_wa    = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url(
 		<?php if ( $glc_cities ) : ?>
 			<div>
 				<h3><?php echo esc_html( glc_t( 'we_deliver' ) ); ?></h3>
-				<ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.5rem;">
+				<ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 					<?php foreach ( $glc_cities as $glc_city ) : ?>
-						<li><a href="<?php echo esc_url( get_permalink( $glc_city ) ); ?>"><?php echo esc_html( GLC_City::city_name( $glc_city->ID ) ); ?></a></li>
+						<li><a href="<?php echo esc_url( get_permalink( $glc_city ) ); ?>"><?php echo esc_html( GLC_City::city_label( $glc_city->ID ) ); ?></a></li>
 					<?php endforeach; ?>
 				</ul>
 			</div>

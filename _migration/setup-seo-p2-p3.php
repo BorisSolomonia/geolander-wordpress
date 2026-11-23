@@ -52,6 +52,7 @@ function glc_backlog_needs( string $text ): string {
 $pages = [
 	[
 		'slug'        => 'car-rental-kazbegi',
+		'custom_path' => 'car-rental-kazbegi',
 		'status'      => 'publish',
 		'title'       => 'Car Rental for Kazbegi from Tbilisi',
 		'seo_title'   => 'Car Rental for Kazbegi from Tbilisi',
@@ -69,7 +70,7 @@ $pages = [
 <!-- wp:paragraph --><p>Read the detailed <a href="/driving-to-kazbegi-in-winter/">Tbilisi-to-Kazbegi winter driving guide</a> before choosing a vehicle.</p><!-- /wp:paragraph -->
 
 <!-- wp:heading --><h2 class="wp-block-heading">What your Kazbegi rental includes</h2><!-- /wp:heading -->
-<!-- wp:list --><ul class="wp-block-list"><li>No security deposit, cash deposit, card charge, or card preauthorization hold.</li><li>Full insurance with no deductible.</li><li>Third-party liability cover up to 30,000 GEL.</li><li>Single-vehicle accidents covered.</li><li>Winter tyres supplied free of charge.</li><li>Free delivery at Tbilisi International Airport (TBS).</li><li>The exact car and real photographs, not an anonymous “or similar” category.</li></ul><!-- /wp:list -->
+<!-- wp:list --><ul class="wp-block-list"><li>No security deposit, cash deposit, card charge, or card preauthorization hold.</li><li>Full insurance with no deductible.</li><li>Third-party liability cover up to 30,000 GEL.</li><li>Single-vehicle accidents covered.</li><li>Winter tyres supplied free of charge.</li><li>Unlimited mileage within Georgia.</li><li>The exact car and real photographs, not an anonymous “or similar” category.</li></ul><!-- /wp:list -->
 
 <!-- wp:heading --><h2 class="wp-block-heading">Choose an exact car for your dates</h2><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Compare the current vehicles and their real seasonal prices below. Tell Geolander your dates, group size, luggage, and any side valleys you plan to visit so the team can recommend clearance and space without pretending every Kazbegi trip has the same needs.</p><!-- /wp:paragraph -->
@@ -96,7 +97,7 @@ HTML,
 <!-- wp:geolander/fleet-grid /-->
 
 <!-- wp:heading --><h2 class="wp-block-heading">Clear rental terms</h2><!-- /wp:heading -->
-<!-- wp:list --><ul class="wp-block-list"><li>No security deposit or card preauthorization hold.</li><li>Full insurance with no deductible.</li><li>Third-party liability cover limited to 30,000 GEL.</li><li>Free winter tyres.</li><li>Free Tbilisi Airport delivery.</li><li>Direct confirmation through WhatsApp.</li></ul><!-- /wp:list -->
+<!-- wp:list --><ul class="wp-block-list"><li>No security deposit or card preauthorization hold.</li><li>Full insurance with no deductible.</li><li>Third-party liability cover limited to 30,000 GEL.</li><li>Free winter tyres.</li><li>Unlimited mileage within Georgia.</li><li>Direct confirmation through WhatsApp.</li></ul><!-- /wp:list -->
 
 <!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact/">Check availability for your route</a></div><!-- /wp:button --></div><!-- /wp:buttons -->
 HTML,

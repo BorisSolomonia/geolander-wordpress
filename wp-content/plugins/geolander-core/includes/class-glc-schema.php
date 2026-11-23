@@ -71,7 +71,8 @@ class GLC_Schema {
 					'@context' => 'https://schema.org',
 					'@graph'   => array_values( array_filter( array_map( [ __CLASS__, 'prune' ], $graph ) ) ),
 				],
-				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+				// HEX_TAG writes < and > as \u003C and \u003E, so no value can close this <script> early. A parser reads the same text either way.
+				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG
 			)
 		);
 	}
@@ -121,7 +122,7 @@ class GLC_Schema {
 		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
 		if ( class_exists( 'GLC_City' ) ) {
 			foreach ( GLC_City::all() as $city ) {
-				$name = GLC_City::city_name( $city->ID );
+				$name = GLC_City::city_label( $city->ID );
 				if ( $name ) {
 					$area[] = [ '@type' => 'City', 'name' => $name ];
 				}
@@ -367,7 +368,7 @@ class GLC_Schema {
 		$area = [ [ '@type' => 'Country', 'name' => 'Georgia' ] ];
 		if ( class_exists( 'GLC_City' ) ) {
 			foreach ( GLC_City::all() as $city ) {
-				$name = GLC_City::city_name( $city->ID );
+				$name = GLC_City::city_label( $city->ID );
 				if ( $name ) {
 					$area[] = [ '@type' => 'City', 'name' => $name ];
 				}

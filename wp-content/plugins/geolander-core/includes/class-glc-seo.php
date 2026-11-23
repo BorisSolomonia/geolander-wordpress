@@ -61,14 +61,28 @@ class GLC_SEO {
 		}
 	}
 
+	/** The reader's language, or English when the i18n layer is not loaded. */
+	private static function locale(): string {
+		return class_exists( 'GLC_I18n' ) ? GLC_I18n::locale() : 'en';
+	}
+
 	/**
 	 * Search-engineered titles. English (default locale) carries the
 	 * commercial keywords; other locales use their catalog strings.
 	 */
 	public static function title( array $parts ): array {
 		$en = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
-		$custom_title = is_singular() && $en
-			? trim( (string) get_post_meta( get_queried_object_id(), 'glc_seo_title_en', true ) )
+		/*
+		 * A page's own search title, in the reader's language. Only English could
+		 * carry one before (`glc_seo_title_en`), so a landing page written for the
+		 * Georgian market fell back to the catalogue sentence however carefully its
+		 * title had been chosen. Each language now reads its own key and never
+		 * borrows another's: an English title under a `hreflang="ka"` page
+		 * contradicts the page. An empty key behaves exactly as before, so a page
+		 * that carries no translation is untouched by this.
+		 */
+		$custom_title = is_singular()
+			? trim( (string) get_post_meta( get_queried_object_id(), 'glc_seo_title_' . self::locale(), true ) )
 			: '';
 
 		if ( $custom_title ) {
@@ -230,19 +244,20 @@ class GLC_SEO {
 			return;
 		}
 		$primary = $ga4 ?: $ads;
+		printf( "<link rel=\"preconnect\" href=\"https://www.googletagmanager.com\">\n" );
+		printf( "<link rel=\"dns-prefetch\" href=\"https://www.google-analytics.com\">\n" );
 		printf( "<script async src=\"https://www.googletagmanager.com/gtag/js?id=%s\"></script>\n", esc_attr( $primary ) );
 		// Keep our measurements free of booking messages, customer details and URL queries.
 		printf( '<script>window.glcAnalytics=%s;</script>' . "\n", wp_json_encode( [ 'ids' => array_values( array_filter( [ $ga4, $ads ] ) ) ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) );
-		wp_enqueue_script( 'glc-analytics', GLC_URL . 'assets/analytics.js', [], GLC_VERSION, false );
+		wp_enqueue_script( 'glc-analytics', GLC_URL . 'assets/analytics.js', [], GLC_VERSION . '.' . filemtime( GLC_DIR . 'assets/analytics.js' ), [ 'strategy' => 'defer', 'in_footer' => true ] );
 	}
 
 	private static function description(): string {
 		if ( is_singular() ) {
 			$post = get_queried_object();
 			$en   = ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale();
-			$custom_description = $en
-				? trim( (string) get_post_meta( $post->ID, 'glc_seo_description_en', true ) )
-				: '';
+			// Per language, for the same reason as the title above.
+			$custom_description = trim( (string) get_post_meta( $post->ID, 'glc_seo_description_' . self::locale(), true ) );
 			if ( $custom_description ) {
 				return wp_html_excerpt( $custom_description, 158, '…' );
 			}
@@ -263,7 +278,7 @@ class GLC_SEO {
 				if ( $price <= 0 ) {
 					$text = $en
 						? sprintf(
-							'Rent a %s in Tbilisi. Full insurance and free Tbilisi Airport delivery. Get an exact seasonal quote with location fees. %s',
+							'Rent a %s in Tbilisi. Full insurance and no security deposit. Get an exact seasonal quote with location fees. %s',
 							get_the_title( $post ),
 							$text
 						)
@@ -272,7 +287,7 @@ class GLC_SEO {
 							get_the_title( $post ),
 							glc_ui( 'booking_title' ),
 							glc_ui( 'trust_insurance' ),
-							glc_ui( 'trust_delivery' ),
+							glc_ui( 'trust_deposit' ),
 							$text
 						);
 					return wp_html_excerpt( trim( $text ), 158, '…' );
@@ -282,7 +297,7 @@ class GLC_SEO {
 				// the page and reads badly in localized search results.
 				$text  = $en
 					? sprintf(
-						'Rent a %s in Tbilisi from %s/day. Full insurance and free Tbilisi Airport delivery. Location fees are shown in the quote. %s',
+						'Rent a %s in Tbilisi from %s/day. Full insurance and no security deposit. Location fees are shown in the quote. %s',
 						get_the_title( $post ),
 						GLC_Format::money( $price ),
 						$text
@@ -294,7 +309,7 @@ class GLC_SEO {
 						GLC_Format::money( $price ),
 						glc_ui( 'from_per_day' ),
 						glc_ui( 'trust_insurance' ),
-						glc_ui( 'trust_delivery' ),
+						glc_ui( 'trust_deposit' ),
 						$text
 					);
 			}
@@ -311,12 +326,12 @@ class GLC_SEO {
 					: sprintf( '%s. %s', sprintf( glc_ui( 'place_driving_title' ), get_the_title( $post ) ), $text );
 			}
 		} elseif ( is_post_type_archive( 'car' ) ) {
-			$text = glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' ) . ' ' . glc_ui( 'trust_insurance' ) . ', ' . glc_ui( 'trust_delivery' ) . '.';
+			$text = glc_ui( 'fleet_title' ) . ' — ' . glc_ui( 'fleet_subtitle' ) . ' ' . glc_ui( 'trust_insurance' ) . ', ' . glc_ui( 'trust_deposit' ) . '.';
 		} elseif ( is_post_type_archive( 'place' ) ) {
 			$text = glc_ui( 'places_subtitle' ) . ' — ' . glc_ui( 'route_1' ) . ', ' . glc_ui( 'route_2' ) . ', ' . glc_ui( 'route_3' ) . ', ' . glc_ui( 'route_4' ) . '.';
 		} elseif ( is_front_page() ) {
 			$text = sprintf(
-				'%s — Geolander car rental in the heart of Tbilisi, in %s at %s.',
+				glc_ui( 'front_seo_description' ),
 				glc_ui( 'hero_subtitle' ),
 				GLC_Settings::get( 'office_district' ),
 				GLC_Settings::get( 'address' )

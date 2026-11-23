@@ -20,7 +20,7 @@ $glc_id = get_the_ID();
 	</div>
 	<?php endif; ?>
 
-	<article style="width:min(100% - 2.5rem, 760px);margin-inline:auto;display:grid;gap:1.4rem;margin-top:<?php echo has_post_thumbnail( $glc_id ) ? '-4rem' : 'var(--wp--preset--spacing--50)'; ?>;position:relative;">
+	<article style="width:min(100% - 2.5rem, 760px);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:1.4rem;margin-top:<?php echo has_post_thumbnail( $glc_id ) ? '-4rem' : 'var(--wp--preset--spacing--50)'; ?>;position:relative;">
 		<nav aria-label="breadcrumb" style="font-size:0.8rem;color:var(--glc-stone);">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" style="text-decoration:none;"><?php echo esc_html( glc_t( 'nav_home' ) ); ?></a>
 			<span> / </span>

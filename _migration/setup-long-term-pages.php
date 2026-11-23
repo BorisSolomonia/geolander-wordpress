@@ -91,7 +91,7 @@ $pages = [
 <!-- wp:list --><ul class="wp-block-list"><li><strong>Quote first.</strong> Choose a car, enter your dates, and send the pre-filled WhatsApp request. We confirm availability, usually within the hour during the day.</li><li><strong>A 10% prepayment confirms the booking.</strong> The balance is paid at pickup.</li><li><strong>Cancellation.</strong> 30 days or more before the rental starts, 50% of the prepayment is refunded. Fewer than 30 days before, the prepayment is non-refundable.</li><li><strong>The exact car.</strong> The vehicle on the page — plate, photos, year — is the vehicle you receive. Never “or similar”.</li></ul><!-- /wp:list -->
 
 <!-- wp:heading --><h2 class="wp-block-heading">Handover and delivery</h2><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Pickup at our office in Mtatsminda, central Tbilisi, or free delivery to Tbilisi International Airport (TBS). Handover at Kutaisi Airport (KUT) or Batumi Airport (BUS) carries a fixed each-way charge that is shown in your quote before you confirm. See the city pages for <a href="/car-rental-tbilisi/">Tbilisi</a>, <a href="/car-rental-kutaisi/">Kutaisi</a> and <a href="/car-rental-batumi/">Batumi</a>.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Pickup at our office in Mtatsminda, central Tbilisi, is free. Delivery is charged each way — a Tbilisi address [geolander_fee place="tbilisi_city"], Tbilisi International Airport (TBS) [geolander_fee place="tbilisi_airport"], Kutaisi [geolander_fee place="kutaisi_airport"], Batumi [geolander_fee place="batumi_airport"] — and the charge is shown in your quote before you confirm. See the city pages for <a href="/car-rental-tbilisi/">Tbilisi</a>, <a href="/car-rental-kutaisi/">Kutaisi</a> and <a href="/car-rental-batumi/">Batumi</a>.</p><!-- /wp:paragraph -->
 
 <!-- wp:heading --><h2 class="wp-block-heading">Agree these on WhatsApp before you book</h2><!-- /wp:heading -->
 <!-- wp:paragraph --><p>A month on Georgian roads is different from a weekend. Three things are agreed per booking rather than promised on a web page, so ask us and get the answer in writing in the chat: <strong>servicing during your rental</strong> (oil change intervals on a high-mileage month), <strong>swapping the car</strong> if it needs workshop time, and <strong>crossing into Armenia</strong>, which is possible with advance notice under our <a href="/terms/">rental terms</a>.</p><!-- /wp:paragraph -->
@@ -120,7 +120,7 @@ HTML,
 		'status'       => 'draft',
 		'title'        => 'Monthly Car Rental in Tbilisi',
 		'seo_title'    => 'Monthly Car Rental in Tbilisi, Georgia — 31+ Day Rates',
-		'description'  => 'Rent a car in Tbilisi by the month: lower 31+ day per-day rates read live from each car, no deposit, full insurance, free handover at our Mtatsminda office or Tbilisi Airport.',
+		'description'  => 'Rent a car in Tbilisi by the month: lower 31+ day per-day rates read live from each car, no deposit, full insurance, free handover at our Mtatsminda office; Tbilisi Airport delivery at a fixed fee per direction.',
 		'service_type' => 'Monthly car rental',
 		'titles'       => [
 			'ka' => 'მანქანის ყოველთვიური ქირაობა თბილისში',
@@ -131,7 +131,7 @@ HTML,
 			'fr' => 'Location de voiture au mois à Tbilissi',
 		],
 		'content'      => <<<'HTML'
-<!-- wp:paragraph {"fontSize":"large"} --><p class="has-large-font-size"><strong>Geolander rents cars in Tbilisi by the month</strong>, from our office in Mtatsminda or with free handover at Tbilisi International Airport. The 31+ day tier below is read live from each car's price table.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph {"fontSize":"large"} --><p class="has-large-font-size"><strong>Geolander rents cars in Tbilisi by the month</strong>, collected from our office in Mtatsminda or delivered to Tbilisi International Airport for [geolander_fee place="tbilisi_airport"] each way. The 31+ day tier below is read live from each car's price table.</p><!-- /wp:paragraph -->
 
 <!-- wp:paragraph --><p><mark><strong>OWNER DECISION (plan Day 17):</strong> keep this as a separate page only if Tbilisi monthly demand justifies its own URL. Otherwise fold the Tbilisi-specific paragraph into <a href="/long-term-car-rental-georgia/">the long-term hub</a> and leave this draft unpublished. Two strong pages beat four thin ones.</mark></p><!-- /wp:paragraph -->
 
@@ -139,7 +139,7 @@ HTML,
 <!-- wp:geolander/long-term-rates /-->
 
 <!-- wp:heading --><h2 class="wp-block-heading">What is different about Tbilisi</h2><!-- /wp:heading -->
-<!-- wp:list --><ul class="wp-block-list"><li>Handover is free at the Mtatsminda office and at Tbilisi Airport (TBS) — no delivery charge on a month-long rental here.</li><li>Parking: most long-stay visitors park on the street in the central districts; ask us about the current municipal parking rules when you book.</li><li>Extending is a WhatsApp message; if the car is free we re-quote the whole rental at the longer tier.</li></ul><!-- /wp:list -->
+<!-- wp:list --><ul class="wp-block-list"><li>Handover is free at the Mtatsminda office; delivery to Tbilisi Airport (TBS) costs [geolander_fee place="tbilisi_airport"] each way.</li><li>Parking: most long-stay visitors park on the street in the central districts; ask us about the current municipal parking rules when you book.</li><li>Extending is a WhatsApp message; if the car is free we re-quote the whole rental at the longer tier.</li></ul><!-- /wp:list -->
 
 <!-- wp:heading --><h2 class="wp-block-heading">What every rental includes</h2><!-- /wp:heading -->
 <!-- wp:geolander/rental-facts /-->

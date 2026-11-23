@@ -18,18 +18,26 @@ class GLC_Vehicle_Evidence {
 			register_block_type( 'geolander/vehicle-evidence', [ 'render_callback' => [ __CLASS__, 'render' ] ] );
 		} );
 	}
-	public static function date( $value ): string {
+	/**
+	 * Today's date where the cars are: the display time zone of Settings → Geolander, never the site's own
+	 * clock. That one is UTC and stays UTC, four hours behind Tbilisi, so between midnight and 04:00 there a
+	 * check done "today" was still "a day that has not come". $now is for a test that pins its clock.
+	 */
+	public static function today( ?int $now = null ): string {
+		return GLC_Settings::local_time( $now ?? time(), 'Y-m-d' );
+	}
+	public static function date( $value, ?int $now = null ): string {
 		if ( ! is_string( $value ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) { return ''; }
 		[ $y, $m, $d ] = array_map( 'intval', explode( '-', $value ) );
-		return checkdate( $m, $d, $y ) && $value <= current_time( 'Y-m-d' ) ? $value : '';
+		return checkdate( $m, $d, $y ) && $value <= self::today( $now ) ? $value : '';
 	}
-	public static function normalize( array $input ): array {
+	public static function normalize( array $input, ?int $now = null ): array {
 		$out = [];
 		foreach ( self::FIELDS as $key => [ $label, $type ] ) {
 			$value = $input[ $key ] ?? '';
 			if ( ! is_scalar( $value ) ) { $value = ''; }
 			$value = (string) $value;
-			$out[ $key ] = 'date' === $type ? self::date( $value ) : ( 'number' === $type
+			$out[ $key ] = 'date' === $type ? self::date( $value, $now ) : ( 'number' === $type
 				? ( ctype_digit( $value ) && (int) $value > 0 && (int) $value <= 9999999 ? (string) (int) $value : '' )
 				: sanitize_text_field( $value ) );
 		}
@@ -49,6 +57,9 @@ class GLC_Vehicle_Evidence {
 			|| ! current_user_can( 'edit_post', $id ) || wp_is_post_revision( $id )
 			|| ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) { return; }
 		foreach ( self::normalize( wp_unslash( $_POST ) ) as $key => $value ) {
+			// The dated facts a partner may change too are saved by GLC_Meta_Boxes::save(), through
+			// GLC_Price_Store, so a page opened before a partner's change cannot put the old ones back.
+			if ( class_exists( 'GLC_Price_Store' ) && isset( GLC_Price_Store::SPEC_FIELDS[ $key ] ) ) { continue; }
 			update_post_meta( $id, $key, $value );
 		}
 	}

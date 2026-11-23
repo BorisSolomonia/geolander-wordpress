@@ -28,7 +28,9 @@ class GLC_Content {
 		'car'   => [ 'body' ],
 		'place' => [ 'title', 'body' ],
 		'faq'   => [ 'title', 'body' ],
-		'city'  => [ 'title', 'body' ],
+		// 'label' is the bare name for lists and schema ("Аэропорт Кутаиси"); the title is a phrase
+		// ("Аренда автомобиля в аэропорту Кутаиси") whose grammatical case is wrong standing alone.
+		'city'  => [ 'title', 'label', 'body' ],
 		// Pages were missing: /blog/ and /music/ stored a Georgian post_title as
 		// the English original, so the x-default <title> leaked Georgian. With
 		// pages translatable, the English title is the post_title and each
@@ -42,6 +44,18 @@ class GLC_Content {
 		add_action( 'add_meta_boxes', [ __CLASS__, 'meta_boxes' ] );
 		add_action( 'save_post', [ __CLASS__, 'save' ], 10, 2 );
 		add_filter( 'the_title', [ __CLASS__, 'localized_title' ], 10, 2 );
+		// Before do_blocks (priority 9), so the translated blocks render like the original.
+		add_filter( 'the_content', [ __CLASS__, 'localized_page_content' ], 1 );
+	}
+
+	/** Core post-content blocks on pages must show the same translation as the title and description. */
+	public static function localized_page_content( string $content ): string {
+		if ( is_admin() || 'en' === self::current_locale() || ! in_the_loop() || ! is_main_query() ) { return $content; }
+		$post = get_post();
+		if ( ! $post || 'page' !== $post->post_type ) { return $content; }
+		$value = (string) get_post_meta( $post->ID, self::key( 'body', self::current_locale() ), true );
+		// No translation yet: keep the English original rather than an empty page.
+		return '' !== trim( $value ) ? $value : $content;
 	}
 
 	/** Core post-title blocks must use the same translation as the document title. */
@@ -116,10 +130,11 @@ class GLC_Content {
 		}
 		$locale = self::current_locale();
 		if ( ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === $locale ) {
-			return $post->post_content;
+			return do_shortcode( $post->post_content );
 		}
 		$value = (string) get_post_meta( $post->ID, self::key( 'body', $locale ), true );
-		return '' !== trim( $value ) ? $value : $post->post_content;
+		// Shortcodes run here so a fee placeholder in stored text shows the current setting.
+		return do_shortcode( '' !== trim( $value ) ? $value : $post->post_content );
 	}
 
 	/** Plain-text summary of the localized body, for cards and meta descriptions. */
@@ -162,9 +177,9 @@ class GLC_Content {
 			foreach ( $fields as $field ) {
 				$key   = self::key( $field, $locale );
 				$value = (string) get_post_meta( $post->ID, $key, true );
-				$label = 'title' === $field ? __( 'Title', 'geolander' ) : __( 'Body', 'geolander' );
+				$label = [ 'title' => __( 'Title', 'geolander' ), 'label' => __( 'Name in lists (footer, schema)', 'geolander' ) ][ $field ] ?? __( 'Body', 'geolander' );
 				printf( '<p style="margin:.2rem 0;"><label for="%1$s"><strong>%2$s</strong></label></p>', esc_attr( $key ), esc_html( $label ) );
-				if ( 'title' === $field ) {
+				if ( 'body' !== $field ) {
 					printf(
 						'<input type="text" id="%1$s" name="%1$s" value="%2$s" class="widefat" />',
 						esc_attr( $key ),
@@ -200,7 +215,7 @@ class GLC_Content {
 					continue;
 				}
 				$raw   = wp_unslash( $_POST[ $key ] );
-				$clean = 'title' === $field ? sanitize_text_field( $raw ) : wp_kses_post( $raw );
+				$clean = 'body' !== $field ? sanitize_text_field( $raw ) : wp_kses_post( $raw );
 				if ( '' === trim( $clean ) ) {
 					delete_post_meta( $post_id, $key );
 				} else {

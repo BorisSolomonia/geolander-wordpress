@@ -58,7 +58,7 @@ COPY docker/wordpress-hardening.php /usr/local/etc/wordpress/wordpress-hardening
 COPY docker/hardened-apache-start.sh /usr/local/bin/apache2-geolander-foreground
 RUN sed -i 's/\r$//' /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground \
 	&& chmod +x /usr/local/bin/geolander-memory-snapshot /usr/local/bin/apache2-geolander-foreground \
-	&& a2enmod status \
+	&& a2enmod status expires deflate headers \
 	&& a2enconf zz-geolander-production
 
 # Static healthcheck: confirms Apache serves without consuming a PHP worker.

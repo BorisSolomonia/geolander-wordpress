@@ -25,7 +25,7 @@ $glc_cards = [
 	[ glc_t( 'contact_address' ), GLC_Settings::get( 'address' ) . ', ' . GLC_Settings::get( 'address_locality' ) . ' ' . GLC_Settings::get( 'postal_code' ), $glc_map, 'var(--glc-accent)' ],
 ];
 ?>
-<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:2.2rem;">
+<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;grid-template-columns:minmax(0,1fr);gap:2.2rem;">
 	<div class="glc-section-head" style="margin-bottom:0;">
 		<div class="glc-kicker"><?php echo glc_sign( 'contact_title', '24/7 · WHATSAPP · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'contact_title' ) ); ?></h1>
@@ -39,7 +39,7 @@ $glc_cards = [
 
 	<div class="glc-stagger" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;">
 		<?php foreach ( $glc_cards as [ $glc_label, $glc_value, $glc_href, $glc_color ] ) : ?>
-			<a href="<?php echo esc_url( $glc_href ); ?>" rel="noopener" style="text-decoration:none;background:var(--glc-surface);border:1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);border-radius:var(--glc-radius);padding:1.6rem;display:grid;gap:0.5rem;">
+			<a href="<?php echo esc_url( $glc_href ); ?>" rel="noopener" style="text-decoration:none;background:var(--glc-surface);border:1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);border-radius:var(--glc-radius);padding:1.6rem;display:grid;grid-template-columns:minmax(0,1fr);gap:0.5rem;">
 				<span class="glc-label" style="color:<?php echo esc_attr( $glc_color ); ?>;"><?php echo esc_html( $glc_label ); ?></span>
 				<strong style="font-size:1.05rem;color:var(--glc-glacier);word-break:break-word;"><?php echo esc_html( $glc_value ); ?></strong>
 			</a>
@@ -69,7 +69,7 @@ $glc_cards = [
 			<?php elseif ( 'error' === $glc_status ) : ?>
 				<p role="alert" style="padding:0.8rem;border-radius:0.5rem;background:color-mix(in srgb, var(--glc-orange) 16%, transparent);"><?php echo esc_html( glc_t( 'contact_form_error' ) ); ?></p>
 			<?php endif; ?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:grid;gap:1rem;">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;">
 				<input type="hidden" name="action" value="glc_contact">
 				<p aria-hidden="true" style="position:absolute;left:-10000px;"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
 				<label><?php echo esc_html( glc_t( 'contact_form_name' ) ); ?><input type="text" name="name" autocomplete="name" required maxlength="120" style="display:block;width:100%;margin-top:0.35rem;"></label>
@@ -80,7 +80,7 @@ $glc_cards = [
 			</form>
 		</section>
 
-		<section style="background:var(--glc-surface);border:1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);border-radius:var(--glc-radius);padding:1.6rem;display:grid;gap:1rem;">
+		<section style="background:var(--glc-surface);border:1px solid color-mix(in srgb, var(--glc-glacier) 8%, transparent);border-radius:var(--glc-radius);padding:1.6rem;display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;">
 			<h2 style="margin:0;"><?php echo esc_html( glc_t( 'contact_map_title' ) ); ?></h2>
 			<?php if ( $glc_embed ) : ?>
 				<iframe src="<?php echo esc_url( $glc_embed ); ?>" title="<?php echo esc_attr( glc_t( 'contact_map_title' ) ); ?>" loading="lazy" referrerpolicy="no-referrer-when-downgrade" style="border:0;border-radius:0.75rem;width:100%;min-height:420px;" allowfullscreen></iframe>

@@ -12,12 +12,16 @@ class GLC_Trip_Tools {
 		foreach ( [ 'arrival_airport', 'arrival_one_way', 'arrival_round_trip' ] as $key ) { $out .= '<th scope="col">' . esc_html( glc_ui( $key ) ) . '</th>'; }
 		$out .= '</tr></thead><tbody>';
 		foreach ( [ 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport' ] as $key ) {
-			$fee = GLC_Rental::location_fee( $key );
-			// Tbilisi is explicitly confirmed free; missing paid-location fees are not free.
-			if ( 'tbilisi_airport' !== $key && $fee <= 0 ) { continue; }
+			// For the whole fleet: one amount while every car charges the same, "from" the
+			// cheapest car once a car has a fee of its own. The round trip is summed per
+			// car before the cars are compared.
+			$one_way = GLC_Rental::fee_summary( $key );
+			$both    = GLC_Rental::pair_summary( $key, $key );
+			// A paid place whose fee is not set is unknown, not free: its row is left out.
+			if ( 'unknown' === $one_way['state'] ) { continue; }
 			$out .= '<tr><th scope="row">' . esc_html( GLC_Rental::location_label( $key ) ) . '</th><td>'
-				. esc_html( $fee > 0 ? GLC_Format::money( $fee ) : glc_ui( 'arrival_included' ) ) . '</td><td>'
-				. esc_html( $fee > 0 ? GLC_Format::money( 2 * $fee ) : glc_ui( 'arrival_included' ) ) . '</td></tr>';
+				. esc_html( GLC_Rental::fee_text( $one_way, 'arrival_included' ) ) . '</td><td>'
+				. esc_html( GLC_Rental::fee_text( $both, 'arrival_included' ) ) . '</td></tr>';
 		}
 		$out .= '</tbody></table></figure><p>' . esc_html( glc_ui( 'arrival_math' ) ) . '</p><p>' . esc_html( glc_ui( 'arrival_limits' ) ) . '</p>';
 		$out .= '<h2>' . esc_html( glc_ui( 'arrival_checklist_title' ) ) . '</h2><ul>';

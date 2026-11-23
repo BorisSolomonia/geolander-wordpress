@@ -149,8 +149,10 @@ class GLC_MCP {
 		);
 	}
 
-	private static function tools(): array {
-		$locations = [ 'tbilisi_office', 'tbilisi_airport', 'kutaisi_airport', 'batumi_airport' ];
+	/** Also the WebMCP site-tool definitions (GLC_Assist), so both transports describe one set of tools. */
+	public static function tools(): array {
+		$locations = GLC_Rental::location_keys();
+		$time      = [ 'type' => 'string', 'pattern' => GLC_Rental::TIME_PATTERN, 'description' => 'Optional. Clock time at the car, 24-hour HH:MM. When omitted the site default is assumed and the quote says so in times_assumed.' ];
 		return [
 			[
 				'name'        => 'list_fleet',
@@ -169,7 +171,7 @@ class GLC_MCP {
 			[
 				'name'        => 'get_rental_quote',
 				'title'       => 'Get a date-specific Geolander quote',
-				'description' => 'Calculate a read-only quote for one published exact car, dates, pickup, and return. It does not confirm availability or create a booking.',
+				'description' => 'Calculate a read-only quote for one published exact car, dates, pickup, and return. It does not confirm availability or create a booking. kutaisi_airport and batumi_airport also cover a city address in that city at the same fee. A pickup or return outside the free handover hours adds a fee per handover; send pickup_time and return_time to have it priced.',
 				'inputSchema' => [
 					'type'                 => 'object',
 					'additionalProperties' => false,
@@ -180,6 +182,8 @@ class GLC_MCP {
 						'to'     => [ 'type' => 'string', 'format' => 'date' ],
 						'pickup' => [ 'type' => 'string', 'enum' => $locations, 'default' => GLC_Rental::DEFAULT_PICKUP ],
 						'return' => [ 'type' => 'string', 'enum' => $locations, 'default' => GLC_Rental::DEFAULT_RETURN ],
+						'pickup_time' => $time,
+						'return_time' => $time,
 					],
 				],
 				'annotations' => [ 'readOnlyHint' => true, 'idempotentHint' => true, 'openWorldHint' => false ],
@@ -241,7 +245,7 @@ class GLC_MCP {
 			'winter_tyres'     => 'Included free in winter.',
 			'route_policy'     => 'All vehicles and routes unless bad weather, an official road closure, or damaged-road conditions apply. Current safety and opening status must be checked before departure.',
 			'cross_border'     => 'Armenia is allowed; confirm trip documents and insurance before departure.',
-			'handover'         => 'Tbilisi office and Tbilisi Airport are free. Kutaisi and Batumi charges must be calculated by the dated quote.',
+			'handover'         => GLC_Rental::fee_sentence(),
 			'prepayment'       => '10% confirms the booking after availability is checked.',
 			'cancellation'     => 'At least 30 days before pickup, 50% of the prepayment is refunded. With fewer than 30 days remaining, the prepayment is non-refundable.',
 			'confirmation'     => 'A quote or booking request is not a confirmed reservation. Geolander staff confirm availability and payment instructions.',
@@ -251,7 +255,7 @@ class GLC_MCP {
 	/** Shared dated quote result; never creates a booking or claims availability. */
 	public static function quote_data( array $arguments ) {
 		$wp_request = new WP_REST_Request( 'GET', '/geolander-agent/v1/quote' );
-		foreach ( [ 'car', 'from', 'to', 'pickup', 'return' ] as $field ) {
+		foreach ( [ 'car', 'from', 'to', 'pickup', 'return', 'pickup_time', 'return_time' ] as $field ) {
 			if ( array_key_exists( $field, $arguments ) ) {
 				$wp_request->set_param( $field, $arguments[ $field ] );
 			}

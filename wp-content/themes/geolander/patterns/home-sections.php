@@ -8,7 +8,7 @@
  * fleet → how it works → routes → included → Google proof → FAQ → CTA.
  */
 ?>
-<div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;display:grid;gap:var(--wp--preset--spacing--70);padding-block:var(--wp--preset--spacing--60);">
+<div style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--wp--preset--spacing--70);padding-block:var(--wp--preset--spacing--60);">
 
 	<section class="glc-reveal" id="fleet">
 		<div class="glc-section-head">

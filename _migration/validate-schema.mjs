@@ -235,6 +235,16 @@ for (const path of AI_FILES) {
 		err(path, `contains ${zeros.length} zero-price quotation(s) — this file is read verbatim by AI systems`);
 	} else ok();
 	if (/\$\d+–\$0|\$0–/.test(body)) { err(path, 'contains a zero-bounded price range'); } else ok();
+	// Delivery is charged everywhere except the office (owner, 2026-10-11). These files
+	// are quoted verbatim by AI systems, so a surviving "free airport delivery", an old
+	// Kutaisi/Batumi fee or an unexpanded fee placeholder is a published false statement.
+	// The office clause is removed first: "office … is free" is the one true "free".
+	const claims = body.replace(/office(?:(?!airport|deliver|handover)[^.;!?\n]){0,40}?free/gi, ' ');
+	if (/free[^.\n]{0,40}(airport|deliver|handover)|(airport|handover)s?[^.\n]{0,40}\bfree\b/i.test(claims.replace(/free winter t[iy]res/gi, ' '))) {
+		err(path, 'says an airport or a delivery is free');
+	} else ok();
+	if (/(Kutaisi|Batumi)[^\n]{0,100}\$(68|98)\b|\$(68|98)\b[^\n]{0,100}(Kutaisi|Batumi)/i.test(body)) { err(path, 'quotes the old Kutaisi or Batumi fee'); } else ok();
+	if (/\[geolander_fee/.test(body)) { err(path, 'prints a fee placeholder that did not expand'); } else ok();
 }
 
 console.log('\nagent content negotiation');
@@ -901,6 +911,142 @@ try {
 	}
 } catch (e) {
 	err('long-term', `fetch failed: ${e.message}`);
+}
+
+/* ------------------------------------------------ 2026-10 guards -------- */
+
+/* Since 2026-10 a customer sees the total for their own dates, places and
+ * handover times, not the season table behind it; an early or late handover has
+ * a fee; and a single car may carry fees of its own. Each check below is one way
+ * that can quietly come undone.
+ *
+ * The two tables can be switched back on in Settings → Geolander without a
+ * deploy. The validator cannot read settings, so it expects the default (hidden)
+ * and must be told when the owner has switched one on deliberately:
+ *   node _migration/validate-schema.mjs <base> --car-grid-shown --long-term-grid-shown */
+const FLAGS = new Set(process.argv.slice(3));
+const visible = (html) => html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&#36;/g, '$');
+const ZERO_PRICE = /\$\s?0(?![.\d])/;
+
+console.log('\ncar pages — no season table, handover times asked, no zero fee');
+for (const [label, url] of PAGES.filter(([n]) => n.startsWith('car-'))) {
+	try {
+		const html = await (await fetch(url)).text();
+		const hasGrid = /class="[^"]*\bglc-price-table\b/.test(html);
+		if (hasGrid && !FLAGS.has('--car-grid-shown')) err(label, 'the season price table is on the car page again (setting price_grid_car_page); pass --car-grid-shown if that is deliberate');
+		else if (!hasGrid && FLAGS.has('--car-grid-shown')) err(label, '--car-grid-shown was passed but the page has no season price table');
+		else ok();
+		for (const id of ['glc-b-pickup-time', 'glc-b-return-time']) {
+			const input = html.match(new RegExp(`<input\\b[^>]*\\bid="${id}"[^>]*>`))?.[0] ?? '';
+			if (!/\btype="time"/.test(input) || !/\brequired\b/.test(input)) err(label, `booking form has no required time field #${id}`);
+			else if (!/\bvalue="([01]\d|2[0-3]):[0-5]\d"/.test(input)) err(label, `time field #${id} does not open on a time`);
+			else ok();
+		}
+		// A place this car cannot price must not be choosable, and no place may read as a zero.
+		for (const id of ['glc-b-pickup', 'glc-b-return']) {
+			const select = html.match(new RegExp(`<select id="${id}">([\\s\\S]*?)</select>`))?.[1];
+			if (!select) { err(label, `booking form has no #${id} list`); continue; }
+			const loose = [...select.matchAll(/<option value="([^"]+)"([^>]*)>([^<]*)<\/option>/g)]
+				.filter(([, , attrs, text]) => !/\bdisabled\b/.test(attrs) && !/·\s*(\+\s*\S+|Free)\s*$/.test(text.replace(/&#36;/g, '$').replace(/&middot;|&#183;/g, '·').trim()));
+			if (loose.length) err(label, `#${id} lets a visitor choose a place with no stated fee: ${loose.map((m) => m[1]).join(', ')}`); else ok();
+		}
+		const text = visible(html);
+		if (ZERO_PRICE.test(text) || /from\s+\$\s?0(?![.\d])/i.test(text)) err(label, 'page prints a zero amount ("$0" or "from $0")'); else ok();
+	} catch (e) {
+		err(label, `fetch failed: ${e.message}`);
+	}
+}
+
+console.log('\nfee wording on fleet-wide pages — no zero fee');
+let feePagesRead = 0;
+for (const path of ['/long-term-car-rental-georgia/', '/georgia-airport-rental-costs/', '/georgia-road-trip-planner/', '/car-rental/', '/car-rental-tbilisi/', '/car-rental-kutaisi/', '/car-rental-batumi/', '/car-rental-kobuleti/']) {
+	try {
+		const res = await fetch(`${BASE}${path}`, { headers: { Accept: 'text/html' } });
+		if (res.status === 404) continue; // not every page is published on every copy of the site
+		feePagesRead++;
+		const text = visible(await res.text());
+		if (ZERO_PRICE.test(text) || /from\s+\$\s?0(?![.\d])/i.test(text)) err(path, 'page prints a zero amount ("$0" or "from $0")'); else ok();
+		if (/\[geolander_fee/.test(text)) err(path, 'prints a fee placeholder that did not expand'); else ok();
+	} catch (e) {
+		err(path, `fetch failed: ${e.message}`);
+	}
+}
+if (!feePagesRead) err('fee-wording', 'none of the pages that print a delivery fee could be read'); else ok();
+
+console.log('\nlong-term page — one line per car');
+try {
+	const res = await fetch(`${BASE}/long-term-car-rental-georgia/`, { headers: { Accept: 'text/html' } });
+	if (res.ok) {
+		const table = (await res.text()).match(/<table class="[^"]*\bglc-long-term-table\b[^"]*">([\s\S]*?)<\/table>/)?.[1] ?? '';
+		const cars = [...table.matchAll(/<tr><td><a href="([^"]+)"/g)].map((m) => m[1]);
+		const repeated = cars.length - new Set(cars).size;
+		if (!cars.length) err('long-term', 'rates table lists no car');
+		else if (repeated && !FLAGS.has('--long-term-grid-shown')) err('long-term', `the per-season table is back: ${repeated} repeated car row(s) (setting price_grid_long_term); pass --long-term-grid-shown if that is deliberate`);
+		else if (!repeated && FLAGS.has('--long-term-grid-shown')) err('long-term', '--long-term-grid-shown was passed but every car has one row');
+		else ok();
+	} // a missing or failing page is already reported by the long-term check above
+} catch (e) {
+	err('long-term', `fetch failed: ${e.message}`);
+}
+
+console.log('\npublic REST — no price table, no fee override, no partner');
+try {
+	const cars = await (await fetch(`${BASE}/wp-json/wp/v2/car?status=publish&per_page=100&_fields=id,meta`)).json();
+	const closed = ['glc_pricing', 'glc_pricing_previous', 'glc_delivery_fees', 'glc_out_of_hours_fee', 'glc_rev', 'glc_partner_id'];
+	const leaked = [...new Set(cars.flatMap((car) => closed.filter((key) => key in (car.meta ?? {}))))];
+	if (!Array.isArray(cars) || !cars.length) err('rest-car-meta', 'REST API returned no published cars');
+	else if (leaked.length) err('rest-car-meta', `anonymous /wp-json/wp/v2/car shows ${leaked.join(', ')}`);
+	else ok();
+
+	/* The quote, by two paths: its own lines must add up to its total, and the
+	 * sentence machine clients read must name the amount the engine charges. */
+	const car = cars[0].id;
+	const from = new Date(Date.now() + 200 * 864e5).toISOString().slice(0, 10);
+	const to = new Date(Date.now() + 203 * 864e5).toISOString().slice(0, 10);
+	const quote = async (extra) => { const r = await fetch(`${BASE}/wp-json/geolander/v1/quote?car=${car}&from=${from}&to=${to}${extra}`); return { status: r.status, body: await r.json() }; };
+	const adds = (q) => Math.abs(q.total - (q.rental_total + q.pickup_fee + q.return_fee + q.pickup_time_fee + q.return_time_fee)) < 0.005;
+	const plain = await quote('');
+	if (plain.status !== 200) err('quote', `a quote without times answered ${plain.status} ${plain.body?.code ?? ''}`);
+	else if (plain.body.times_assumed !== true || !/^\d\d:\d\d$/.test(plain.body.pickup_time ?? '') || plain.body.pickup_time !== plain.body.return_time) err('quote', 'a quote without times does not say which time it assumed');
+	else if (!adds(plain.body)) err('quote', `total ${plain.body.total} is not the sum of its lines`);
+	else ok();
+	const malformed = await quote('&pickup_time=9:00');
+	if (malformed.status !== 400 || malformed.body?.code !== 'glc_bad_time') err('quote', `a malformed time answered ${malformed.status} ${malformed.body?.code ?? ''}, expected 400 glc_bad_time`); else ok();
+
+	const sentence = /Pickup or return before (\d\d):(\d\d) or after (\d\d:\d\d)[^.\n]*\./;
+	const texts = {};
+	for (const path of ['/llms.txt', '/pricing.md', '/.well-known/agent-skills/geolander-car-rental/SKILL.md']) texts[path] = (await (await fetch(BASE + path)).text()).match(sentence);
+	const said = Object.values(texts).map((m) => m?.[0] ?? '(nothing)');
+	if (new Set(said).size !== 1) err('early-late-fee', `llms.txt, pricing.md and SKILL.md state the early/late fee differently: ${said.join(' | ')}`); else ok();
+	const stated = texts['/llms.txt'];
+	const exact = stated?.[0].match(/ is charged \$([\d.,]+) per handover, at the office too\.$/);
+	if (exact && `${stated[1]}:${stated[2]}` > '00:00') {
+		// One minute before the free hours start, and exactly at the start.
+		const minutes = Number(stated[1]) * 60 + Number(stated[2]) - 1;
+		const early = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+		const before = await quote(`&pickup_time=${early}&return_time=${stated[1]}:${stated[2]}`);
+		const fee = Number(exact[1].replace(/,/g, ''));
+		if (before.status !== 200) err('early-late-fee', `a pickup at ${early} answered ${before.status} ${before.body?.code ?? ''}`);
+		else if (before.body.pickup_time_fee !== fee || before.body.return_time_fee !== 0 || !adds(before.body)) err('early-late-fee', `the texts say $${fee} before ${stated[1]}:${stated[2]}; the quote charges ${before.body.pickup_time_fee} at ${early} and ${before.body.return_time_fee} at ${stated[1]}:${stated[2]}`);
+		else ok();
+	} else ok(); // no single amount is stated (cars differ, free, or not decided): nothing to compare
+} catch (e) {
+	err('quote', `check failed: ${e.message}`);
+}
+
+console.log('\nopenapi — handover times documented');
+try {
+	const spec = await (await fetch(`${BASE}/openapi.json`)).json();
+	const params = (spec.paths?.['/wp-json/geolander/v1/quote']?.get?.parameters ?? []).map((p) => p.name);
+	const quoteProps = Object.keys(spec.components?.schemas?.Quote?.properties ?? {});
+	const missing = [
+		...['pickup_time', 'return_time'].filter((name) => !params.includes(name)).map((name) => `quote parameter ${name}`),
+		...['pickup_time', 'return_time', 'pickup_time_fee', 'return_time_fee', 'times_assumed'].filter((name) => !quoteProps.includes(name)).map((name) => `Quote.${name}`),
+		...['pickup_time', 'return_time'].filter((name) => !(name in (spec.components?.schemas?.BookingRequest?.properties ?? {}))).map((name) => `BookingRequest.${name}`),
+	];
+	if (missing.length) err('openapi', `does not document ${missing.join(', ')}`); else ok();
+} catch (e) {
+	err('openapi', `invalid or unreachable: ${e.message}`);
 }
 
 console.log(`\n===== ${checks} checks, ${errors} errors, ${warnings} warnings =====`);

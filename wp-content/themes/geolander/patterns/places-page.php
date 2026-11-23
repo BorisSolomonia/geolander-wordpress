@@ -9,7 +9,7 @@ $glc_sign_text = $glc_places > 0
 	? sprintf( '%d DRIVING DESTINATIONS · 0 → 2196 M', $glc_places )
 	: 'DRIVING DESTINATIONS · GEORGIA';
 ?>
-<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:2rem;">
+<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;grid-template-columns:minmax(0,1fr);gap:2rem;">
 	<div class="glc-section-head" style="margin-bottom:0;">
 		<div class="glc-kicker"><?php echo glc_sign( 'places_title', $glc_sign_text ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'places_title' ) ); ?></h1>

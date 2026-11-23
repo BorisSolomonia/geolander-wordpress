@@ -7,7 +7,7 @@
       "name": "What is Geolander?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Geolander is a local car rental company based in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. It rents exact, individually photographed vehicles and offers free Tbilisi Airport delivery, included insurance, and direct WhatsApp support."
+        "text": "Geolander is a local car rental company based in the heart of Tbilisi, in Mtatsminda at 8/5 Vedzini Street. It rents exact, individually photographed vehicles with included insurance, no security deposit, and direct WhatsApp support. Delivery to Tbilisi Airport or a city address is available at a fixed fee per direction."
       }
     },
     {
@@ -39,7 +39,7 @@
       "name": "Can I pick up the car at Tbilisi Airport?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Geolander offers free delivery at Tbilisi International Airport (TBS). Contact Geolander to arrange delivery for your booking."
+        "text": "Yes. Geolander delivers to and collects from Tbilisi International Airport (TBS) for [geolander_fee place=\"tbilisi_airport\"] per direction. The fee is shown in the booking quote before you send the request."
       }
     },
     {

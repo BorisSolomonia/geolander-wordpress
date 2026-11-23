@@ -48,21 +48,22 @@ class GLC_Trip_Planner {
 		return $page && 'publish' === $page->post_status ? get_permalink( $page ) : '';
 	}
 
-	/** Missing paid-location fees are unknown, never a promise of free delivery. */
-	public static function delivery_total( string $pickup, string $return ): ?float {
-		$total = 0.0;
-		foreach ( [ $pickup, $return ] as $location ) {
-			if ( ! isset( self::AIRPORTS[ $location ] ) ) { return null; }
-			$fee = GLC_Rental::location_fee( $location );
-			if ( ! is_finite( $fee ) || ( 'tbilisi_airport' !== $location && $fee <= 0 ) ) { return null; }
-			$total += $fee;
+	/**
+	 * Delivery for one pickup and one return, for the whole published fleet:
+	 * [ 'state' => free | priced | from | free_or_from | unknown, 'fee' => amount ].
+	 * One exact amount while every car charges the same; "from" the cheapest car
+	 * once a car has a fee of its own. Missing paid-location fees are unknown,
+	 * never a promise of free delivery.
+	 */
+	public static function delivery_total( string $pickup, string $return ): array {
+		if ( ! isset( self::AIRPORTS[ $pickup ], self::AIRPORTS[ $return ] ) ) {
+			return [ 'state' => 'unknown', 'fee' => 0.0 ];
 		}
-		return round( $total, 2 );
+		return GLC_Rental::pair_summary( $pickup, $return );
 	}
 
-	private static function price( ?float $total ): string {
-		if ( null === $total ) { return glc_ui( 'planner_confirm_fee' ); }
-		return 0.0 === $total ? glc_ui( 'arrival_included' ) : GLC_Format::money( $total );
+	private static function price( array $delivery ): string {
+		return GLC_Rental::fee_text( $delivery, 'arrival_included' );
 	}
 
 	public static function teaser(): string {
@@ -96,7 +97,7 @@ class GLC_Trip_Planner {
 					<?php foreach ( [ 'pickup', 'return' ] as $direction ) : ?>
 						<label for="trip-<?php echo esc_attr( $direction ); ?>"><?php echo esc_html( glc_ui( 'planner_' . $direction ) ); ?><select id="trip-<?php echo esc_attr( $direction ); ?>" name="<?php echo esc_attr( $direction ); ?>">
 							<?php foreach ( self::AIRPORTS as $location => $code ) : ?>
-								<option value="<?php echo esc_attr( $location ); ?>"><?php echo esc_html( $code . ' · ' . GLC_Rental::location_label( $location ) ); ?></option>
+								<option value="<?php echo esc_attr( $location ); ?>"><?php echo esc_html( GLC_Rental::location_label( $location ) ); ?></option>
 							<?php endforeach; ?>
 						</select></label>
 					<?php endforeach; ?>

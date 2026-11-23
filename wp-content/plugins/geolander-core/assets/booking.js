@@ -8,13 +8,32 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var fromEl = $('glc-b-from'), toEl = $('glc-b-to'), nameEl = $('glc-b-name'), emailEl = $('glc-b-email');
 	var pickupEl = $('glc-b-pickup'), returnEl = $('glc-b-return');
+	var pickupTimeEl = $('glc-b-pickup-time'), returnTimeEl = $('glc-b-return-time');
 	var lines = $('glc-b-lines'), errEl = $('glc-b-error'), submit = $('glc-b-submit');
 	var barDates = $('glc-bar-dates'), barCta = $('glc-bar-cta');
-	if (!fromEl || !toEl || !pickupEl || !returnEl || !submit) return;
+	if (!fromEl || !toEl || !pickupEl || !returnEl || !pickupTimeEl || !returnTimeEl || !submit) return;
 
 	var current = null;
 	var busy = false; // guards BOTH the submit button and the sticky-bar CTA
 	var quoteVersion = 0, quoteController = null;
+	// The lines a customer sees must add up to the total they see. Half a cent is
+	// the most two honest sums of the same cents can differ by.
+	var HALF_CENT = 0.005;
+
+	// A time field's value as HH:MM, or '' while it is empty or half typed.
+	function timeOf(el) {
+		var m = /^([01]\d|2[0-3]):[0-5]\d/.exec(el.value || '');
+		return m ? m[0] : '';
+	}
+
+	// The second check on every total: the server's own lines, added up here, must
+	// equal the server's total. If they do not, something is wrong on one side and
+	// no figure is shown at all.
+	function linesAddUp(q) {
+		var parts = [q.rental_total, q.pickup_fee, q.return_fee, q.pickup_time_fee, q.return_time_fee], sum = 0;
+		for (var i = 0; i < parts.length; i++) sum += Number(parts[i]) || 0;
+		return Math.abs(sum - Number(q.total)) <= HALF_CENT;
+	}
 
 	function fmtMoney(value) {
 		var rules = cfg.fmt || {};
@@ -57,11 +76,15 @@
 		if (barDates) barDates.textContent = '';
 		if ($('glc-bar-total')) $('glc-bar-total').textContent = '';
 		if (!from || !to || to <= from) { setError(''); submit.disabled = true; return; }
+		// Both handover times are part of the price, so nothing is priced without them.
+		var pickupTime = timeOf(pickupTimeEl), returnTime = timeOf(returnTimeEl);
+		if (!pickupTime || !returnTime) { setError(cfg.i18n.timeError); return; }
 		submit.disabled = true;
-		fetch(cfg.restQuote + '?car=' + cfg.carId + '&from=' + from + '&to=' + to + '&pickup=' + encodeURIComponent(pickupEl.value) + '&return=' + encodeURIComponent(returnEl.value), { signal: quoteController.signal })
+		fetch(cfg.restQuote + '?car=' + cfg.carId + '&from=' + from + '&to=' + to + '&pickup=' + encodeURIComponent(pickupEl.value) + '&return=' + encodeURIComponent(returnEl.value) + '&pickup_time=' + encodeURIComponent(pickupTime) + '&return_time=' + encodeURIComponent(returnTime), { signal: quoteController.signal })
 			.then(function (r) { return r.ok ? r.json() : Promise.reject(); })
 			.then(function (q) {
 				if (version !== quoteVersion) return;
+				if (!linesAddUp(q)) { setError(cfg.i18n.quoteError); return; }
 				current = q;
 				// Reflect only the most recently requested server-priced quote.
 				var days = $('glc-b-days');
@@ -70,10 +93,16 @@
 				$('glc-b-total').textContent = fmtMoney(q.total);
 				$('glc-b-prepayment').textContent = fmtMoney(q.prepayment);
 				$('glc-b-balance').textContent = fmtMoney(q.balance);
-				$('glc-b-pickup-fee').textContent = fmtMoney(q.pickup_fee);
-				$('glc-b-return-fee').textContent = fmtMoney(q.return_fee);
+				// A line that is not shown holds no text either: a hidden "$0" is still a zero on the page.
+				$('glc-b-pickup-fee').textContent = q.pickup_fee > 0 ? fmtMoney(q.pickup_fee) : '';
+				$('glc-b-return-fee').textContent = q.return_fee > 0 ? fmtMoney(q.return_fee) : '';
 				$('glc-b-pickup-row').hidden = !(q.pickup_fee > 0);
 				$('glc-b-return-row').hidden = !(q.return_fee > 0);
+				// Early or late handover: a line only when there is something to pay.
+				$('glc-b-pickup-time-fee').textContent = q.pickup_time_fee > 0 ? fmtMoney(q.pickup_time_fee) : '';
+				$('glc-b-return-time-fee').textContent = q.return_time_fee > 0 ? fmtMoney(q.return_time_fee) : '';
+				$('glc-b-pickup-time-row').hidden = !(q.pickup_time_fee > 0);
+				$('glc-b-return-time-row').hidden = !(q.return_time_fee > 0);
 				lines.hidden = false;
 				setError('');
 				submit.disabled = busy;
@@ -117,6 +146,8 @@
 				to: toEl.value,
 				pickup: pickupEl.value,
 				return: returnEl.value,
+				pickup_time: timeOf(pickupTimeEl),
+				return_time: timeOf(returnTimeEl),
 				name: nameEl.value.trim(),
 				email: emailEl.value.trim()
 			})
@@ -159,6 +190,8 @@
 	toEl.addEventListener('change', refresh);
 	pickupEl.addEventListener('change', refresh);
 	returnEl.addEventListener('change', refresh);
+	pickupTimeEl.addEventListener('change', refresh);
+	returnTimeEl.addEventListener('change', refresh);
 	function customerChanged() {
 		if (current && nameEl && nameEl.value.trim() && emailEl && emailEl.checkValidity()) {
 			setError('');

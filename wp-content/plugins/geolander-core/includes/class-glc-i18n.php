@@ -24,7 +24,6 @@ class GLC_I18n {
 	];
 
 	public const DEFAULT_LOCALE = 'en';
-	private const COOKIE        = 'glc_lang';
 
 	private static string $locale = self::DEFAULT_LOCALE;
 
@@ -48,24 +47,14 @@ class GLC_I18n {
 				self::redirect( self::strip_prefix( $uri, $m[1] ) );
 			}
 			$_SERVER['REQUEST_URI'] = self::strip_prefix( $uri, $m[1] );
-			self::remember();
 			add_action( 'init', [ __CLASS__, 'hooks' ] );
 			return;
 		}
 
-		// Explicit switch to the default locale (switcher link) wins over
-		// the stored preference — otherwise the cookie would bounce the
-		// visitor straight back to their previous language.
-		if ( self::DEFAULT_LOCALE === ( $_GET['glc_lang'] ?? '' ) ) {
-			self::$locale = self::DEFAULT_LOCALE;
-			self::remember();
-			add_action( 'init', [ __CLASS__, 'hooks' ] );
-			return;
-		}
-
-		// The URL, not browser language or a stale preference cookie, owns locale.
+		// The URL, not browser language or a preference cookie, owns locale.
+		// No language cookie is written: nothing reads it, and a Set-Cookie
+		// makes Cloudflare refuse to store the page (every /ka/, /ru/… fill).
 		self::$locale = self::DEFAULT_LOCALE;
-		self::remember();
 		add_action( 'init', [ __CLASS__, 'hooks' ] );
 	}
 
@@ -88,29 +77,6 @@ class GLC_I18n {
 		return (bool) preg_match( '#^/(?:wp-admin|wp-json|wp-login|wp-content|wp-includes|wp-cron|xmlrpc|wp-sitemap|feed|\.well-known/)|\.(?:txt|xml|json|md)$#i', $path );
 	}
 
-	private static function remember(): void {
-		if ( headers_sent() ) {
-			return;
-		}
-		// A Set-Cookie on every response makes shared caches (Cloudflare "cache
-		// everything") bypass the page, so only write when there is a real,
-		// changed preference to persist.
-		$stored = $_COOKIE[ self::COOKIE ] ?? null;
-		if ( $stored === self::$locale ) {
-			return; // already remembered
-		}
-		// First visitor who resolved to the default locale needs no cookie: the
-		// next visit negotiates to the same default, and writing one here would
-		// make this cache-populating response uncacheable.
-		if ( null === $stored && self::DEFAULT_LOCALE === self::$locale ) {
-			return;
-		}
-		setcookie( self::COOKIE, self::$locale, [
-			'expires'  => time() + 180 * DAY_IN_SECONDS,
-			'path'     => '/',
-			'samesite' => 'Lax',
-		] );
-	}
 
 	public static function hooks() {
 		/*

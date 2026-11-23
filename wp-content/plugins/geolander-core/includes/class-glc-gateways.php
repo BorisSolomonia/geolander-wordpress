@@ -22,8 +22,21 @@ abstract class GLC_Gateway {
 	 */
 	abstract public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error;
 
-	/** Log the request server-side and mint a human reference like GL-2417. */
-	protected function log_request( int $car_id, string $from, string $to, array $quote, array $customer ): array|WP_Error {
+	/**
+	 * Log the request server-side and mint a human reference like GL-2417.
+	 *
+	 * $route is where the customer's message is being sent (see
+	 * GLC_Gateway_WhatsApp::route_for()); it is stored with the request so the
+	 * owner's count of messages per partner is read from the requests themselves
+	 * and a later reassignment of the car does not move old requests. A gateway
+	 * that sends no message to anyone passes none.
+	 */
+	protected function log_request( int $car_id, string $from, string $to, array $quote, array $customer, array $route = [] ): array|WP_Error {
+		$routing = $route ? [
+			'glc_partner_id'     => (int) $route['partner_id'],
+			'glc_routed_number'  => (string) $route['number'],
+			'glc_routing_source' => (string) $route['source'],
+		] : [];
 		$post_id = wp_insert_post( [
 			'post_type'   => 'booking_request',
 			'post_status' => 'publish',
@@ -40,6 +53,13 @@ abstract class GLC_Gateway {
 				'glc_return'       => $quote['return'],
 				'glc_return_label' => $quote['return_label'],
 				'glc_return_fee'   => $quote['return_fee'],
+				// The handover times the total was priced for. "Assumed" means the
+				// client sent none and the default time was used: staff must ask.
+				'glc_pickup_time'     => $quote['pickup_time'],
+				'glc_return_time'     => $quote['return_time'],
+				'glc_pickup_time_fee' => $quote['pickup_time_fee'],
+				'glc_return_time_fee' => $quote['return_time_fee'],
+				'glc_times_assumed'   => $quote['times_assumed'] ? 1 : 0,
 				'glc_total'        => $quote['total'],
 				'glc_prepayment'   => $quote['prepayment'],
 				'glc_balance'      => $quote['balance'],
@@ -47,7 +67,7 @@ abstract class GLC_Gateway {
 				'glc_email'        => $customer['email'] ?? '',
 				'glc_booking_status' => 'requested',
 				'glc_gateway' => $this->id(),
-			],
+			] + $routing,
 		] );
 		if ( is_wp_error( $post_id ) || ! $post_id ) {
 			return is_wp_error( $post_id ) ? $post_id : new WP_Error( 'glc_booking_log', __( 'Could not save the booking request.', 'geolander' ) );
@@ -78,28 +98,69 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 	 * @return string Empty string when no number is configured.
 	 */
 	/**
-	 * Which WhatsApp number answers for a given car.
+	 * Which WhatsApp number answers for a given car, and why that one.
 	 *
-	 * Not every vehicle on the site is answered by the same phone: some are run
-	 * with a partner who takes their own bookings. That is a property of the car,
-	 * so it lives on the car as editable meta, never as a list of plates in code.
-	 * A car with no number of its own falls back to the site number, which is why
-	 * adding a car needs no configuration at all.
+	 * Not every vehicle on the site is answered by the same phone: some belong to
+	 * a partner who takes their own bookings. In order:
+	 *
+	 *  1. the phone of the partner the car is assigned to (`partner`);
+	 *  2. else the number kept on the car itself, `glc_whatsapp_number` (`car`):
+	 *     how partner cars were routed before partner accounts existed, and still
+	 *     the answer for a car whose partner has no account or no phone yet;
+	 *  3. else the site number (`site`), which is why adding a car needs no
+	 *     configuration at all.
+	 *
+	 * None of this is a list of plates in code: the assignment and both numbers
+	 * are editable data.
+	 *
+	 * @return array{number:string, source:string, partner_id:int} number as bare digits; partner_id is
+	 *               the partner the message goes to, 0 when it goes to the car's own or the site number
 	 */
+	public static function route_for( ?int $car_id = null ): array {
+		$digits = static fn( $raw ): string => (string) preg_replace( '/[^0-9]/', '', (string) $raw );
+		if ( $car_id ) {
+			$partner_id = GLC_Partners::partner_of( $car_id );
+			$phone      = $partner_id ? $digits( GLC_Partners::phone( $partner_id ) ) : '';
+			if ( '' !== $phone ) {
+				return [ 'number' => $phone, 'source' => 'partner', 'partner_id' => $partner_id ];
+			}
+			$own = $digits( get_post_meta( $car_id, 'glc_whatsapp_number', true ) );
+			if ( '' !== $own ) {
+				return [ 'number' => $own, 'source' => 'car', 'partner_id' => 0 ];
+			}
+		}
+		return [ 'number' => $digits( GLC_Settings::get( 'whatsapp_number' ) ), 'source' => 'site', 'partner_id' => 0 ];
+	}
+
 	public static function number_for( ?int $car_id = null ): string {
-		$own = $car_id ? (string) get_post_meta( $car_id, 'glc_whatsapp_number', true ) : '';
-		$raw = trim( $own ) !== '' ? $own : (string) GLC_Settings::get( 'whatsapp_number' );
-		return (string) preg_replace( '/[^0-9]/', '', $raw );
+		return self::route_for( $car_id )['number'];
 	}
 
 	public static function url( string $text = '', ?int $car_id = null ): string {
-		$digits = self::number_for( $car_id );
+		return self::link( self::number_for( $car_id ), $text );
+	}
+
+	/** The link itself, for a number already chosen. See the format note above before touching it. */
+	private static function link( string $digits, string $text ): string {
 		if ( ! $digits ) {
 			return '';
 		}
 		return 'https://api.whatsapp.com/send/?phone=' . rawurlencode( '+' . $digits )
 			. '&text=' . rawurlencode( $text )
 			. '&type=phone_number&app_absent=0';
+	}
+
+	/**
+	 * One handover time for the staff message: the time, the early/late fee when
+	 * there is one, and a plain note when nobody chose the time (an app or an AI
+	 * assistant sent dates only), so staff do not read a default as a wish.
+	 */
+	private static function time_line( array $quote, string $side ): string {
+		$line = (string) $quote[ $side . '_time' ];
+		if ( $quote[ $side . '_time_fee' ] > 0 ) {
+			$line .= ' (early/late fee ' . GLC_Format::money_exact( $quote[ $side . '_time_fee' ], 'en' ) . ')';
+		}
+		return $line . ( $quote['times_assumed'] ? ' (assumed: no time was given)' : '' );
 	}
 
 	public function id(): string {
@@ -111,12 +172,13 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 	}
 
 	public function checkout( int $car_id, string $from, string $to, array $quote, array $customer = [] ): array|WP_Error {
-		$number = self::number_for( $car_id );
-		if ( ! $number ) {
+		// Decided once: the stored request, and the link the customer is handed, name the same number.
+		$route = self::route_for( $car_id );
+		if ( ! $route['number'] ) {
 			return new WP_Error( 'glc_no_whatsapp', __( 'Booking channel is not configured.', 'geolander' ), [ 'status' => 500 ] );
 		}
 
-		$logged = $this->log_request( $car_id, $from, $to, $quote, $customer );
+		$logged = $this->log_request( $car_id, $from, $to, $quote, $customer, $route );
 		if ( is_wp_error( $logged ) ) {
 			return $logged;
 		}
@@ -125,7 +187,8 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 
 		// DELIBERATELY ENGLISH — do not "localize" this (decision: 2026-07-16).
 		// This message is composed in the customer's WhatsApp but READ BY GEOLANDER
-		// STAFF in Tbilisi. Translating it to the visitor's locale would deliver
+		// STAFF in Tbilisi, or by the car's partner. It never names the partner:
+		// the customer sees this text. Translating it to the visitor's locale would deliver
 		// bookings the team cannot read (e.g. a Chinese customer's request arriving
 		// as 预订请求). It is an operational message, not UI copy, so it stays in one
 		// staff-readable language. Amounts stay in plain en-US format for the same
@@ -135,7 +198,9 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 			'Car: ' . get_the_title( $car_id ),
 			sprintf( 'Dates: %s -> %s (%d %s)', $from, $to, $quote['days'], 1 === $quote['days'] ? 'day' : 'days' ),
 			'Pickup: ' . $quote['pickup_label'],
+			'Pickup time: ' . self::time_line( $quote, 'pickup' ),
 			'Return: ' . $quote['return_label'],
+			'Return time: ' . self::time_line( $quote, 'return' ),
 			'Rental: ' . GLC_Format::money_exact( $quote['rental_total'], 'en' ),
 		];
 		if ( $quote['pickup_fee'] > 0 ) {
@@ -153,9 +218,10 @@ class GLC_Gateway_WhatsApp extends GLC_Gateway {
 			$lines[] = 'Email: ' . $customer['email'];
 		}
 		$message = implode( "\n", $lines );
+		GLC_Booking_Email::send_partner_copy( $logged['post_id'], $message );
 
 		return [
-			'redirect'  => self::url( $message ),
+			'redirect'  => self::link( $route['number'], $message ),
 			'reference' => $reference,
 			'message'   => $message,
 			'emailSent' => $email_sent,

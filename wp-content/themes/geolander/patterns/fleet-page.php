@@ -8,7 +8,7 @@ $glc_today = current_datetime()->format( 'Y-m-d' );
 $glc_from  = isset( $_GET['from'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_GET['from'] ) ? $_GET['from'] : '';
 $glc_to    = isset( $_GET['to'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_GET['to'] ) ? $_GET['to'] : '';
 ?>
-<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:2rem;">
+<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;grid-template-columns:minmax(0,1fr);gap:2rem;">
 	<div class="glc-section-head" style="margin-bottom:0;">
 		<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'REAL CARS · REAL PHOTOS · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h1>
@@ -28,7 +28,7 @@ $glc_to    = isset( $_GET['to'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_GET[
 		<div class="glc-trust" style="flex-basis:100%;padding-top:0.2rem;">
 			<span><?php echo esc_html( glc_t( 'trust_cancel' ) ); ?></span>
 			<span><?php echo esc_html( glc_t( 'trust_fees' ) ); ?></span>
-			<span><?php echo esc_html( glc_t( 'trust_delivery' ) ); ?></span>
+			<span><?php echo esc_html( glc_t( 'trust_deposit' ) ); ?></span>
 		</div>
 	</form>
 

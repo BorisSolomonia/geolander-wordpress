@@ -60,7 +60,8 @@ Assert-Contains $snapshot "-perm /022" 'Runtime diagnostics must report writable
 
 Assert-Contains $booking "private const RATE_LIMIT_OPTION = 'glc_checkout_rate_limit';" 'Checkout throttling must use one fixed-size option.'
 Assert-Contains $booking 'private const RATE_LIMIT_MAX = 20;' 'Checkout global write ceiling must remain bounded.'
-Assert-Contains $booking "update_option( self::RATE_LIMIT_OPTION, `$state, false )" 'The fixed rate-limit state must not autoload.'
+Assert-Contains $booking "autoload = 'off'" 'The fixed rate-limit state must not autoload.'
+Assert-Contains $booking 'AND BINARY option_value = %s' 'Checkout admission must use atomic compare-and-swap.'
 if ($booking.Contains("'glc_rl_' . md5")) {
 	throw 'Per-IP transient keys cause attacker-controlled wp_options growth.'
 }

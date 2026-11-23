@@ -65,6 +65,35 @@ class GLC_Booking_Email {
 		return $sent;
 	}
 
+	/**
+	 * A copy of a booking request for the car's partner, by email.
+	 *
+	 * Off today: the customer's WhatsApp message already goes to the partner's
+	 * phone. It becomes real when the owner turns on `partner_email_copy` and the
+	 * server has SMTP; until then each request records why nothing was sent
+	 * (`disabled`, `not_configured`). A request that went to Geolander's own
+	 * number has no partner to copy and records nothing.
+	 *
+	 * @param string $message the same English lines the WhatsApp message carries
+	 * @return string the recorded status, or '' when the request has no partner
+	 */
+	public static function send_partner_copy( int $post_id, string $message ): string {
+		$partner = get_userdata( (int) get_post_meta( $post_id, 'glc_partner_id', true ) );
+		if ( ! $partner ) {
+			return '';
+		}
+		if ( '1' !== (string) GLC_Settings::get( 'partner_email_copy' ) ) {
+			$status = 'disabled';
+		} elseif ( ! self::transport_configured() ) {
+			$status = 'not_configured';
+		} else {
+			$email  = sanitize_email( (string) $partner->user_email );
+			$status = $email && wp_mail( $email, self::subject( $post_id, false ), $message ) ? 'sent' : 'failed';
+		}
+		update_post_meta( $post_id, 'glc_partner_mail_status', $status );
+		return $status;
+	}
+
 	public static function send_confirmation( int $post_id ): bool {
 		if ( ! self::transport_configured() ) {
 			return false;
@@ -107,6 +136,7 @@ class GLC_Booking_Email {
 			'reference', 'name', 'email', 'from', 'to', 'days', 'pickup_label',
 			'return_label', 'rental_total', 'pickup_fee', 'return_fee', 'total',
 			'prepayment', 'balance', 'booking_status',
+			'pickup_time', 'return_time', 'pickup_time_fee', 'return_time_fee',
 		];
 		$data = [];
 		foreach ( $keys as $key ) {
@@ -142,6 +172,13 @@ class GLC_Booking_Email {
 			'Pickup: ' . ( $d['pickup_label'] ?: 'Not recorded in the original request' ),
 			'Return: ' . ( $d['return_label'] ?: 'Not recorded in the original request' ),
 		];
+		// Requests from before handover times existed carry none: the lines are left out.
+		if ( '' !== (string) $d['pickup_time'] ) {
+			$lines[] = 'Pickup time: ' . $d['pickup_time'];
+		}
+		if ( '' !== (string) $d['return_time'] ) {
+			$lines[] = 'Return time: ' . $d['return_time'];
+		}
 		if ( (float) $d['rental_total'] > 0 ) {
 			$lines[] = 'Rental: ' . self::money( $d['rental_total'] );
 		}
@@ -150,6 +187,12 @@ class GLC_Booking_Email {
 		}
 		if ( (float) $d['return_fee'] > 0 ) {
 			$lines[] = 'Return charge: ' . self::money( $d['return_fee'] );
+		}
+		if ( (float) $d['pickup_time_fee'] > 0 ) {
+			$lines[] = 'Early/late pickup fee: ' . self::money( $d['pickup_time_fee'] );
+		}
+		if ( (float) $d['return_time_fee'] > 0 ) {
+			$lines[] = 'Early/late return fee: ' . self::money( $d['return_time_fee'] );
 		}
 		if ( (float) $d['total'] > 0 ) {
 			$lines[] = 'Final total shown: ' . self::money( $d['total'] );

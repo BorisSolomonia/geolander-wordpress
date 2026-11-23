@@ -13,7 +13,7 @@ $glc_airport  = class_exists( 'GLC_City' ) ? GLC_City::airport( $glc_id ) : [ 'n
 $glc_delivery = class_exists( 'GLC_City' ) ? GLC_City::delivery_note( $glc_id ) : '';
 $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::url() : '';
 ?>
-<main style="width:min(100% - 2.5rem, 900px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
+<main style="width:min(100% - 2.5rem, 900px);margin-inline:auto;padding-block:var(--wp--preset--spacing--50) var(--wp--preset--spacing--60);display:grid;grid-template-columns:minmax(0,1fr);gap:1.6rem;">
 
 	<?php
 	// City pages emitted BreadcrumbList markup with no visible breadcrumb, while
@@ -30,7 +30,7 @@ $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::u
 		</div>
 	<?php endif; ?>
 
-	<header style="display:grid;gap:0.8rem;">
+	<header style="display:grid;grid-template-columns:minmax(0,1fr);gap:0.8rem;">
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);"><?php echo esc_html( GLC_Content::title( $glc_id ) ); ?></h1>
 
 		<div class="glc-chips">
@@ -39,9 +39,20 @@ $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::u
 			<?php endif; ?>
 			<span class="glc-chip">✓ <?php echo esc_html( glc_t( 'trust_insurance' ) ); ?></span>
 			<?php if ( $glc_delivery ) : ?>
-				<span class="glc-chip">📍 <?php echo esc_html( $glc_delivery ); ?></span>
+				<span class="glc-chip">📍 <?php echo esc_html( do_shortcode( $glc_delivery ) ); ?></span>
 			<?php endif; ?>
 		</div>
+
+		<?php
+		// In the header, not after the body text: on a phone the intro is several screens long,
+		// and WhatsApp is the only way to book, so it must be on the first screen (2026-11-03).
+		// The fallbacks keep the old colours for anyone whose cached main.css predates the tokens.
+		if ( $glc_wa ) :
+			?>
+			<a class="wp-element-button glc-btn" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener" style="justify-self:start;background:var(--glc-whatsapp,var(--glc-success));color:var(--glc-whatsapp-ink,var(--glc-paper));">
+				💬 <?php echo esc_html( glc_t( 'ask_whatsapp' ) ); ?>
+			</a>
+		<?php endif; ?>
 	</header>
 
 	<div class="glc-answer" style="font-size:1.02rem;line-height:1.7;">
@@ -56,19 +67,13 @@ $glc_wa       = class_exists( 'GLC_Gateway_WhatsApp' ) ? GLC_Gateway_WhatsApp::u
 		</p>
 	<?php endif; ?>
 
-	<?php if ( $glc_wa ) : ?>
-		<a class="wp-element-button glc-btn" href="<?php echo esc_url( $glc_wa ); ?>" target="_blank" rel="noopener" style="justify-self:start;background:var(--glc-success);color:var(--glc-paper);">
-			💬 <?php echo esc_html( glc_t( 'ask_whatsapp' ) ); ?>
-		</a>
-	<?php endif; ?>
-
-	<section style="display:grid;gap:1rem;margin-top:1rem;">
+	<section style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;margin-top:1rem;">
 		<h2 style="margin:0;"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h2>
 		<?php echo do_blocks( '<!-- wp:geolander/fleet-grid {"count":6} /-->' ); ?>
 		<a href="<?php echo esc_url( get_post_type_archive_link( 'car' ) ); ?>" style="justify-self:start;"><?php echo esc_html( glc_t( 'view_all' ) ); ?> →</a>
 	</section>
 
-	<section style="display:grid;gap:1rem;">
+	<section style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;">
 		<h2 style="margin:0;"><?php echo esc_html( glc_t( 'faq_title' ) ); ?></h2>
 		<?php echo do_blocks( '<!-- wp:geolander/faq-list /-->' ); ?>
 	</section>

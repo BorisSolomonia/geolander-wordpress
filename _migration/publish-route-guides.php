@@ -101,7 +101,7 @@ $guides = [
 <h2 class="wp-block-heading">Book the exact car for your Kazbegi dates</h2>
 <!-- /wp:heading -->
 <!-- wp:paragraph -->
-<p>Geolander shows real photos of the actual vehicle you reserve. Insurance is included, Tbilisi airport delivery is free, and our local team can help you match the car to the forecast and group size. Road access is never guaranteed by a rental booking, so we will always favor the current official restriction over an itinerary.</p>
+<p>Geolander shows real photos of the actual vehicle you reserve. Insurance is included, there is no security deposit, and our local team can help you match the car to the forecast and group size. Road access is never guaranteed by a rental booking, so we will always favor the current official restriction over an itinerary.</p>
 <!-- /wp:paragraph -->
 <!-- wp:buttons -->
 <div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/fleet/">Choose a Kazbegi-ready 4x4</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/contact/">Ask a local route question</a></div><!-- /wp:button --></div>
@@ -166,7 +166,7 @@ HTML,
 <h2 class="wp-block-heading">Reserve a real 4x4 for Svaneti</h2>
 <!-- /wp:heading -->
 <!-- wp:paragraph -->
-<p>With Geolander, the exact car shown in the listing is the car you receive. There is no anonymous “or similar” substitution. Tell us whether Mestia is your endpoint or Ushguli is part of the plan, and we can recommend the right clearance and luggage capacity. Insurance is included and Tbilisi airport delivery is free; current weather, closures, and road damage still control whether a route is safe to use.</p>
+<p>With Geolander, the exact car shown in the listing is the car you receive. There is no anonymous “or similar” substitution. Tell us whether Mestia is your endpoint or Ushguli is part of the plan, and we can recommend the right clearance and luggage capacity. Insurance is included and there is no security deposit; current weather, closures, and road damage still control whether a route is safe to use.</p>
 <!-- /wp:paragraph -->
 <!-- wp:buttons -->
 <div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/fleet/">Compare Svaneti 4x4s</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/contact/">Check your Svaneti route</a></div><!-- /wp:button --></div>

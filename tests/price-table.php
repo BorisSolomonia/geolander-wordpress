@@ -2,6 +2,9 @@
 define( 'ABSPATH', __DIR__ );
 $_GET = [];
 $rates = [ 'd1_2' => 40, 'd3_4' => 0 ];
+// The table is shown on a car page only while its setting says so; '0' is the default since 2026-10.
+$grid = '1';
+class GLC_Settings { public static function get( $key, $default = null ) { return 'price_grid_car_page' === $key ? $GLOBALS['grid'] : $default; } }
 function glc_t( $key ) { return $key; }
 function get_the_ID() { return 1; }
 function get_post_meta( ...$args ) { return [ [ 'label' => 'Test season', 'rates' => $GLOBALS['rates'] ] ]; }
@@ -19,3 +22,9 @@ foreach ( [ 'unknown', [], -20, null ] as $missing_rate ) {
 $rates = [ 'd1_2' => 0, 'd3_4' => 0 ];
 if ( GLC_Blocks::price_table() !== '' ) { throw new Exception( 'Unpriced table must be omitted.' ); }
 echo "PASS Partial and fully missing seasonal prices never display zero\n";
+$rates = [ 'd1_2' => 40, 'd3_4' => 35 ];
+if ( ! str_contains( GLC_Blocks::price_table(), '$35' ) ) { throw new Exception( 'With the setting on, the table must render.' ); }
+foreach ( [ '0', '', null, 'yes' ] as $grid ) {
+	if ( GLC_Blocks::price_table() !== '' ) { throw new Exception( 'The table must render only while the setting is exactly "1".' ); }
+}
+echo "PASS The season table renders only while its setting is on\n";

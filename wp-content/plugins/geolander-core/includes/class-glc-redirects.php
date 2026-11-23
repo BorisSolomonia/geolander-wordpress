@@ -35,8 +35,6 @@ class GLC_Redirects {
 		// comparison post that no longer exists. Parked on /about/ until an honest
 		// comparison page is written — then point this line at it.
 		'/blog/geolander-vs-local-rent-vs-premium-auto-rent/' => '/about/',
-		'/fleet/00000000-0000-0000-0000-000000000003/' => '/fleet/',
-		'/fleet/00000000-0000-0000-0000-000000000015/' => '/fleet/',
 		'/places/samegrelo/'                           => '/places/',   // old region path, 2 impressions + 1 click
 	];
 
@@ -116,13 +114,47 @@ class GLC_Redirects {
 			}
 		}
 		if ( ! isset( $map[ $path ] ) ) {
-			return;
+			$legacy = self::legacy_car_path( $path );
+			if ( null === $legacy ) {
+				return;
+			}
+			$map[ $path ] = $legacy;
 		}
 		$to     = $map[ $path ];
 		$target = preg_match( '#^https?://#i', $to ) ? $to : home_url( self::norm( $to ) );
 		nocache_headers();
 		wp_redirect( esc_url_raw( $target ), 301, 'Geolander' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 		exit;
+	}
+
+	/**
+	 * The previous site addressed cars as /fleet/<uuid>/, and Google still shows
+	 * those URLs (Search Console, Oct 2026: positions 5–8). The importer kept each
+	 * car's old id in `glc_legacy_id`, so the redirect target is read from data:
+	 * the car's page while it is published, the fleet archive once it is not.
+	 */
+	private static function legacy_car_path( string $path ): ?string {
+		$type = get_post_type_object( 'car' );
+		$base = $type && ! empty( $type->rewrite['slug'] ) ? trim( (string) $type->rewrite['slug'], '/' ) : '';
+		if ( '' === $base || ! preg_match( '#^/' . preg_quote( $base, '#' ) . '/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$#i', $path, $m ) ) {
+			return null;
+		}
+		$ids = get_posts( [
+			'post_type'      => 'car',
+			'post_status'    => 'any',
+			'meta_key'       => 'glc_legacy_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value'     => strtolower( $m[1] ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		] );
+		if ( ! $ids ) {
+			return null;
+		}
+		$car = get_post( (int) $ids[0] );
+		return 'publish' === $car->post_status
+			? '/' . $base . '/' . $car->post_name . '/'
+			: '/' . $base . '/';
 	}
 
 	/** Slugs that must never be listed in wp-sitemap: every redirect source plus the noindex list. */

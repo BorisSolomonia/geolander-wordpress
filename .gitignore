@@ -13,3 +13,18 @@ _migration/fleet-import-raw/
 .env.host
 data/
 .secrets
+
+# Secrets: BrowserStack and any other local credentials. Added 2026-10-08
+# after .claude/.env was found untracked but NOT ignored, which is one
+# "git add ." away from publishing an access key.
+.claude/
+.env
+*.env
+!.env.example
+
+# Deploy script: it names the server address and the path of the SSH key, and
+# this repository is public. Kept out of commits. Added 2026-10-11.
+deploy.sh
+
+# Local test accounts for tests/partner-authority.mjs (generated passwords). Never committed.
+tests/.local/

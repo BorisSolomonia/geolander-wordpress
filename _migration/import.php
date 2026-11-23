@@ -101,7 +101,7 @@ foreach ( $cars as $car ) {
 	$year  = (int) $car['year'];
 
 	$description = $car['descriptionEn'] ?: sprintf(
-		'Rent a %1$d %2$s in Tbilisi, Georgia. %3$s with %4$d seats, %5$s transmission and full insurance included — ready for Kazbegi, Gudauri, Kakheti and every Caucasus mountain road. Free Tbilisi Airport delivery and 24/7 support.',
+		'Rent a %1$d %2$s in Tbilisi, Georgia. %3$s with %4$d seats, %5$s transmission and full insurance included — ready for Kazbegi, Gudauri, Kakheti and every Caucasus mountain road. No security deposit and 24/7 WhatsApp support.',
 		$year,
 		$title,
 		$car['bodyType'],

@@ -16,10 +16,9 @@
  *    (they set their own headers)
  *  - car/fleet pages carrying ?from&to (live seasonal quotes vary by dates)
  *  - 404s (short cache only)
- *  - the unprefixed front page (language negotiation makes it origin-decided)
  *
- * Pair with a CDN rule that bypasses cache when the `glc_lang` or
- * `wordpress_logged_in` cookie is present (see docs/DEPLOYMENT.md).
+ * Pair with a CDN rule that bypasses cache for /wp-admin, /wp-json, /wp-login,
+ * from/to quote queries and the `wordpress_logged_in` cookie (see docs/DEPLOYMENT.md).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -89,19 +88,9 @@ class GLC_Perf {
 			return;
 		}
 
-		// The UNPREFIXED front page ("/") is not a pure function of its URL:
-		// GLC_I18n may 302 it by cookie/Accept-Language. A shared cache (Cloudflare
-		// ignores Vary on HTML) would then serve the cached English "/" to a
-		// first-visit non-English browser, or to a cookie-switched visitor whose
-		// Accept-Language still reads "en". So the origin must always decide "/".
-		// Prefixed home pages (/ka/, /ru/…) are path-keyed and never redirect, so
-		// they stay fully cacheable below.
-		if ( is_front_page()
-			&& ( ! class_exists( 'GLC_I18n' ) || GLC_I18n::DEFAULT_LOCALE === GLC_I18n::locale() ) ) {
-			header( 'Cache-Control: private, no-cache' );
-			return;
-		}
-
+		// Every page, the unprefixed front page "/" included, is a pure function of
+		// its URL: GLC_I18n takes the language from the path only and never
+		// redirects by cookie or Accept-Language, so "/" is cacheable like the rest.
 		header( sprintf( 'Cache-Control: public, max-age=%d, s-maxage=%d', self::MAXAGE, self::S_MAXAGE ) );
 	}
 }

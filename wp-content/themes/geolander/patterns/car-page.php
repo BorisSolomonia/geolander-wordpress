@@ -19,7 +19,7 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
  */
 [ $glc_rate_low, $glc_rate_high ] = GLC_Pricing::rate_range( $glc_id );
 ?>
-<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--40) var(--wp--preset--spacing--60);display:grid;gap:1.6rem;">
+<main style="width:min(100% - 2.5rem, 1240px);margin-inline:auto;padding-block:var(--wp--preset--spacing--40) var(--wp--preset--spacing--60);display:grid;grid-template-columns:minmax(0,1fr);gap:1.6rem;">
 
 	<nav aria-label="breadcrumb" style="font-size:0.8rem;color:var(--glc-stone);">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" style="text-decoration:none;"><?php echo esc_html( glc_t( 'nav_home' ) ); ?></a>
@@ -32,7 +32,7 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 	<?php echo do_blocks( '<!-- wp:geolander/car-gallery /-->' ); ?>
 
 	<div class="glc-single-layout">
-		<div style="display:grid;gap:2.4rem;align-content:start;">
+		<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:2.4rem;align-content:start;">
 			<div class="glc-section-head" style="margin-bottom:0;">
 				<h1 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-variation-settings:'wdth' 112;"><?php echo esc_html( $glc_title ); ?> <span style="color:var(--glc-stone);font-weight:500;"><?php echo esc_html( $glc_year ); ?></span></h1>
 				<div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap;">
@@ -66,7 +66,17 @@ $glc_drive = get_post_meta( $glc_id, 'glc_drivetrain', true );
 				<?php echo do_blocks( '<!-- wp:geolander/rental-facts /-->' ); ?>
 			</section>
 
-			<?php if ( $glc_rate_low > 0 ) : ?>
+			<?php
+			/*
+			 * The season × rental-length table, hidden by default since 2026-10: a
+			 * customer sees the total for their own dates and places in the booking
+			 * form, not the table behind it. The heading goes with the table. The low
+			 * and high day prices stay visible in the "from … to … per day" line above,
+			 * which is what the Product markup is matched against. The setting brings
+			 * the table back without a deploy (Settings → Geolander → Price tables).
+			 */
+			?>
+			<?php if ( $glc_rate_low > 0 && '1' === (string) GLC_Settings::get( 'price_grid_car_page' ) ) : ?>
 			<section>
 				<h2 class="glc-label" style="margin:0 0 0.9rem;"><?php echo esc_html( glc_t( 'rates_title' ) ); ?></h2>
 				<?php echo do_blocks( '<!-- wp:geolander/price-table /-->' ); ?>

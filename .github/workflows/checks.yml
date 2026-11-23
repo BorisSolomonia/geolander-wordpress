@@ -1,0 +1,65 @@
+name: Application checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build application runtime
+        run: docker build -t geolander-wordpress:checks .
+      - name: Lint PHP
+        run: docker run --rm -v "$PWD:/src:ro" --entrypoint sh geolander-wordpress:checks -c 'find /src/wp-content /src/_migration /src/docker /src/tests -name "*.php" -exec php -l {} \; > /tmp/lint; cat /tmp/lint; ! grep -E "Parse error|Errors parsing|Fatal error" /tmp/lint'
+      - name: Standalone PHP behavior
+        run: docker run --rm -v "$PWD:/src:ro" --entrypoint sh geolander-wordpress:checks /src/tests/run-standalone.sh
+      - name: Browser logic
+        run: node --test tests/booking-state.test.mjs tests/analytics-privacy.test.mjs
+      - name: Static contracts
+        shell: pwsh
+        run: |
+          Get-ChildItem tests/*.test.ps1 | Where-Object Name -ne 'checkout-concurrency.test.ps1' | ForEach-Object {
+            & $_.FullName
+          }
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Start development WordPress
+        run: docker compose up -d --build --wait wordpress db
+      - name: Install and seed isolated fixtures
+        run: |
+          docker compose exec -T wordpress wp core install --url=http://localhost:8080 --title=Geolander --admin_user=ci-audit --admin_password="$(openssl rand -hex 24)" --admin_email=audit@example.test --skip-email --allow-root
+          docker compose exec -T wordpress wp plugin activate geolander-core --allow-root
+          docker compose exec -T wordpress wp theme activate geolander --allow-root
+          docker compose exec -T wordpress wp option update permalink_structure '/%postname%/' --allow-root
+          docker compose exec -T wordpress php -d max_execution_time=0 -d memory_limit=256M /usr/local/bin/wp eval-file /migration/import.php --allow-root
+          docker compose exec -T wordpress wp eval-file /migration/setup-pages.php --allow-root
+          docker compose exec -T wordpress wp eval-file /migration/setup-seo-p2-p3.php --allow-root
+          docker compose exec -T wordpress wp rewrite flush --hard --allow-root
+      - name: Database behavior and rollback
+        shell: pwsh
+        run: ./tests/tools/run-integration.ps1
+      - name: Concurrent checkout ceiling
+        shell: pwsh
+        run: ./tests/checkout-concurrency.test.ps1
+      - name: Landing path precedence in every locale
+        run: node --test tests/landing-routing.test.mjs
+      - name: Stop isolated runtime
+        if: always()
+        run: docker compose down

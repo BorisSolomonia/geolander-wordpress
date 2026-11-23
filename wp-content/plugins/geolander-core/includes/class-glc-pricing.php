@@ -14,6 +14,10 @@ class GLC_Pricing {
 
 	public const TIERS = [ 'd1_2', 'd3_4', 'd5_7', 'd8_12', 'd13_18', 'd19_30', 'd31p' ];
 
+	/** The one day a yearly MM-DD table cannot name, and the day whose season prices it. */
+	private const LEAP_DAY         = '02-29';
+	private const LEAP_DAY_READ_AS = '02-28';
+
 	public const TIER_LABELS = [
 		'd1_2'   => '1-2',
 		'd3_4'   => '3-4',
@@ -136,9 +140,16 @@ class GLC_Pricing {
 	/**
 	 * Find the season row covering a date. Seasons wrap year boundaries
 	 * (e.g. Dec 25 – Jan 05), so compare on MM-DD ordinals.
+	 *
+	 * 29 February is read as 28 February. A season table is saved against the 365
+	 * days of an ordinary year (GLC_Price_Store), so no row can name the leap day;
+	 * read this way, a table that covers an ordinary year covers a leap year too.
 	 */
 	public static function season_for_date( array $pricing, DateTimeImmutable $date ): ?array {
 		$md = $date->format( 'm-d' );
+		if ( self::LEAP_DAY === $md ) {
+			$md = self::LEAP_DAY_READ_AS;
+		}
 		foreach ( $pricing as $season ) {
 			$from = $season['from'] ?? '';
 			$to   = $season['to'] ?? '';
@@ -158,15 +169,26 @@ class GLC_Pricing {
 	/**
 	 * Quote a rental. Returns null when input is invalid or no rates exist.
 	 *
+	 * A day no season covers, or a season with no price for this rental length,
+	 * gives no quote at all. It used to be priced at the car's headline "from"
+	 * price, which is empty on imported cars: the day then cost nothing and the
+	 * total silently held a free day. GLC_Price_Store refuses to save a table with
+	 * such a hole, so a stored table never reaches that branch.
+	 *
 	 * @return array{days:int, tier:string, total:float, per_day_avg:float, breakdown:array}|null
 	 */
 	public static function quote( int $car_id, string $from, string $to ): ?array {
-		try {
-			$start = new DateTimeImmutable( $from );
-			$end   = new DateTimeImmutable( $to );
-		} catch ( Exception ) {
-			return null;
+		// DateTime accepts relative dates and silently rolls February 30 into
+		// March. All callers must price exactly the calendar dates they supplied.
+		foreach ( [ $from, $to ] as $date ) {
+			if ( ! preg_match( '/\A([0-9]{4})-([0-9]{2})-([0-9]{2})\z/', $date, $parts )
+				|| ! checkdate( (int) $parts[2], (int) $parts[3], (int) $parts[1] ) ) {
+				return null;
+			}
 		}
+		$zone  = new DateTimeZone( 'UTC' );
+		$start = new DateTimeImmutable( $from, $zone );
+		$end   = new DateTimeImmutable( $to, $zone );
 		if ( $end <= $start ) {
 			return null;
 		}
@@ -185,21 +207,18 @@ class GLC_Pricing {
 		$total     = 0.0;
 		$breakdown = [];
 
-		for ( $i = 0; $i < $days; $i++ ) {
-			$day    = $start->modify( "+{$i} days" );
+		foreach ( self::calendar_days( $start, $end, $days ) as [ $day, $count ] ) {
 			$season = self::season_for_date( $pricing, $day );
 			$rate   = $season ? (float) ( $season['rates'][ $tier ] ?? 0 ) : 0.0;
 			if ( $rate <= 0 ) {
-				// Fall back to the car's headline rate so a gap in the
-				// season table never produces a free day.
-				$rate = (float) get_post_meta( $car_id, 'glc_price_from', true );
+				return null;
 			}
-			$total += $rate;
+			$total += $rate * $count;
 			$label  = $season['label'] ?? '';
 			if ( ! isset( $breakdown[ $label ] ) ) {
 				$breakdown[ $label ] = [ 'days' => 0, 'rate' => $rate ];
 			}
-			$breakdown[ $label ]['days']++;
+			$breakdown[ $label ]['days'] += $count;
 		}
 
 		return [
@@ -210,6 +229,36 @@ class GLC_Pricing {
 			'breakdown'   => $breakdown,
 			'currency'    => 'USD',
 		];
+	}
+
+	/**
+	 * Count repeated month/day values instead of walking thousands of years.
+	 * Short rentals keep their chronological order. Longer ranges need at most
+	 * 366 season lookups, with Gregorian century rules applied to February 29.
+	 * This bounds public quote work without imposing a new rental-length policy.
+	 */
+	private static function calendar_days( DateTimeImmutable $start, DateTimeImmutable $end, int $days ): iterable {
+		if ( $days <= 366 ) {
+			for ( $day = $start; $day < $end; $day = $day->modify( '+1 day' ) ) {
+				yield [ $day, 1 ];
+			}
+			return;
+		}
+		$first_year = (int) $start->format( 'Y' );
+		$last_year  = (int) $end->format( 'Y' );
+		$first_md   = $start->format( 'm-d' );
+		$last_md    = $end->format( 'm-d' );
+		$leaps      = static fn( int $year ): int => intdiv( $year, 4 ) - intdiv( $year, 100 ) + intdiv( $year, 400 );
+		$day        = new DateTimeImmutable( '2000-01-01', new DateTimeZone( 'UTC' ) );
+		for ( $i = 0; $i < 366; $i++, $day = $day->modify( '+1 day' ) ) {
+			$md    = $day->format( 'm-d' );
+			$first = $first_year + (int) ( $md < $first_md );
+			$last  = $last_year - (int) ( $md >= $last_md );
+			$count = self::LEAP_DAY === $md ? $leaps( $last ) - $leaps( $first - 1 ) : $last - $first + 1;
+			if ( $count > 0 ) {
+				yield [ $day, $count ];
+			}
+		}
 	}
 
 	/**

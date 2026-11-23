@@ -76,9 +76,9 @@ foreach ($stale in @('Free delivery to Batumi Airport', 'Free pickup at Kutaisi 
 		throw "City content still contains a false free-delivery claim: $stale"
 	}
 }
-foreach ($expected in @('$68 pickup and $68 return', '$98 pickup and $98 return')) {
+foreach ($expected in @('[geolander_fee place="kutaisi_airport"]', '[geolander_fee place="batumi_airport"]')) {
 	if ($cities -notmatch [regex]::Escape($expected)) {
-		throw "City content is missing owner-confirmed charge: $expected"
+		throw "City content must read the current owner-set charge: $expected"
 	}
 }
 

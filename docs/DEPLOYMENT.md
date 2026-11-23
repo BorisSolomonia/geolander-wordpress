@@ -26,24 +26,16 @@ redeploys** — add plugins to the repo instead. Media uploads persist on a volu
    The `geolander-core` plugin (`GLC_Perf`) now emits `Cache-Control: public, max-age=300,
    s-maxage=86400` on static pages and `private, no-cache` on dynamic ones, so configure Cloudflare to
    **respect origin cache headers** (Caching → Browser Cache TTL: "Respect Existing Headers"), then add
-   a Cache Rule that **bypasses cache** when ANY of these hold, so the origin's own decision is honored:
-   - path starts with `/wp-admin` or `/wp-json`
+   a Cache Rule that makes HTML **eligible for cache** (respecting origin headers) and **bypasses cache**
+   when ANY of these hold:
+   - path starts with `/wp-admin`, `/wp-json` or `/wp-login`
    - request has a `from` or `to` query param (live seasonal quotes)
-   - Cookie contains `glc_lang` **or** `wordpress_logged_in` (language-switched or logged-in visitors)
+   - Cookie contains `wordpress_logged_in`
 
-   The unprefixed homepage `/` is deliberately sent `private, no-cache` by the plugin (its response
-   depends on cookie/Accept-Language language negotiation), so it is always decided at the origin —
-   do **not** add a "cache everything" rule that would override this. Prefixed pages (`/ka/…`,
-   `/ru/…`) are path-keyed and fully cacheable.
-
-   **Caveat (unprefixed deep links):** `GLC_I18n` also 302-redirects unprefixed deep links (`/fleet/`,
-   `/cars/…`) for a *first-visit* non-English browser (no cookie yet). Because those pages ARE edge-cached
-   as English, such a visitor can be served English HTML instead of the redirect. In practice this is
-   rare and non-breaking: search engines follow hreflang straight to the `/ru/…` URL, and the on-page
-   switcher is always present; the cookie-bypass rule covers every *returning* visitor. The clean,
-   recommended fix (a small product decision) is to **scope the Accept-Language auto-redirect to the
-   homepage only** and let deep links stay language-stable — standard i18n practice, and it removes the
-   caveat entirely while keeping the cache win. Tracked in `docs/PERFORMANCE_AUDIT.md` (finding S1).
+   Every page, `/` included, is a pure function of its URL (2026-11-22): `GLC_I18n` takes the language
+   from the path only, never redirects by cookie or Accept-Language, and writes no language cookie, so
+   no response carries a `Set-Cookie` that would stop Cloudflare storing it. `tests/edge-cacheable-html.test.ps1`
+   guards this. After a content edit, purge the changed URLs (or wait out the one-day `s-maxage`).
 7. Email: Cloudflare DNS alone cannot send customer mail. Booking confirmations are generated in
    **Booking Requests → Customer confirmation** and can always be opened as a prefilled email draft.
    For automatic request receipts and confirmation delivery, add these Railway variables from an

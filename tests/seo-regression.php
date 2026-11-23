@@ -2,6 +2,7 @@
 /** Lightweight behavioral tests; no WordPress/database/network needed. */
 define( 'ABSPATH', __DIR__ );
 define( 'GLC_URL', 'https://example.test/plugin/' );
+define( 'GLC_DIR', __DIR__ . '/../wp-content/plugins/geolander-core/' );
 define( 'GLC_VERSION', 'test' );
 $options = [ 'home' => 'https://example.test', 'glc_indexnow_key' => 'test-key-12345678' ];
 $context = [];

@@ -17,7 +17,7 @@ $glc_region = wp_get_post_terms( $glc_id, 'place_region', [ 'fields' => 'names' 
 	</div>
 	<?php endif; ?>
 
-	<div style="width:min(100% - 2.5rem, 760px);margin-inline:auto;display:grid;gap:1.4rem;margin-top:<?php echo has_post_thumbnail( $glc_id ) ? '-4rem' : 'var(--wp--preset--spacing--50)'; ?>;position:relative;">
+	<div style="width:min(100% - 2.5rem, 760px);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:1.4rem;margin-top:<?php echo has_post_thumbnail( $glc_id ) ? '-4rem' : 'var(--wp--preset--spacing--50)'; ?>;position:relative;">
 		<nav aria-label="breadcrumb" style="font-size:0.8rem;color:var(--glc-stone);">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" style="text-decoration:none;"><?php echo esc_html( glc_t( 'nav_home' ) ); ?></a>
 			<span> / </span>
@@ -30,7 +30,7 @@ $glc_region = wp_get_post_terms( $glc_id, 'place_region', [ 'fields' => 'names' 
 		<div style="line-height:1.8;color:color-mix(in srgb, var(--glc-glacier) 88%, transparent);">
 			<?php echo wp_kses_post( wpautop( GLC_Content::body( $glc_id ) ) ); ?>
 		</div>
-		<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.6rem;display:grid;gap:0.8rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">
+		<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.6rem;display:grid;grid-template-columns:minmax(0,1fr);gap:0.8rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">
 			<h2 style="margin:0;font-size:1.2rem;"><?php echo esc_html( glc_t( 'place_drive_plan' ) ); ?></h2>
 			<p style="margin:0;color:var(--glc-stone);"><?php echo esc_html( glc_t( 'place_driving_policy' ) ); ?></p>
 			<p style="margin:0;display:flex;flex-wrap:wrap;gap:1rem;">
@@ -42,7 +42,7 @@ $glc_region = wp_get_post_terms( $glc_id, 'place_region', [ 'fields' => 'names' 
 			<p><a class="wp-element-button glc-btn" href="<?php echo esc_url( "https://maps.google.com/?q={$glc_lat},{$glc_lng}" ); ?>" rel="noopener" style="background:transparent;border:1px solid var(--glc-accent);color:var(--glc-accent);"><?php echo esc_html( glc_t( 'view_on_map' ) ); ?> →</a></p>
 		<?php endif; ?>
 
-		<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.6rem;display:grid;gap:0.8rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">
+		<section style="background:var(--glc-surface);border-radius:var(--glc-radius);padding:1.6rem;display:grid;grid-template-columns:minmax(0,1fr);gap:0.8rem;border:1px solid color-mix(in srgb, var(--glc-glacier) 7%, transparent);">
 			<h2 style="margin:0;font-size:1.15rem;font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'cta_title' ) ); ?></h2>
 			<p style="margin:0;font-size:0.9rem;color:var(--glc-stone);"><?php echo esc_html( glc_t( 'terrain_text' ) ); ?></p>
 			<p style="margin:0;"><a class="wp-element-button glc-btn" href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>"><?php echo esc_html( glc_t( 'hero_cta' ) ); ?></a></p>
