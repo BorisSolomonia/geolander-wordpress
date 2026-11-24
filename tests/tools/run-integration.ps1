@@ -1,5 +1,5 @@
 param(
-    [string[]]$Suites = @('quote-clients-wp.php', 'partners-wp.php', 'price-store-wp.php', 'photos-specs-wp.php', 'bulk-excel-wp.php', 'assignment-atomicity-wp.php', 'plugin-management-wp.php')
+    [string[]]$Suites = @('quote-clients-wp.php', 'partners-wp.php', 'price-store-wp.php', 'photos-specs-wp.php', 'bulk-excel-wp.php', 'assignment-atomicity-wp.php', 'plugin-management-wp.php', 'fleet-covers-wp.php')
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)

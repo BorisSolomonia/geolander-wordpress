@@ -12,7 +12,7 @@
 
 	<section class="glc-reveal" id="fleet">
 		<div class="glc-section-head">
-			<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'REAL CARS · REAL PHOTOS' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'OUR FLEET' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h2>
 			<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_subtitle' ) ); ?></p>
 		</div>

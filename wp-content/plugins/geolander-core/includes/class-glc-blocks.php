@@ -147,13 +147,19 @@ class GLC_Blocks {
 		}
 
 		$quote = ( $from && $to ) ? GLC_Pricing::quote( $id, $from, $to ) : null;
+		$cover = GLC_Fleet_Covers::image( $car, $num );
+		if ( $cover ) {
+			$brand_title = GLC_Fleet_Covers::name( $car );
+		}
 
 		ob_start();
 		?>
 		<article class="glc-card">
 			<div class="glc-card-media">
 				<span class="glc-card-num"><?php printf( '%02d', $num ); ?></span>
-				<?php if ( has_post_thumbnail( $id ) ) : ?>
+				<?php if ( $cover ) : ?>
+					<a href="<?php echo esc_url( $url ); ?>"><?php echo $cover; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
+				<?php elseif ( has_post_thumbnail( $id ) ) : ?>
 					<?php echo get_the_post_thumbnail( $id, 'glc-card', [ 'loading' => $num <= 3 ? 'eager' : 'lazy' ] ); ?>
 				<?php else : ?>
 					<div class="glc-no-photo"><?php echo esc_html( glc_ui( 'photos_soon' ) ); ?></div>

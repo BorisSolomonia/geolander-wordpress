@@ -34,7 +34,8 @@ return [
 	'trust_insurance' => '含保险',
 
 	'fleet_title'     => '我们的车队',
-	'fleet_subtitle'  => '真实车辆，真实照片 — 您预订哪辆，就开走哪辆',
+	'fleet_subtitle'  => '示意棚拍封面 — 点击车辆查看该车的真实照片。您预订哪辆，就开走哪辆。',
+	'studio_cover'    => '%s — 示意棚拍封面',
 	'seats'           => '座',
 	'automatic'       => '自动挡',
 	'manual'          => '手动挡',

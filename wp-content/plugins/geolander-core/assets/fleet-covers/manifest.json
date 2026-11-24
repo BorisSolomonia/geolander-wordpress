@@ -1,0 +1,97 @@
+{
+  "jeep-renegade-2017-nn-545-kn": {
+    "year": "2017",
+    "name": "Jeep Renegade",
+    "asset": "renegade-bu-black-69128c7735"
+  },
+  "mitsubishi-outlander-2018-black": {
+    "year": "2018",
+    "name": "Mitsubishi Outlander",
+    "asset": "outlander-gf-black-71235866ae"
+  },
+  "mitsubishi-outlander-2016-gray": {
+    "year": "2016",
+    "name": "Mitsubishi Outlander",
+    "asset": "outlander-gf-silver-85b2baea6b"
+  },
+  "subaru-forester-2020-ll802ml": {
+    "year": "2020",
+    "name": "Subaru Forester",
+    "asset": "forester-sk-bronze-c85d28f700"
+  },
+  "subaru-forester-2019-gray": {
+    "year": "2019",
+    "name": "Subaru Forester",
+    "asset": "forester-sk-white-bcdeb69826"
+  },
+  "subaru-forester-2016-blue": {
+    "year": "2016",
+    "name": "Subaru Forester",
+    "asset": "forester-sj-blue-2016-b9f1f3a175"
+  },
+  "subaru-forester-2014-ee346el": {
+    "year": "2014",
+    "name": "Subaru Forester",
+    "asset": "forester-sj-green-2014-d7e72f5aec"
+  },
+  "subaru-forester-2018-green": {
+    "year": "2018",
+    "name": "Subaru Forester",
+    "asset": "forester-sj-green-2018-e848246ca9"
+  },
+  "subaru-forester-2018-black": {
+    "year": "2018",
+    "name": "Subaru Forester",
+    "asset": "forester-sj-black-2018-a0c73c1282"
+  },
+  "subaru-forester-2023-black": {
+    "year": "2023",
+    "name": "Subaru Forester",
+    "asset": "forester-sk-black-2023-f6815f5d0c"
+  },
+  "toyota-rav4-2016-limited": {
+    "year": "2016",
+    "name": "Toyota RAV4 Hybrid AWD",
+    "asset": "rav4-xa40-hybrid-charcoal-c4f5842b17"
+  },
+  "toyota-highlander-2017-lc-785-ll": {
+    "year": "2017",
+    "name": "Toyota Highlander",
+    "asset": "highlander-xu50-black-8b3b799bf8"
+  },
+  "subaru-crosstrek-2021-dy-089-dy": {
+    "year": "2021",
+    "name": "Subaru Crosstrek",
+    "asset": "crosstrek-gt-charcoal-c5a5e2a2ed"
+  },
+  "subaru-crosstrek-2017-rz117zr": {
+    "year": "2017",
+    "name": "Subaru Crosstrek",
+    "asset": "crosstrek-gt-white-5f7777c792"
+  },
+  "jeep-wrangler-2017-ys-105-sy": {
+    "year": "2017",
+    "name": "Jeep Wrangler",
+    "asset": "wrangler-jk-unlimited-red-916a2119c9"
+  },
+  "jeep-wrangler-2017-white-sport": {
+    "year": "2017",
+    "name": "Jeep Wrangler Sport",
+    "asset": "wrangler-jk-unlimited-white-83c973f836"
+  },
+  "mitsubishi-outlander": {
+    "year": "2022",
+    "name": "Mitsubishi Outlander",
+    "asset": "outlander-gn-silver-fac61fab06"
+  },
+  "mitsubishi-outlander-2021-white": {
+    "year": "2021",
+    "name": "Mitsubishi Outlander",
+    "asset": "outlander-gn-white-6bcacd4ed7"
+  },
+  "toyota-4runner-2021-white": {
+    "year": "2021",
+    "name": "Toyota 4Runner",
+    "asset": "4runner-n280-white-83f44b37ea"
+  }
+}
