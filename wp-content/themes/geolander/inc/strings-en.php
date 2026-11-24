@@ -34,7 +34,8 @@ return [
 	'trust_insurance' => 'Insurance included',
 
 	'fleet_title'     => 'Our Fleet',
-	'fleet_subtitle'  => 'Illustrative studio covers — open a car to see its real photos. The car you book is the one you get.',
+	'fleet_subtitle'  => 'Real cars, real photos — the exact car you book is the one you get',
+	'fleet_studio_subtitle'  => 'Illustrative studio covers — open a car to see its real photos. The car you book is the one you get.',
 	'studio_cover'    => '%s — illustrative studio cover',
 	'seats'           => 'seats',
 	'automatic'       => 'Automatic',

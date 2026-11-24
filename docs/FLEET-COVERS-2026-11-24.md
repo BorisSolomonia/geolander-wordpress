@@ -10,6 +10,8 @@ The home page and car archive use one illustrative studio front cover per curren
 
 Card-only names omit stale colour words and repeated years in old titles. The database titles, URLs, colours, years, prices and SEO fields are unchanged.
 
+Visible cover explanations use the separate `fleet_studio_subtitle` key in all seven catalogues. The original `fleet_subtitle` strings remain intact because the SEO renderer also uses them for localized archive metadata.
+
 Validation: PHP lint; WordPress cover-scope/year-fallback/gallery preservation integration test; fleet integrity audit; local and production schema guard; before/after public head/schema/gallery comparisons; responsive browser review. Production rollout must preserve the database and uploads, take a fresh code/database backup, and refresh the home/fleet cache variants.
 
 Source corrections and their actual built-in ImageGen prompts are retained locally in `output/fleet-production-covers-2026-11-24/`. Only the selected first covers and their web sizes ship with the application.

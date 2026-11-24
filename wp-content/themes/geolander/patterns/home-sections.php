@@ -14,7 +14,7 @@
 		<div class="glc-section-head">
 			<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'OUR FLEET' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 			<h2 style="margin:0;font-size:var(--wp--preset--font-size--xx-large);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h2>
-			<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_subtitle' ) ); ?></p>
+			<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_studio_subtitle' ) ); ?></p>
 		</div>
 		<?php echo do_blocks( '<!-- wp:geolander/fleet-grid {"count":6} /-->' ); ?>
 		<p style="margin-top:1.6rem;text-align:center;">

@@ -12,7 +12,7 @@ $glc_to    = isset( $_GET['to'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_GET[
 	<div class="glc-section-head" style="margin-bottom:0;">
 		<div class="glc-kicker"><?php echo glc_sign( 'fleet_title', 'OUR FLEET · TBILISI' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 		<h1 style="margin:0;font-size:var(--wp--preset--font-size--display);font-family:var(--wp--preset--font-family--georgian);font-feature-settings:'case';"><?php echo esc_html( glc_t( 'fleet_title' ) ); ?></h1>
-		<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_subtitle' ) ); ?></p>
+		<p style="margin:0;color:var(--glc-stone);max-width:56ch;"><?php echo esc_html( glc_t( 'fleet_studio_subtitle' ) ); ?></p>
 	</div>
 
 	<form class="glc-hero-widget" method="get">

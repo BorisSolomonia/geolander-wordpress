@@ -34,7 +34,8 @@ return [
 	'trust_insurance' => 'Assurance incluse',
 
 	'fleet_title'     => 'Notre flotte',
-	'fleet_subtitle'  => 'Illustrations en studio — ouvrez la fiche du véhicule pour voir ses vraies photos. Vous recevez la voiture que vous réservez.',
+	'fleet_subtitle'  => 'De vraies voitures, de vraies photos — vous recevez exactement la voiture que vous réservez',
+	'fleet_studio_subtitle'  => 'Illustrations en studio — ouvrez la fiche du véhicule pour voir ses vraies photos. Vous recevez la voiture que vous réservez.',
 	'studio_cover'    => '%s — illustration en studio',
 	'seats'           => 'places',
 	'automatic'       => 'Automatique',
